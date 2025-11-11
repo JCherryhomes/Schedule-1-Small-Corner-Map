@@ -89,11 +89,5 @@ namespace Small_Corner_Map
             );
             directionIndicator.anchoredPosition = newPosition;
         }
-
-        public void SetMarkerScale(float scale)
-        {
-            if (playerMarker != null)
-                playerMarker.transform.localScale = Vector3.one * scale;
-        }
     }
 }

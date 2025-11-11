@@ -1,9 +1,7 @@
-using System;
+using MelonLoader;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using MelonLoader;
-using Il2CppScheduleOne.UI.Phone.Map;
 
 namespace Small_Corner_Map
 {
@@ -31,7 +29,7 @@ namespace Small_Corner_Map
         private bool initialized = false;
 
         // --- Constants ---
-        private const float mapScale = 1.2487098f;  // World-to-minimap scale factor
+        private const float mapScale = 1.20f;  // World-to-minimap scale factor
         private const float markerXAdjustment = 5f; // X offset for contract markers
         private const float minimapSize = 150f;     // Size of the minimap mask/frame
         private const float mapContentSize = 500f;  // Size of the map content
@@ -39,7 +37,6 @@ namespace Small_Corner_Map
         // --- Cached Player Reference ---
         private GameObject playerObject;
 
-        private bool doubleSizeEnabled {  get { return mapPreferences.doubleSizeMinimap.Value; } }
         private bool timeBarEnabled {  get { return mapPreferences.showGameTime.Value; } }
         private bool minimapEnabled {  get { return mapPreferences.minimapEnabled.Value; } }
 
@@ -48,7 +45,6 @@ namespace Small_Corner_Map
             mapPreferences = preferences;
             mapPreferences.minimapEnabled.OnEntryValueChanged.Subscribe(OnMinimapEnableChanged);
             mapPreferences.showGameTime.OnEntryValueChanged.Subscribe(OnTimeBarEnableChanged);
-            mapPreferences.doubleSizeMinimap.OnEntryValueChanged.Subscribe(OnDoubleSizeEnableChanged);
         }
 
         /// <summary>
@@ -87,55 +83,13 @@ namespace Small_Corner_Map
             UnityEngine.Object.DontDestroyOnLoad(minimapObject);
 
             // Canvas for UI rendering
-            GameObject canvasObject = new GameObject("MinimapCanvas");
-            canvasObject.transform.SetParent(minimapObject.transform, false);
-            Canvas canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 9999;
-            CanvasScaler canvasScaler = canvasObject.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-            canvasObject.AddComponent<GraphicRaycaster>();
+            var canvasObject = createCanvasAsset();
 
             // Frame (positions minimap in the corner)
-            GameObject frameObject = new GameObject("MinimapFrame");
-            frameObject.transform.SetParent(canvasObject.transform, false);
-            minimapFrameRect = frameObject.AddComponent<RectTransform>();
-            minimapFrameRect.anchorMin = new Vector2(1f, 1f);
-            minimapFrameRect.anchorMax = new Vector2(1f, 1f);
-            minimapFrameRect.pivot = new Vector2(1f, 1f);
-            minimapFrameRect.anchoredPosition = new Vector2(-20f, -20f);
-            minimapFrameRect.sizeDelta = new Vector2(minimapSize, minimapSize);
+            var frameObject = createFrameAsset(canvasObject);
 
             // Mask (circular area for minimap)
-            GameObject maskObject = new GameObject("MinimapMask");
-            maskObject.transform.SetParent(frameObject.transform, false);
-            RectTransform maskRect = maskObject.AddComponent<RectTransform>();
-            maskRect.sizeDelta = new Vector2(minimapSize, minimapSize);
-            maskRect.anchorMin = new Vector2(0.5f, 0.5f);
-            maskRect.anchorMax = new Vector2(0.5f, 0.5f);
-            maskRect.pivot = new Vector2(0.5f, 0.5f);
-            maskRect.anchoredPosition = Vector2.zero;
-            maskObject.AddComponent<Mask>().showMaskGraphic = false;
-            minimapDisplayObject = maskObject;
-            Image maskImage = maskObject.AddComponent<Image>();
-            maskImage.sprite = CreateCircleSprite((int)minimapSize, Color.black);
-            maskImage.type = Image.Type.Sliced;
-            maskImage.color = Color.black;
-
-            // Background (dark circle behind the map)
-            GameObject bgObject = new GameObject("Background");
-            bgObject.transform.SetParent(maskObject.transform, false);
-            RectTransform bgRect = bgObject.AddComponent<RectTransform>();
-            bgRect.sizeDelta = new Vector2(minimapSize, minimapSize);
-            bgRect.anchorMin = new Vector2(0.5f, 0.5f);
-            bgRect.anchorMax = new Vector2(0.5f, 0.5f);
-            bgRect.pivot = new Vector2(0.5f, 0.5f);
-            bgRect.anchoredPosition = Vector2.zero;
-            Image bgImage = bgObject.AddComponent<Image>();
-            bgImage.sprite = CreateCircleSprite((int)minimapSize, new Color(0.1f, 0.1f, 0.1f, 1f));
-            bgImage.type = Image.Type.Simple;
-            bgImage.color = new Color(0.1f, 0.1f, 0.1f, 1f);
+            var maskObject = createMaskAsset(frameObject);
 
             // Map content (holds the map image, grid, and markers)
             minimapContent = new MinimapContent(mapContentSize, 20, mapScale);
@@ -148,11 +102,11 @@ namespace Small_Corner_Map
 
             // Contract PoI markers
             contractMarkerManager = new ContractMarkerManager(
-                minimapContent.MapContentObject, mapScale, markerXAdjustment);
+            minimapContent.MapContentObject, mapScale, markerXAdjustment);
 
             // Time display (shows in-game time)
             minimapTimeDisplay = new MinimapTimeDisplay();
-            minimapTimeDisplay.Create(minimapFrameRect, doubleSizeEnabled, timeBarEnabled);
+            minimapTimeDisplay.Create(minimapFrameRect, false, timeBarEnabled);
         }
 
         public void OnMinimapEnableChanged(bool oldValue, bool newValue)
@@ -188,20 +142,12 @@ namespace Small_Corner_Map
             }
         }
 
-        public void OnDoubleSizeEnableChanged(bool oldValue, bool newValue)
-        {
-            if (oldValue != newValue)
-            {
-                UpdateMinimapSize();
-            }
-        }
-
         /// <summary>
         /// Updates the minimap and its elements when the size changes (e.g., 2x toggle).
         /// </summary>
         private void UpdateMinimapSize()
         {
-            float sizeMultiplier = doubleSizeEnabled ? 2f : 1f;
+            float sizeMultiplier = 1f;
 
             if (minimapFrameRect != null)
                 minimapFrameRect.sizeDelta = new Vector2(minimapSize, minimapSize) * sizeMultiplier;
@@ -212,31 +158,29 @@ namespace Small_Corner_Map
                 component.sizeDelta = new Vector2(minimapSize, minimapSize) * sizeMultiplier;
             }
 
-            // Fix: Use sizeMultiplier instead of1f / sizeMultiplier
-            //playerMarkerManager?.SetMarkerScale(1f / sizeMultiplier);
-            playerMarkerManager?.SetMarkerScale(1f / sizeMultiplier);
-
-            minimapTimeDisplay?.UpdatePosition(doubleSizeEnabled);
+            minimapTimeDisplay?.UpdatePosition(false);
         }
 
         /// <summary>
         /// Utility for creating a filled circle sprite for the minimap mask/background.
         /// </summary>
-        private Sprite CreateCircleSprite(int diameter, Color color)
+        private Sprite CreateCircleSprite(int diameter, Color color, int resolutionMultiplier =1)
         {
-            Texture2D texture = new Texture2D(diameter, diameter, TextureFormat.ARGB32, false);
-            Color clear = new Color(0f, 0f, 0f, 0f);
-            for (int i = 0; i < diameter; i++)
-                for (int j = 0; j < diameter; j++)
+            int texSize = diameter * resolutionMultiplier;
+            Texture2D texture = new Texture2D(texSize, texSize, TextureFormat.ARGB32, false);
+            texture.filterMode = FilterMode.Bilinear;
+            Color clear = new Color(0f,0f,0f,0f);
+            for (int i =0; i < texSize; i++)
+                for (int j =0; j < texSize; j++)
                     texture.SetPixel(j, i, clear);
-            int num = diameter / 2;
+            int num = texSize /2;
             Vector2 center = new Vector2(num, num);
-            for (int k = 0; k < diameter; k++)
-                for (int l = 0; l < diameter; l++)
+            for (int k =0; k < texSize; k++)
+                for (int l =0; l < texSize; l++)
                     if (Vector2.Distance(new Vector2(l, k), center) <= num)
                         texture.SetPixel(l, k, color);
             texture.Apply();
-            return Sprite.Create(texture, new Rect(0f, 0f, diameter, diameter), new Vector2(0.5f, 0.5f));
+            return Sprite.Create(texture, new Rect(0f,0f, texSize, texSize), new Vector2(0.5f,0.5f), resolutionMultiplier);
         }
 
         /// <summary>
@@ -520,16 +464,88 @@ namespace Small_Corner_Map
             Vector3 position = playerObject.transform.position;
             float mappedX = -position.x * mapScale;
             float mappedZ = -position.z * mapScale;
-            RectTransform contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
-            if (contentRect != null)
+            Transform minimapMask = minimapDisplayObject.transform.Find("MinimapMask");
+            var zero = Vector2.zero;
+
+            if (minimapMask != null)
             {
-                contentRect.anchoredPosition = new Vector2(mappedX, mappedZ);
+                RectTransform contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
+                if (contentRect != null)
+                {
+                    Rect rect = contentRect.rect;
+                    float halfWidth = rect.width * 0.5f;
+                    contentRect.anchoredPosition = new Vector2(mappedX, mappedZ);
+                    zero = new Vector2(halfWidth, rect.height * 0.5f);
+                }
             }
 
-            // Update player marker direction indicator
-            playerMarkerManager?.UpdateDirectionIndicator(playerObject.transform);
+            // Position of the player marker on the minimap
+            var sizeVector = new Vector2(11.2f, -2.7f);
+            var heightVector = new Vector2(mappedX, mappedZ) + zero + sizeVector;
+
+            var contentObject = minimapContent.MapContentObject.GetComponent<RectTransform>();
+            if (contentObject != null)
+            {
+                contentObject.anchoredPosition = Vector2.Lerp(
+                    contentObject.anchoredPosition,
+                    heightVector,
+                    Time.deltaTime * 10f);
+
+                // Update player marker direction indicator
+                playerMarkerManager?.UpdateDirectionIndicator(playerObject.transform);
+            }
+
 
             minimapTimeDisplay.UpdateMinimapTime();
+        }
+
+        private GameObject createCanvasAsset()
+        {
+            GameObject canvasObject = new GameObject("MinimapCanvas");
+            canvasObject.transform.SetParent(minimapObject.transform, false);
+            Canvas canvas = canvasObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 9999;
+            UnityEngine.UI.CanvasScaler canvasScaler = canvasObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+            canvasScaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvasScaler.referenceResolution = new Vector2(1920f, 1080f);
+            canvasObject.AddComponent<GraphicRaycaster>();
+
+            return canvasObject;
+        }
+
+        private GameObject createFrameAsset(GameObject canvasObject)
+        {
+            GameObject frameObject = new GameObject("MinimapFrame");
+            frameObject.transform.SetParent(canvasObject.transform, false);
+            minimapFrameRect = frameObject.AddComponent<RectTransform>();
+            minimapFrameRect.anchorMin = new Vector2(1f, 1f);
+            minimapFrameRect.anchorMax = new Vector2(1f, 1f);
+            minimapFrameRect.pivot = new Vector2(1f, 1f);
+            minimapFrameRect.anchoredPosition = new Vector2(-20f, -20f);
+            minimapFrameRect.sizeDelta = new Vector2(minimapSize, minimapSize);
+
+            return frameObject;
+        }
+
+        private GameObject createMaskAsset(GameObject frameObject)
+        {
+            GameObject maskObject = new GameObject("MinimapMask");
+            maskObject.transform.SetParent(frameObject.transform, false);
+            RectTransform maskRect = maskObject.AddComponent<RectTransform>();
+            maskRect.sizeDelta = new Vector2(minimapSize, minimapSize);
+            maskRect.anchorMin = new Vector2(0.5f, 0.5f);
+            maskRect.anchorMax = new Vector2(0.5f, 0.5f);
+            maskRect.pivot = new Vector2(0.5f, 0.5f);
+            maskRect.anchoredPosition = Vector2.zero;
+            maskObject.AddComponent<Mask>().showMaskGraphic = false;
+            minimapDisplayObject = maskObject;
+            Image maskImage = maskObject.AddComponent<Image>();
+            maskImage.sprite = CreateCircleSprite((int)minimapSize, Color.black);
+            maskImage.type = Image.Type.Sliced;
+            maskImage.color = Color.black;
+
+            return maskObject;
         }
     }
 }

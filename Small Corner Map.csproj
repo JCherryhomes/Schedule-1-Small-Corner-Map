@@ -487,11 +487,6 @@
 		<Compile Include="Small_Corner_Map\MinimapUI.cs" />
 		<Compile Include="Small_Corner_Map\PlayerMarkerManager.cs" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="NSubstitute" Version="5.3.0" />
-	  <PackageReference Include="NUnit" Version="4.4.0" />
-	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I\Mods&quot;" />

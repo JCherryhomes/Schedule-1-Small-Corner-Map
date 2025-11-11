@@ -3,7 +3,7 @@ using Il2CppAmplifyImpostors;
 using MelonLoader;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(Small_Corner_Map.Core), "Small Corner Map", "1.0.0", "cherries_home", null)]
+[assembly: MelonInfo(typeof(Small_Corner_Map.Core), "Small Corner Map", "1.1.0", "winzaar", null)]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace Small_Corner_Map
