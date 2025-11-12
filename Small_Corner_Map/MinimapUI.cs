@@ -398,8 +398,6 @@ namespace Small_Corner_Map
                         minimapContent.AddWhiteStaticMarker(new Vector3(-67.17f, -3.03f, 138.31f), iconContainer.gameObject);
                         minimapContent.AddWhiteStaticMarker(new Vector3(-79.88f, -2.26f, 85.13f), iconContainer.gameObject);
                         minimapContent.AddWhiteStaticMarker(new Vector3(-179.99f, -3.03f, 113.69f), iconContainer.gameObject);
-                        minimapContent.AddRedStaticMarker(new Vector3(-68.44f, -1.49f, 35.37f));
-                        minimapContent.AddRedStaticMarker(new Vector3(-13.44f, -1.49f, 65.37f));
                     }
                 }
             }

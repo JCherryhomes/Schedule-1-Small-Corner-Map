@@ -1,7 +1,8 @@
 ﻿using MelonLoader;
+using Small_Corner_Map.Helpers;
 
-[assembly: MelonInfo(typeof(Small_Corner_Map.Core), "Small Corner Map", "1.1.0", "winzaar", null)]
-[assembly: MelonGame("TVGS", "Schedule I")]
+[assembly: MelonInfo(typeof(Small_Corner_Map.Core), Constants.ModName, Constants.ModVersion, Constants.ModAuthor, null)]
+[assembly: MelonGame(Constants.GameDeveloper, Constants.GameName)]
 
 namespace Small_Corner_Map
 {

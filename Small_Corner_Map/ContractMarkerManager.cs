@@ -32,17 +32,7 @@ namespace Small_Corner_Map
 
         public void CacheContractPoIIcon(Contract contract)
         {
-            Transform contractPoI = contract.PoIPrefab.transform;
-            var temp = contractPoI.Find("IconContainer");
-            MelonLogger.Msg("MinimapUI: Found IconContainer: " + temp?.name ?? "Not Found");
-            if (contractPoI == null)
-            {
-                MelonLogger.Warning("MinimapUI: Could not find ContractPoI transform.");
-                return;
-            }
-
-            contractPoIIconPrefab = contractPoI.gameObject;
-            MelonLogger.Msg("MinimapUI: Cached contract marker with icon.");
+            contractPoIIconPrefab = contract.IconPrefab.gameObject;
         }
 
         public void AddContractPoIMarkerWorld(Contract contract)
@@ -51,44 +41,32 @@ namespace Small_Corner_Map
                 return;
 
             Vector3 worldPos = contract.DeliveryLocation.CustomerStandPoint.position;
-            var xPosition = worldPos.x * mapScale - 0.5f;
-            var zPosition = worldPos.z * mapScale - 0.5f;
+            var xPosition = worldPos.x * mapScale;
+            var zPosition = worldPos.z * mapScale;
             Vector2 mappedPos = new Vector2(xPosition, zPosition);
             mappedPos.x -= markerXAdjustment;
 
-            //if (contractPoIIconPrefab == null)
-            //{
-            //    CacheContractPoIIcon(contract);
-            //    MelonLogger.Msg("ContractMarkerManager: Prefab value: " + contractPoIIconPrefab != null);
-            //    if (contractPoIIconPrefab == null)
-            //        return;
-            //}
-
             if (mapContentObject != null)
             {
-                mapContent.AddRedStaticMarker(worldPos);
-                //MelonLogger.Msg("ContractMarkerManager: Adding ContractPoI marker at world position: " + worldPos);
-                //// Create a backup marker if prefab is not available
-                //GameObject marker = new GameObject("ContractPoIMarker_Backup");
-                //var rectTransform = marker.AddComponent<RectTransform>();
-                //var image = marker.AddComponent<UnityEngine.UI.Image>();
-                //image.color = Color.green;
-                //marker.transform.SetParent(mapContentObject.transform, false);
-                //marker.transform.SetAsLastSibling();
-                //rectTransform.anchoredPosition = mappedPos;
-                //rectTransform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                //rectTransform.sizeDelta = new Vector2(20f, 20f);
-                //contractPoIMarkers.Add(marker);
+                if (contractPoIIconPrefab == null)
+                {
+                    CacheContractPoIIcon(contract);
+                }
 
-                GameObject markerObject = new GameObject("ContractPoIMarker_Backup");
+                GameObject markerObject = UnityEngine.Object.Instantiate(contractPoIIconPrefab);
                 markerObject.transform.SetParent(mapContentObject.transform, false);
-                RectTransform markerRect = markerObject.AddComponent<RectTransform>();
-                markerRect.sizeDelta = new Vector2(5f, 5f);
-                float mappedX = worldPos.x * mapScale - 12f;
-                float mappedZ = worldPos.z * mapScale + 3f;
-                markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
-                Image markerImage = markerObject.AddComponent<Image>();
-                markerImage.color = Color.green;
+                markerObject.name = "ContractPoI_Marker";
+                RectTransform markerRect = markerObject.GetComponent<RectTransform>();
+
+                if (markerRect != null)
+                {
+                    markerRect.sizeDelta = new Vector2(15f, 15f);
+                    markerRect.anchoredPosition = mappedPos;
+                    markerObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+
+                    contractPoIMarkers.Add(markerObject);
+                }
+
                 MelonLogger.Msg("Green contract marker added at mapped position: " + markerRect.anchoredPosition);
             }
         }
@@ -104,74 +82,32 @@ namespace Small_Corner_Map
 
         public void UpdateContractMarkers(List<Contract> activeCPs)
         {
-            float threshold = 0.1f;
-
+            MelonLogger.Msg($"[ContractMarkerManager] Updating contract markers... (total count: {activeCPs.Count}");
             // Add new markers
-            foreach (var cp in activeCPs)
+            foreach (var contract in activeCPs)
             {
-                Vector3 wp = cp.DeliveryLocation.CustomerStandPoint.position;
-                Vector2 desiredPos = new Vector2(wp.x * mapScale, wp.z * mapScale);
-                desiredPos.x -= markerXAdjustment;
+                var exists = contractPoIMarkers.Any(m => m.name == contract.name);
 
-                bool markerFound = false;
-
-                for (int i = 0; i < contractPoIMarkers.Count; i++)
+                if (!exists)
                 {
-                    GameObject marker = contractPoIMarkers[i];
-                    if (marker != null)
-                    {
-                        RectTransform rt = marker.GetComponent<RectTransform>();
-                        if (rt != null && Vector2.Distance(rt.anchoredPosition, desiredPos) < threshold)
-                        {
-                            markerFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!markerFound)
-                {
-                    AddContractPoIMarkerWorld(cp);
+                    AddContractPoIMarkerWorld(contract);
                 }
             }
 
-            // Remove markers that no longer exist
-            for (int i = contractPoIMarkers.Count - 1; i >= 0; i--)
+            // Remove inactive markers
+            foreach (var contract in contractPoIMarkers)
             {
-                GameObject marker = contractPoIMarkers[i];
-
-                if (marker == null)
+                var stillActive = activeCPs.Any(c => c.name == contract.name);
+                if (!stillActive)
                 {
-                    contractPoIMarkers.RemoveAt(i);
-                    continue;
+                    UnityEngine.Object.Destroy(contract);
+                    contractPoIMarkers.Remove(contract);
                 }
+            }
 
-                RectTransform rt = marker.GetComponent<RectTransform>();
-                bool stillExists = false;
-
-                if (rt != null)
-                {
-                    Vector2 markerPos = rt.anchoredPosition;
-
-                    foreach (var cp in activeCPs)
-                    {
-                        var position = cp.DeliveryLocation.CustomerStandPoint.position;
-                        Vector2 desiredPos = new Vector2(position.x * mapScale, position.z * mapScale);
-                        desiredPos.x -= markerXAdjustment;
-
-                        if (Vector2.Distance(markerPos, desiredPos) < threshold)
-                        {
-                            stillExists = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!stillExists)
-                {
-                    UnityEngine.Object.Destroy(marker);
-                    contractPoIMarkers.RemoveAt(i);
-                }
+            if (activeCPs.Count == 0)
+            {
+                RemoveAllContractPoIMarkers();
             }
         }
     }

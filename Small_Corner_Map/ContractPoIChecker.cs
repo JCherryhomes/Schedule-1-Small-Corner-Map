@@ -63,36 +63,9 @@ namespace Small_Corner_Map
                             MelonLogger.Msg($"[ContractPoIChecker] Found {activeCPs.Count} ContractPoI objects.");
                         }
 
-                        float threshold = 0.1f;
-
                         try
                         {
-                            // Add new markers
-                            foreach (var cp in activeCPs)
-                            {
-                                Vector3 wp = cp.DeliveryLocation.CustomerStandPoint.position;
-                                Vector2 desiredPos = new Vector2(wp.x * Constants.DefaultMapScale, wp.z * Constants.DefaultMapScale);
-                                desiredPos.x -= 5f;
-
-                                bool markerFound = false;
-                                for (int i = 0; i < contractManager.contractMarkers.Count; i++)
-                                {
-                                    GameObject marker = contractManager.contractMarkers[i];
-                                    if (marker != null)
-                                    {
-                                        RectTransform rt = marker.GetComponent<RectTransform>();
-                                        if (rt != null && Vector2.Distance(rt.anchoredPosition, desiredPos) < threshold)
-                                        {
-                                            markerFound = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (!markerFound)
-                                {
-                                    contractManager.AddContractPoIMarkerWorld(cp);
-                                }
-                            }
+                            contractManager.UpdateContractMarkers(activeCPs);
                         }
                         catch (Exception ex)
                         {
@@ -102,39 +75,6 @@ namespace Small_Corner_Map
                         {
                             Dispose();
                         }
-
-                        // Remove markers that no longer exist
-                        for (int i = contractManager.contractMarkers.Count - 1; i >= 0; i--)
-                        {
-                            GameObject marker = contractManager.contractMarkers[i];
-                            if (marker == null)
-                            {
-                                contractManager.contractMarkers.RemoveAt(i);
-                                continue;
-                            }
-                            RectTransform rt = marker.GetComponent<RectTransform>();
-                            bool stillExists = false;
-                            if (rt != null)
-                            {
-                                Vector2 markerPos = rt.anchoredPosition;
-                                foreach (var cp in activeCPs)
-                                {
-                                    var position = cp.DeliveryLocation.CustomerStandPoint.position;
-                                    Vector2 desiredPos = new Vector2(position.x * Constants.DefaultMapScale, position.z * Constants.DefaultMapScale);
-                                    desiredPos.x -= 5f;
-                                    if (Vector2.Distance(markerPos, desiredPos) < threshold)
-                                    {
-                                        stillExists = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!stillExists)
-                            {
-                                UnityEngine.Object.Destroy(marker);
-                                contractManager.contractMarkers.RemoveAt(i);
-                            }
-                        }
                     }
                     else
                     {
@@ -143,7 +83,7 @@ namespace Small_Corner_Map
                     break;
             }
 
-            _current = new WaitForSeconds(20f);
+            _current = new WaitForSeconds(5f);
             _state = 1;
             return true;
         }
