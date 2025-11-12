@@ -1,8 +1,5 @@
 using UnityEngine;
-using MelonLoader;
 using Il2CppScheduleOne.Quests;
-using Il2CppSystem.Xml.Schema;
-using UnityEngine.UI;
 
 namespace Small_Corner_Map
 {
@@ -55,7 +52,7 @@ namespace Small_Corner_Map
 
                 GameObject markerObject = UnityEngine.Object.Instantiate(contractPoIIconPrefab);
                 markerObject.transform.SetParent(mapContentObject.transform, false);
-                markerObject.name = "ContractPoI_Marker";
+                markerObject.name = $"ContractPoI_Marker_{contract.GUID}";
                 RectTransform markerRect = markerObject.GetComponent<RectTransform>();
 
                 if (markerRect != null)
@@ -66,8 +63,6 @@ namespace Small_Corner_Map
 
                     contractPoIMarkers.Add(markerObject);
                 }
-
-                MelonLogger.Msg("Green contract marker added at mapped position: " + markerRect.anchoredPosition);
             }
         }
 
@@ -81,29 +76,20 @@ namespace Small_Corner_Map
         }
 
         public void UpdateContractMarkers(List<Contract> activeCPs)
-        {
-            MelonLogger.Msg($"[ContractMarkerManager] Updating contract markers... (total count: {activeCPs.Count}");
-            // Add new markers
-            foreach (var contract in activeCPs)
+        {            
+            var markersToAdd = activeCPs.Where(c => !contractPoIMarkers.Any(m => m.name == $"ContractPoI_Marker_{c.GUID}")).ToList();
+            markersToAdd.ForEach(contract =>
             {
-                var exists = contractPoIMarkers.Any(m => m.name == contract.name);
+                AddContractPoIMarkerWorld(contract);
+            });
 
-                if (!exists)
-                {
-                    AddContractPoIMarkerWorld(contract);
-                }
-            }
+            var markersToRemove = contractPoIMarkers.Where(m => !activeCPs.Any(c => $"ContractPoI_Marker_{c.GUID}" == m.name)).ToList();
 
-            // Remove inactive markers
-            foreach (var contract in contractPoIMarkers)
+            markersToRemove.ForEach(marker =>
             {
-                var stillActive = activeCPs.Any(c => c.name == contract.name);
-                if (!stillActive)
-                {
-                    UnityEngine.Object.Destroy(contract);
-                    contractPoIMarkers.Remove(contract);
-                }
-            }
+                UnityEngine.Object.Destroy(marker);
+                contractPoIMarkers.Remove(marker);
+            });
 
             if (activeCPs.Count == 0)
             {

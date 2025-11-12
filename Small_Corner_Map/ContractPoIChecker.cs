@@ -1,10 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
-using Small_Corner_Map.Helpers;
 using MelonLoader;
 using Il2CppScheduleOne.Quests;
-using Il2CppScheduleOne.Economy;
-using System.ComponentModel;
 
 namespace Small_Corner_Map
 {
@@ -32,7 +29,6 @@ namespace Small_Corner_Map
 
         public bool MoveNext()
         {
-            MelonLogger.Msg("[ContractPoIChecker] MoveNext called. State: " + _state);
             switch (_state)
             {
                 default:
@@ -58,14 +54,9 @@ namespace Small_Corner_Map
                             }
                         }
 
-                        if (activeCPs.Count > 0)
-                        {
-                            MelonLogger.Msg($"[ContractPoIChecker] Found {activeCPs.Count} ContractPoI objects.");
-                        }
-
                         try
                         {
-                            contractManager.UpdateContractMarkers(activeCPs);
+                            contractManager.UpdateContractMarkers(new List<Contract>(activeCPs));
                         }
                         catch (Exception ex)
                         {
