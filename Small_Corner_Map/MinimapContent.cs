@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using MelonLoader;
@@ -33,12 +32,6 @@ namespace Small_Corner_Map
             mapContentRect.anchorMax = new Vector2(0.5f, 0.5f);
             mapContentRect.pivot = new Vector2(0.5f, 0.5f);
             mapContentRect.anchoredPosition = Vector2.zero;
-
-            // Optionally add a map image here if you have a sprite
-            // Image mapImage = MapContentObject.AddComponent<Image>();
-            // mapImage.sprite = ...;
-            // mapImage.type = Image.Type.Simple;
-            // mapImage.preserveAspect = true;
 
             // Create grid container
             GameObject gridObject = new GameObject("GridContainer");

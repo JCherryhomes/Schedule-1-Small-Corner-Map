@@ -1,4 +1,5 @@
-using System;
+using MelonLoader;
+using S1API.GameTime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,17 +8,17 @@ namespace Small_Corner_Map
     public class MinimapTimeDisplay
     {
         private RectTransform minimapTimeContainer;
-        private Text cachedTimeText;
         private Text minimapTimeText;
-        private bool timeBarEnabled = true;
+        private MelonPreferences_Entry<bool> timeBarEnabled;
 
         public RectTransform Container => minimapTimeContainer;
         public Text TimeText => minimapTimeText;
 
-        public void Create(Transform parent, bool doubleSizeEnabled, bool timeBarEnabled)
-        {
-            this.timeBarEnabled = timeBarEnabled;
+        private bool enabled { get { return timeBarEnabled.Value; } }
 
+        public void Create(Transform parent, MelonPreferences_Entry<bool> enabled)
+        {
+            timeBarEnabled = enabled;
             GameObject containerObject = new GameObject("MinimapTimeContainer");
             containerObject.transform.SetParent(parent, false);
 
@@ -27,9 +28,7 @@ namespace Small_Corner_Map
             minimapTimeContainer.anchorMax = new Vector2(0.5f, 0f);
             minimapTimeContainer.pivot = new Vector2(0.5f, 1f);
 
-            minimapTimeContainer.anchoredPosition = doubleSizeEnabled
-                ? new Vector2(0f, 40f)
-                : new Vector2(0f, 10f);
+            minimapTimeContainer.anchoredPosition = new Vector2(0f, 20f);
 
             Image backgroundImage = containerObject.AddComponent<Image>();
             backgroundImage.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
@@ -44,13 +43,13 @@ namespace Small_Corner_Map
 
             minimapTimeText = timeTextObject.AddComponent<Text>();
             minimapTimeText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            minimapTimeText.fontSize = 18;
+            minimapTimeText.fontSize = 16;
             minimapTimeText.color = Color.white;
             minimapTimeText.alignment = TextAnchor.MiddleCenter;
             minimapTimeText.text = minimapTimeText.text ?? "00:00:00";
             minimapTimeText.raycastTarget = false;
 
-            if (!timeBarEnabled)
+            if (!this.enabled)
             {
                 containerObject.SetActive(false);
             }
@@ -58,45 +57,19 @@ namespace Small_Corner_Map
 
         public void SetTimeBarEnabled(bool enabled)
         {
-            timeBarEnabled = enabled;
+            timeBarEnabled.Value = enabled;
             if (minimapTimeContainer != null)
                 minimapTimeContainer.gameObject.SetActive(enabled);
         }
 
-        public void UpdatePosition(bool doubleSizeEnabled)
-        {
-            if (minimapTimeContainer != null)
-            {
-                minimapTimeContainer.anchoredPosition = doubleSizeEnabled
-                    ? new Vector2(0f, 40f)
-                    : new Vector2(0f, 10f);
-            }
-        }
-
         public void UpdateMinimapTime()
         {
-            if (cachedTimeText == null)
+
+            var currentTime = TimeManager.GetFormatted12HourTime();
+            var currentDay = TimeManager.CurrentDay;
+            if (minimapTimeText != null && currentTime != null)
             {
-                GameObject val = GameObject.Find("GameplayMenu/Phone/phone/HomeScreen/InfoBar/Time");
-                if (val != null)
-                {
-                    cachedTimeText = val.GetComponent<Text>();
-                }
-            }
-            if (minimapTimeText != null && cachedTimeText != null)
-            {
-                string text = cachedTimeText.text;
-                string[] array = text.Split(new char[1] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (array.Length >= 3)
-                {
-                    string text2 = array[0] + " " + array[1];
-                    string text3 = array[^1];
-                    minimapTimeText.text = text3 + "\n" + text2;
-                }
-                else
-                {
-                    minimapTimeText.text = text;
-                }
+                minimapTimeText.text = currentDay.ToString() + "\n" + currentTime;
             }
         }
     }

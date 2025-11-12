@@ -1,4 +1,6 @@
 using MelonLoader;
+using S1API.Entities;
+using Small_Corner_Map.Helpers;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +20,6 @@ namespace Small_Corner_Map
         // Handles minimap time display
         private MinimapTimeDisplay minimapTimeDisplay;
 
-
         // --- UI GameObjects ---
         private GameObject minimapObject;           // Root object for the minimap UI
         private GameObject minimapDisplayObject;    // The mask object for the minimap
@@ -29,13 +30,13 @@ namespace Small_Corner_Map
         private bool initialized = false;
 
         // --- Constants ---
-        private const float mapScale = 1.20f;  // World-to-minimap scale factor
-        private const float markerXAdjustment = 5f; // X offset for contract markers
+        private const float markerXAdjustment = 12f; // X offset for contract markers
+        private const float markerZAdjustment = -3f;  // Y offset for contract markers
         private const float minimapSize = 150f;     // Size of the minimap mask/frame
         private const float mapContentSize = 500f;  // Size of the map content
 
         // --- Cached Player Reference ---
-        private GameObject playerObject;
+        private Player playerObject;
 
         private bool timeBarEnabled {  get { return mapPreferences.showGameTime.Value; } }
         private bool minimapEnabled {  get { return mapPreferences.minimapEnabled.Value; } }
@@ -58,6 +59,8 @@ namespace Small_Corner_Map
                 StartSceneIntegration();    // Finds map sprite, player, and sets up markers
                 StartMinimapUpdateLoop();   // Continuously updates minimap as player moves
                 initialized = true;
+
+                MelonCoroutines.Start(ContractPoICheckerWorld());
             }
         }
 
@@ -92,7 +95,7 @@ namespace Small_Corner_Map
             var maskObject = createMaskAsset(frameObject);
 
             // Map content (holds the map image, grid, and markers)
-            minimapContent = new MinimapContent(mapContentSize, 20, mapScale);
+            minimapContent = new MinimapContent(mapContentSize, 20, Constants.DefaultMapScale);
             minimapContent.Create(maskObject);
             TryApplyMapSprite(); // Try to assign the map image immediately
 
@@ -102,11 +105,11 @@ namespace Small_Corner_Map
 
             // Contract PoI markers
             contractMarkerManager = new ContractMarkerManager(
-            minimapContent.MapContentObject, mapScale, markerXAdjustment);
+                minimapContent, Constants.DefaultMapScale, markerXAdjustment, markerZAdjustment);
 
             // Time display (shows in-game time)
             minimapTimeDisplay = new MinimapTimeDisplay();
-            minimapTimeDisplay.Create(minimapFrameRect, false, timeBarEnabled);
+            minimapTimeDisplay.Create(minimapFrameRect, mapPreferences.showGameTime);
         }
 
         public void OnMinimapEnableChanged(bool oldValue, bool newValue)
@@ -157,8 +160,6 @@ namespace Small_Corner_Map
                 RectTransform component = minimapDisplayObject.GetComponent<RectTransform>();
                 component.sizeDelta = new Vector2(minimapSize, minimapSize) * sizeMultiplier;
             }
-
-            minimapTimeDisplay?.UpdatePosition(false);
         }
 
         /// <summary>
@@ -188,6 +189,7 @@ namespace Small_Corner_Map
         /// </summary>
         private void TryApplyMapSprite()
         {
+            
             GameObject contentGO = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
             Image contentImage = null;
             if (contentGO != null)
@@ -232,7 +234,6 @@ namespace Small_Corner_Map
 
             yield return new WaitForSeconds(2f);
 
-            GameObject playerObject = null;
             GameObject mapAppObject = null;
             GameObject viewportObject = null;
 
@@ -244,16 +245,7 @@ namespace Small_Corner_Map
                 // Find player by looking for a CharacterController not at world origin
                 if (playerObject == null)
                 {
-                    var controllers = UnityEngine.Object.FindObjectsOfType<CharacterController>();
-                    foreach (var controller in controllers)
-                    {
-                        if (controller.gameObject.transform.position != Vector3.zero)
-                        {
-                            playerObject = controller.gameObject;
-                            MelonLogger.Msg("MinimapUI: Found Player_Local");
-                            break;
-                        }
-                    }
+                    playerObject = Player.Local;
                 }
 
                 // Find the MapApp UI object
@@ -411,9 +403,6 @@ namespace Small_Corner_Map
                     }
                 }
             }
-
-            // Cache contract PoI icon prefab for contract markers
-            contractMarkerManager.CacheContractPoIIcon();
         }
 
         /// <summary>
@@ -443,16 +432,8 @@ namespace Small_Corner_Map
         {
             if (playerObject == null)
             {
-                // Try to find the player if not already cached
-                var controllers = UnityEngine.Object.FindObjectsOfType<CharacterController>();
-                foreach (var controller in controllers)
-                {
-                    if (controller.gameObject.transform.position != Vector3.zero)
-                    {
-                        playerObject = controller.gameObject;
-                        break;
-                    }
-                }
+                playerObject = Player.Local;
+
                 if (playerObject == null)
                     return;
             }
@@ -461,9 +442,9 @@ namespace Small_Corner_Map
                 return;
 
             // Move the map content so the player is always centered in the minimap
-            Vector3 position = playerObject.transform.position;
-            float mappedX = -position.x * mapScale;
-            float mappedZ = -position.z * mapScale;
+            Vector3 position = playerObject.Position;
+            float mappedX = -position.x * Constants.DefaultMapScale;
+            float mappedZ = -position.z * Constants.DefaultMapScale;
             Transform minimapMask = minimapDisplayObject.transform.Find("MinimapMask");
             var zero = Vector2.zero;
 
@@ -492,7 +473,7 @@ namespace Small_Corner_Map
                     Time.deltaTime * 10f);
 
                 // Update player marker direction indicator
-                playerMarkerManager?.UpdateDirectionIndicator(playerObject.transform);
+                playerMarkerManager?.UpdateDirectionIndicator(playerObject.Transform);
             }
 
 
@@ -546,6 +527,11 @@ namespace Small_Corner_Map
             maskImage.color = Color.black;
 
             return maskObject;
+        }
+
+        private IEnumerator ContractPoICheckerWorld()
+        {
+            return new ContractPoIChecker(0, contractMarkerManager);
         }
     }
 }

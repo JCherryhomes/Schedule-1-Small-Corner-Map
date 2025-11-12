@@ -22,6 +22,9 @@
 		<Reference Include="Il2CppAstarPathfindingProject">
 			<HintPath>D:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\Il2CppAssemblies\Il2CppAstarPathfindingProject.dll</HintPath>
 		</Reference>
+		<Reference Include="S1API">
+		  <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Mods\S1API.Il2Cpp.MelonLoader.dll</HintPath>
+		</Reference>
 		<Reference Include="UnityEngine.TextCoreTextEngineModule">
 			<HintPath>D:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\Il2CppAssemblies\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
 		</Reference>
@@ -479,8 +482,10 @@
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />
+		<Compile Include="Helpers\Constants.cs" />
 		<Compile Include="Helpers\Utils.cs" />
 		<Compile Include="Small_Corner_Map\ContractMarkerManager.cs" />
+		<Compile Include="Small_Corner_Map\ContractPoIChecker.cs" />
 		<Compile Include="Small_Corner_Map\MapPreferences.cs" />
 		<Compile Include="Small_Corner_Map\MinimapContent.cs" />
 		<Compile Include="Small_Corner_Map\MinimapTimeDisplay.cs" />

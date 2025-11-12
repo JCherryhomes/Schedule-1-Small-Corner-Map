@@ -1,7 +1,4 @@
-﻿using System;
-using Il2CppAmplifyImpostors;
-using MelonLoader;
-using UnityEngine;
+﻿using MelonLoader;
 
 [assembly: MelonInfo(typeof(Small_Corner_Map.Core), "Small Corner Map", "1.1.0", "winzaar", null)]
 [assembly: MelonGame("TVGS", "Schedule I")]
