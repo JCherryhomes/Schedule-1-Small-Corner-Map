@@ -16,6 +16,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Reference Include="Il2CppInterop.HarmonySupport">
+		  <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net6\Il2CppInterop.HarmonySupport.dll</HintPath>
+		</Reference>
 		<Reference Include="Il2CppRootMotion">
 			<HintPath>D:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\Il2CppAssemblies\Il2CppRootMotion.dll</HintPath>
 		</Reference>
@@ -485,11 +488,11 @@
 		<Compile Include="Helpers\Constants.cs" />
 		<Compile Include="Helpers\Utils.cs" />
 		<Compile Include="Small_Corner_Map\ContractMarkerManager.cs" />
-		<Compile Include="Small_Corner_Map\ContractPoIChecker.cs" />
 		<Compile Include="Small_Corner_Map\MapPreferences.cs" />
 		<Compile Include="Small_Corner_Map\MinimapContent.cs" />
 		<Compile Include="Small_Corner_Map\MinimapTimeDisplay.cs" />
 		<Compile Include="Small_Corner_Map\MinimapUI.cs" />
+		<Compile Include="Small_Corner_Map\MultiplayerManager.cs" />
 		<Compile Include="Small_Corner_Map\PlayerMarkerManager.cs" />
 	</ItemGroup>
 	

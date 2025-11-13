@@ -1,3 +1,4 @@
+using Il2CppScheduleOne.Quests;
 using MelonLoader;
 using S1API.Entities;
 using Small_Corner_Map.Helpers;
@@ -15,8 +16,6 @@ namespace Small_Corner_Map
         private MinimapContent minimapContent;
         // Handles player marker and direction indicator
         private PlayerMarkerManager playerMarkerManager;
-        // Handles contract PoI markers
-        private ContractMarkerManager contractMarkerManager;
         // Handles minimap time display
         private MinimapTimeDisplay minimapTimeDisplay;
 
@@ -37,6 +36,9 @@ namespace Small_Corner_Map
 
         // --- Cached Player Reference ---
         private Player playerObject;
+
+        // Handles contract PoI markers
+        public ContractMarkerManager ContractMarkerManager { get; private set; }
 
         private bool timeBarEnabled {  get { return mapPreferences.showGameTime.Value; } }
         private bool minimapEnabled {  get { return mapPreferences.minimapEnabled.Value; } }
@@ -59,8 +61,6 @@ namespace Small_Corner_Map
                 StartSceneIntegration();    // Finds map sprite, player, and sets up markers
                 StartMinimapUpdateLoop();   // Continuously updates minimap as player moves
                 initialized = true;
-
-                MelonCoroutines.Start(ContractPoICheckerWorld());
             }
         }
 
@@ -104,7 +104,7 @@ namespace Small_Corner_Map
             playerMarkerManager.CreatePlayerMarker(maskObject);
 
             // Contract PoI markers
-            contractMarkerManager = new ContractMarkerManager(
+            ContractMarkerManager = new ContractMarkerManager(
                 minimapContent, Constants.DefaultMapScale, markerXAdjustment, markerZAdjustment);
 
             // Time display (shows in-game time)
@@ -527,9 +527,14 @@ namespace Small_Corner_Map
             return maskObject;
         }
 
-        private IEnumerator ContractPoICheckerWorld()
+        internal void OnContractAccepted(Contract contract)
         {
-            return new ContractPoIChecker(0, contractMarkerManager);
+            ContractMarkerManager.AddContractPoIMarkerWorld(contract);
+        }
+
+        internal void OnContractCompleted(Contract contract)
+        {
+            ContractMarkerManager.RemoveContractPoIMarkers(contract);
         }
     }
 }

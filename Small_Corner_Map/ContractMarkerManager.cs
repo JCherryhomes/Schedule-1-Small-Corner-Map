@@ -1,5 +1,8 @@
-using UnityEngine;
+using Il2CppScheduleOne.Economy;
 using Il2CppScheduleOne.Quests;
+using HarmonyLib;
+using MelonLoader;
+using UnityEngine;
 
 namespace Small_Corner_Map
 {
@@ -27,12 +30,7 @@ namespace Small_Corner_Map
             mapContentObject = mapContent;
         }
 
-        public void CacheContractPoIIcon(Contract contract)
-        {
-            contractPoIIconPrefab = contract.IconPrefab.gameObject;
-        }
-
-        public void AddContractPoIMarkerWorld(Contract contract)
+        internal void AddContractPoIMarkerWorld(Contract contract)
         {
             if (contract == null || mapContentObject == null)
                 return;
@@ -66,7 +64,18 @@ namespace Small_Corner_Map
             }
         }
 
-        public void RemoveAllContractPoIMarkers()
+        internal void RemoveContractPoIMarkers(Contract contract)
+        {
+            var name = $"ContractPoI_Marker_{contract.GUID}";
+            var marker = contractPoIMarkers.FirstOrDefault(m => m.name == name);
+            if (marker != null)
+            {
+                UnityEngine.Object.Destroy(marker);
+                contractPoIMarkers.Remove(marker);
+            }
+        }
+
+        internal void RemoveAllContractPoIMarkers()
         {
             foreach (GameObject marker in contractPoIMarkers)
             {
@@ -75,25 +84,29 @@ namespace Small_Corner_Map
             contractPoIMarkers.Clear();
         }
 
-        public void UpdateContractMarkers(List<Contract> activeCPs)
-        {            
-            var markersToAdd = activeCPs.Where(c => !contractPoIMarkers.Any(m => m.name == $"ContractPoI_Marker_{c.GUID}")).ToList();
-            markersToAdd.ForEach(contract =>
-            {
-                AddContractPoIMarkerWorld(contract);
-            });
+        private void CacheContractPoIIcon(Contract contract)
+        {
+            contractPoIIconPrefab = contract.IconPrefab.gameObject;
+        }
 
-            var markersToRemove = contractPoIMarkers.Where(m => !activeCPs.Any(c => $"ContractPoI_Marker_{c.GUID}" == m.name)).ToList();
+        public void loadInitialMarkers(QuestManager questManager)
+        {
+            var contractContainer = questManager.ContractContainer;
+            var contractCount = contractContainer?.childCount ?? 0;
 
-            markersToRemove.ForEach(marker =>
-            {
-                UnityEngine.Object.Destroy(marker);
-                contractPoIMarkers.Remove(marker);
-            });
+            MelonLogger.Msg($"Found {contractCount} contracts in the container.");
 
-            if (activeCPs.Count == 0)
+            if (contractCount > 0)
             {
-                RemoveAllContractPoIMarkers();
+                for (int i = 0; i < contractCount; i++)
+                {
+                    var child = contractContainer.GetChild(i).GetComponent<Contract>();
+
+                    if (child.State == EQuestState.Active && child.IsTracked)
+                    {
+                        AddContractPoIMarkerWorld(child);
+                    }
+                }
             }
         }
     }
