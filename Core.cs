@@ -1,7 +1,13 @@
-﻿using HarmonyLib;
+﻿using Small_Corner_Map.Helpers;
+using Small_Corner_Map.Main;
 using MelonLoader;
+using HarmonyLib;
+
+#if Mono
+using ScheduleOne.Quests;
+#elif IL2CPP
 using Il2CppScheduleOne.Quests;
-using Small_Corner_Map.Helpers;
+#endif
 
 [assembly: MelonInfo(typeof(Small_Corner_Map.Core), Constants.ModName, Constants.ModVersion, Constants.ModAuthor, null)]
 [assembly: MelonGame(Constants.GameDeveloper, Constants.GameName)]
@@ -13,7 +19,7 @@ namespace Small_Corner_Map
         private MinimapUI minimapUI;
         private MapPreferences mapPreferences;
 
-        public static Core Instance { get; private set; }
+        private static Core Instance { get; set; }
 
         public override void OnInitializeMelon()
         {
@@ -27,7 +33,7 @@ namespace Small_Corner_Map
         {
             base.OnSceneWasLoaded(buildIndex, sceneName);
 
-            MelonLogger.Msg($"Scene loaded: {sceneName} (Build Index: {buildIndex})");
+            MelonLogger.Msg(string.Format("Scene loaded: {0} (Build Index: {1})", sceneName, buildIndex));
 
             if (sceneName == "Main")
             {

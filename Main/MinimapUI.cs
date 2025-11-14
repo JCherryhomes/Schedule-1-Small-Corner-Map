@@ -1,12 +1,21 @@
+#if IL2CPP
+using Il2CppScheduleOne.Map;
+using Il2CppScheduleOne.NPCs;
 using Il2CppScheduleOne.Quests;
-using MelonLoader;
+#else
+using ScheduleOne.Quests;
+using ScheduleOne.Map;
+using ScheduleOne.NPCs;
+#endif
+
 using S1API.Entities;
-using Small_Corner_Map.Helpers;
-using System.Collections;
+using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using Small_Corner_Map.Helpers;
 
-namespace Small_Corner_Map
+namespace Small_Corner_Map.Main
 {
     // The main orchestrator for the minimap UI and its managers.
     public partial class MinimapUI
@@ -438,7 +447,7 @@ namespace Small_Corner_Map
 
             if (minimapContent?.MapContentObject == null)
                 return;
-
+            
             // Move the map content so the player is always centered in the minimap
             Vector3 position = playerObject.Position;
             float mappedX = -position.x * Constants.DefaultMapScale;

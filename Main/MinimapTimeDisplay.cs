@@ -3,7 +3,7 @@ using S1API.GameTime;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Small_Corner_Map
+namespace Small_Corner_Map.Main
 {
     public class MinimapTimeDisplay
     {
@@ -64,12 +64,18 @@ namespace Small_Corner_Map
 
         public void UpdateMinimapTime()
         {
-
-            var currentTime = TimeManager.GetFormatted12HourTime();
-            var currentDay = TimeManager.CurrentDay;
-            if (minimapTimeText != null && currentTime != null)
+            try
             {
-                minimapTimeText.text = currentDay.ToString() + "\n" + currentTime;
+                var currentTime = TimeManager.GetFormatted12HourTime();
+                var currentDay = TimeManager.CurrentDay;
+                if (minimapTimeText != null && currentTime != null)
+                {
+                    minimapTimeText.text = currentDay.ToString() + "\n" + currentTime;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Error("Error updating minimap time: " + ex.Message);
             }
         }
     }

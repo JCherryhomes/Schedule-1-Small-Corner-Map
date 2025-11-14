@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using MelonLoader;
 
-namespace Small_Corner_Map
+namespace Small_Corner_Map.Main
 {
     public class MinimapContent
     {

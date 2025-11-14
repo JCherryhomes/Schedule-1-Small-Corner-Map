@@ -36,7 +36,7 @@ public static class Il2CppListExtensions
 public static class Utils
 {
     private static readonly MelonLogger.Instance Logger = new MelonLogger.Instance(
-        $"{BuildInfo.Name}-Utils"
+        BuildInfo.Name + "-Utils"
     );
 
     /// <summary>
@@ -60,7 +60,7 @@ public static class Utils
             {
                 if (obj.name != objectName)
                     continue;
-                Logger.Debug($"Found {typeof(T).Name} '{objectName}' directly in loaded objects");
+                Logger.Debug(string.Format("Found {0} '{1}' directly in loaded objects", typeof(T).Name, objectName));
                 return obj;
             }
 
@@ -68,7 +68,7 @@ public static class Utils
         }
         catch (Exception ex)
         {
-            Logger.Error($"Error finding {typeof(T).Name} '{objectName}': {ex.Message}");
+            Logger.Error(string.Format("Error finding {0} '{1}': {2}", typeof(T).Name, objectName, ex.Message));
             return null;
         }
     }
@@ -146,23 +146,24 @@ public static class Utils
     public static List<StorableItemDefinition> GetAllStorableItemDefinitions()
     {
         var itemRegistry = Registry.Instance.ItemRegistry.ToList();
-        var itemDefinitions = new List<StorableItemDefinition>();
+var itemDefinitions = new List<StorableItemDefinition>();
 
-        foreach (var item in itemRegistry)
-        {
-            if (Utils.Is<StorableItemDefinition>(item.Definition, out var definition))
-            {
-                itemDefinitions.Add(definition);
-            }
-            else
-            {
-                Logger.Warning(
-                    $"Definition {item.Definition?.GetType().FullName} is not a StorableItemDefinition"
-                );
-            }
-        }
+    foreach (var item in itemRegistry)
+{
+  if (Utils.Is<StorableItemDefinition>(item.Definition, out var definition))
+   {
+   itemDefinitions.Add(definition);
+    }
+  else
+  {
+ Logger.Warning(string.Format(
+     "Definition {0} is not a StorableItemDefinition",
+       item.Definition != null ? item.Definition.GetType().FullName : "null"
+        ));
+    }
+    }
 
-        return itemDefinitions.ToList();
+    return itemDefinitions.ToList();
     }
 
     /// <summary>

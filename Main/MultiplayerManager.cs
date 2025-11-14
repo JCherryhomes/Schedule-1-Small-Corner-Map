@@ -1,11 +1,6 @@
 ﻿using S1API.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Small_Corner_Map
+namespace Small_Corner_Map.Main
 {
     internal class MultiplayerManager
     {

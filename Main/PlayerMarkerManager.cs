@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Small_Corner_Map
+namespace Small_Corner_Map.Main
 {
     public class PlayerMarkerManager
     {
