@@ -32,9 +32,6 @@
     <Reference Include="0Harmony">
       <HintPath>..\..\Assemblies\IL2CPP\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="MelonLoader">
-      <HintPath>..\..\Assemblies\IL2CPP\MelonLoader.dll</HintPath>
-    </Reference>
     <Reference Include="Il2Cppmscorlib">
       <HintPath>..\..\Assemblies\IL2CPP\Il2Cppmscorlib.dll</HintPath>
     </Reference>
@@ -102,31 +99,38 @@
   <ItemGroup>
     <Compile Include="Core.cs" />
     <Compile Include="Helpers\Constants.cs" />
+    <Compile Include="Helpers\MapPreferences.cs" />
     <Compile Include="Helpers\MinimapPoIHelper.cs" />
+    <Compile Include="Helpers\MinimapUIFactory.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Main\ContractMarkerManager.cs" />
-    <Compile Include="Main\MapPreferences.cs" />
     <Compile Include="Main\MinimapContent.cs" />
     <Compile Include="Main\MinimapTimeDisplay.cs" />
     <Compile Include="Main\MinimapUI.cs" />
     <Compile Include="Main\MultiplayerManager.cs" />
     <Compile Include="Main\PlayerMarkerManager.cs" />
+    <Compile Include="Main\PropertyPoIManager.cs" />
   </ItemGroup>
 
 
+  <ItemGroup>
+    <PackageReference Include="LavaGang.MelonLoader" Version="0.7.0" />
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(Configuration)' == 'IL2CPP'">
+    <TargetFramework>net6.0</TargetFramework>
     <DefineConstants>$(DefineConstants);IL2CPP</DefineConstants>
     <TargetName>Small_Corner_Map.Il2cpp</TargetName>
   </PropertyGroup>
-
-
+  
   <PropertyGroup Condition="'$(Configuration)' == 'Mono'">
+    <TargetFramework>netstandard2.1</TargetFramework>
     <DefineConstants>$(DefineConstants);Mono</DefineConstants>
     <TargetName>Small_Corner_Map.Mono</TargetName>
   </PropertyGroup>
-
+  
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I\Mods&quot;" />
+    <Exec Condition="$(Configuration) == 'Mono'" Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I\Mods&quot;" />
+    <Exec Condition="$(Configuration) == 'IL2CPP'" Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I - IL2CPP\Mods&quot;" />
   </Target>
-
 </Project>

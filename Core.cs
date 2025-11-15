@@ -25,7 +25,7 @@ namespace Small_Corner_Map
         {
             base.OnInitializeMelon();
             mapPreferences = new MapPreferences();
-            mapPreferences.loadPreferences();
+            mapPreferences.LoadPreferences();
             Instance = this;
         }
 
@@ -37,7 +37,7 @@ namespace Small_Corner_Map
 
             if (sceneName == "Main")
             {
-                MelonLogger.Msg("GameplayScene loaded, initializing minimap...");
+                MelonLogger.Msg("GameplayScene loaded, initializing Small Corner Map...");
                 minimapUI = new MinimapUI(mapPreferences);
                 minimapUI.Initialize();
             }

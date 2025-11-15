@@ -16,24 +16,31 @@ namespace Small_Corner_Map.Main
     public class ContractMarkerManager
     {
         private GameObject contractPoIIconPrefab;
-        private readonly float mapScale;
+        private float mapScale;
         private readonly float markerXAdjustment;
         private GameObject mapContentObject;
         private MinimapContent mapContent;
+        private readonly MapPreferences mapPreferences;
 
         private const string ContractPoIMarkerKey = "ContractPoI_Marker";
 
-        public ContractMarkerManager(MinimapContent minimapContent, float mapScale, float markerXAdjustment, float markerZAdjustment)
+        public ContractMarkerManager(MinimapContent minimapContent, float mapScale, float markerXAdjustment, float markerZAdjustment, MapPreferences preferences)
         {
             this.mapContent = minimapContent;
             this.mapContentObject = minimapContent.MapContentObject;
             this.mapScale = mapScale;
             this.markerXAdjustment = markerXAdjustment;
+            this.mapPreferences = preferences;
         }
 
         public void SetMapContentObject(GameObject mapContent)
         {
             mapContentObject = mapContent;
+        }
+        
+        public void UpdateMapScale(float newMapScale)
+        {
+            mapScale = newMapScale;
         }
 
         internal void AddContractPoIMarkerWorld(Contract contract)
@@ -41,11 +48,13 @@ namespace Small_Corner_Map.Main
             if (contract == null || mapContentObject == null)
                 return;
 
+            // Use current dynamic scale factor from preferences
+            var currentScale = Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor;
+            
             Vector3 worldPos = contract.DeliveryLocation.CustomerStandPoint.position;
-            var xPosition = worldPos.x * mapScale;
-            var zPosition = worldPos.z * mapScale;
+            var xPosition = worldPos.x * currentScale;
+            var zPosition = worldPos.z * currentScale;
             Vector2 mappedPos = new Vector2(xPosition, zPosition);
-            mappedPos.x -= markerXAdjustment;
 
             if (mapContentObject != null)
             {
@@ -54,11 +63,14 @@ namespace Small_Corner_Map.Main
                     CacheContractPoIIcon(contract);
                 }
 
-                MinimapPoIHelper.addMarkersToMap(
-                    contractPoIIconPrefab, 
-                    mapContentObject, 
-                    ContractPoIMarkerKey + "_" + contract.GUID, 
-                    mappedPos);
+                MinimapPoIHelper.AddMarkersToMap(
+                    contractPoIIconPrefab,
+                    mapContentObject,
+                    ContractPoIMarkerKey + "_" + contract.GUID,
+                    mappedPos,
+                    worldPos,
+                    -markerXAdjustment,
+                    0f);
             }
         }
 

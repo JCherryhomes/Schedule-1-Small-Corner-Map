@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using MelonLoader;
+using Small_Corner_Map.Helpers;
 
 namespace Small_Corner_Map.Main
 {
@@ -44,16 +45,16 @@ namespace Small_Corner_Map.Main
             GridContainer.anchoredPosition = Vector2.zero;
         }
 
-        public void AddWhiteStaticMarker(Vector3 worldPos, GameObject iconPrefab)
+        public GameObject AddWhiteStaticMarker(Vector3 worldPos, GameObject iconPrefab)
         {
             if (MapContentObject == null || iconPrefab == null)
             {
                 MelonLogger.Warning("MinimapContent: Cannot add white marker, missing map content or icon prefab.");
-                return;
+                return null;
             }
 
             GameObject markerObject = UnityEngine.Object.Instantiate(iconPrefab);
-            markerObject.name = "StaticMarker_White";
+            markerObject.name = "StaticMarker_White"; // base name; helper may override for uniqueness
             markerObject.transform.SetParent(MapContentObject.transform, false);
             RectTransform markerRect = markerObject.GetComponent<RectTransform>();
 
@@ -65,6 +66,7 @@ namespace Small_Corner_Map.Main
                 markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
                 markerObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             }
+            return markerObject; // ensure a return even if markerRect was null
         }
 
         public void AddRedStaticMarker(Vector3 worldPos)
@@ -78,7 +80,7 @@ namespace Small_Corner_Map.Main
             GameObject markerObject = new GameObject("StaticMarker_Red");
             markerObject.transform.SetParent(MapContentObject.transform, false);
             RectTransform markerRect = markerObject.AddComponent<RectTransform>();
-            markerRect.sizeDelta = new Vector2(5f, 5f);
+            markerRect.sizeDelta = new Vector2(Constants.RedMarkerSize, Constants.RedMarkerSize);
             float mappedX = worldPos.x * mapScale;
             float mappedZ = worldPos.z * mapScale;
             markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
