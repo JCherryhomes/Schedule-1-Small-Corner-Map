@@ -27,14 +27,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore
-        run: dotnet restore "Small Corner Map.csproj"
-
       - name: Build Mono
-        run: dotnet build "Small Corner Map.csproj" -c Mono --no-restore
+        run: dotnet build "Small Corner Map.csproj" -c Mono
 
       - name: Build IL2CPP
-        run: dotnet build "Small Corner Map.csproj" -c IL2CPP --no-restore
+        run: dotnet build "Small Corner Map.csproj" -c IL2CPP
 
       - name: Verify version consistency
         shell: pwsh
