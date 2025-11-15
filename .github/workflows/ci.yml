@@ -3,6 +3,8 @@
 on:
   push:
     branches: [ main, master ]
+    tags:
+      - 'v*.*.*'
     paths:
       - '**/*.cs'
       - 'manifest.json'
@@ -10,10 +12,6 @@ on:
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [ main, master ]
-  # Publish workflow triggers when a version tag like v2.1.0 is pushed
-  push:
-    tags:
-      - 'v*.*.*'
 
 jobs:
   build-and-package:
