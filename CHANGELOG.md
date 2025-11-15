@@ -1,5 +1,8 @@
 ﻿# Changelog
 
+## 2.1.1
+- Small bug fixes
+
 ## 2.1.0
 - Added scale preferences
 

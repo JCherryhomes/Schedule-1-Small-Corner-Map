@@ -1,0 +1,13 @@
+﻿<AssemblyExplorer>
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\Assembly-CSharp.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\FishNet.Runtime.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\mscorlib.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.CoreModule.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.InputLegacyModule.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.UI.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.UIModule.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net6\0Harmony.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net6\Il2CppInterop.Common.dll" />
+  <Assembly Path="D:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net6\Il2CppInterop.Runtime.dll" />
+</AssemblyExplorer>

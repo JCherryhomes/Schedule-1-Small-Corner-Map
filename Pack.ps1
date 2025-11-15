@@ -4,7 +4,7 @@ Creates a Thunderstore-ready zip containing both Mono and IL2CPP builds.
 Assumes builds already completed.
 #>
 $ErrorActionPreference = 'Stop'
-$version = '2.1.0'
+$version = '2.1.1'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $packageName = 'SmallCornerMap'
 $work = Join-Path $root 'dist'
