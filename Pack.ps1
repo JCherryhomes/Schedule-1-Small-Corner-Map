@@ -46,7 +46,7 @@ if (-not $Version) {
     $manifestPath = Join-Path $root 'manifest.json'
     $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
     $manifest.version_number = $Version
-    $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath -Encoding UTF8
+    $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath -Encoding UTF8 -NoNewline
     Write-Host "Updated manifest.json"
     
     # Update Constants.cs
