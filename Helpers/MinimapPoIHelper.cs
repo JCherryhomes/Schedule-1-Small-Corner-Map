@@ -41,7 +41,6 @@ namespace Small_Corner_Map.Helpers
                     ZOffset = Constants.PropertyMarkerZOffset
                 };
                 whiteMarker.transform.SetAsLastSibling();
-                MelonLoader.MelonLogger.Msg("MinimapPoIHelper: Added white static marker '" + uniqueName + "' at world " + worldPos + " (with offsets)");
             }
             else
             {
@@ -118,8 +117,6 @@ namespace Small_Corner_Map.Helpers
                 XOffset = xOffset,
                 ZOffset = zOffset
             };
-
-            MelonLoader.MelonLogger.Msg("MinimapPoIHelper: Added marker '" + name + "' world=" + worldPos + " mapped=" + finalPos + " (offsets " + xOffset + "," + zOffset + ")");
         }
 
         public static void RemoveMarker(string name)
@@ -128,7 +125,6 @@ namespace Small_Corner_Map.Helpers
             if (entry.Marker != null)
                 UnityEngine.Object.Destroy(entry.Marker);
             MarkerStore.Remove(name);
-            MelonLoader.MelonLogger.Msg("MinimapPoIHelper: Removed marker '" + name + "'");
         }
 
         public static void RemoveAllByKey(string key)
@@ -141,7 +137,6 @@ namespace Small_Corner_Map.Helpers
                     UnityEngine.Object.Destroy(entry.Marker);
                 MarkerStore.Remove(k);
             }
-            MelonLoader.MelonLogger.Msg("MinimapPoIHelper: Removed " + toRemove.Count + " markers with key prefix '" + key + "'");
         }
     }
 }

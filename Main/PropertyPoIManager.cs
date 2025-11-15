@@ -22,8 +22,6 @@ public static class PropertyPoIManager
         {
             if (!property.IsOwned) continue;
             
-            MelonLogger.Msg("Adding PoI for owned property: " + property.PropertyName);
-            MelonLogger.Msg("Property World Position: " + property.transform.position);
             MinimapPoIHelper.AddWhitePoIMarker(
                 minimapContent, property.gameObject.transform.position, iconContainer.gameObject);
         }

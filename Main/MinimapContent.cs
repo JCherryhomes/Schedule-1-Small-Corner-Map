@@ -49,7 +49,7 @@ namespace Small_Corner_Map.Main
         {
             if (MapContentObject == null || iconPrefab == null)
             {
-                MelonLogger.Warning("MinimapContent: Cannot add white marker, missing map content or icon prefab.");
+                MelonLogger.Warning("MinimapContent: Cannot add marker, missing map content or icon prefab.");
                 return null;
             }
 
@@ -73,7 +73,7 @@ namespace Small_Corner_Map.Main
         {
             if (MapContentObject == null)
             {
-                MelonLogger.Warning("MinimapContent: Cannot add red marker, missing map content.");
+                MelonLogger.Warning("MinimapContent: Cannot add marker, missing map content.");
                 return;
             }
 
@@ -86,7 +86,6 @@ namespace Small_Corner_Map.Main
             markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
             Image markerImage = markerObject.AddComponent<Image>();
             markerImage.color = Color.red;
-            MelonLogger.Msg("Red static marker added at mapped position: " + markerRect.anchoredPosition);
         }
     }
 }
