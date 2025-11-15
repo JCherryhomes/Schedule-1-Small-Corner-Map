@@ -7,8 +7,9 @@
     <RootNamespace>Small_Corner_Map</RootNamespace>
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
@@ -115,6 +116,11 @@
 
   <ItemGroup>
     <PackageReference Include="LavaGang.MelonLoader" Version="0.7.0" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Include=".github\CODEOWNERS" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'IL2CPP'">
