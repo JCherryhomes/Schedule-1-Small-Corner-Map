@@ -4,7 +4,7 @@
     "version_number":  "2.3.1",
     "dependencies":  [
                          "LavaGang-MelonLoader-0.7.0",
-                         "S1API-Forked"
+                         "ifBars-S1API_Forked-2.6.1"
                      ],
     "website_url":  "https://github.com/JCherryhomes/Schedule-1-Small-Corner-Map",
     "author":  "winzaar"
