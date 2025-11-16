@@ -141,32 +141,40 @@ namespace Small_Corner_Map.Helpers
                 for (var x = 0; x < texSize; x++)
                 {
                     var dist = Vector2.Distance(new Vector2(x, y), center);
-                    if (dist <= maxDist)
+                    float alpha = 0f;
+                    if (featherInside)
                     {
-                        float alpha = color.a;
-                        if (effectiveFeather > 0)
+                        // Inside feather: fade alpha near the inner edge of the circle
+                        if (dist <= maxDist)
                         {
-                            if (featherInside)
+                            alpha = color.a;
+                            if (effectiveFeather > 0)
                             {
-                                // Fade near edge inside circle
                                 var edgeDist = maxDist - dist;
                                 if (edgeDist <= effectiveFeather)
                                 {
                                     alpha *= Mathf.Clamp01(edgeDist / effectiveFeather);
                                 }
                             }
-                            else
-                            {
-                                // Outward feather: keep solid inner region, add soft outer ring
-                                var edgeDist = maxDist - dist;
-                                if (edgeDist <= effectiveFeather)
-                                {
-                                    // Inner edge solid, we will later allow full alpha; outward handled by mask using larger diameter
-                                    alpha *= Mathf.Clamp01(edgeDist / effectiveFeather);
-                                }
-                            }
+                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
                         }
-                        texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
+                    }
+                    else
+                    {
+                        // Outward feather: fade alpha outside the edge of the circle
+                        if (dist <= maxDist)
+                        {
+                            // Solid inner region
+                            alpha = color.a;
+                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
+                        }
+                        else if (dist > maxDist && dist <= maxDist + effectiveFeather)
+                        {
+                            // Fade outwards from the edge
+                            var edgeDist = dist - maxDist;
+                            alpha = color.a * Mathf.Clamp01(1f - (edgeDist / effectiveFeather));
+                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
+                        }
                     }
                 }
             }
