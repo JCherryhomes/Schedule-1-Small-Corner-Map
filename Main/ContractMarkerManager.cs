@@ -84,6 +84,22 @@ namespace Small_Corner_Map.Main
         {
             MinimapPoIHelper.RemoveAllByKey(ContractPoIMarkerKey);
         }
+        
+        internal void AddAllContractPoIMarkers()
+        {
+            var contractContainer = QuestManager.Instance.ContractContainer;
+            MelonLogger.Msg("Adding ContractPoIMarkers");
+            MelonLogger.Msg("Contract Container Child Count: " + contractContainer.childCount);
+            for (var i = 0; i < contractContainer.childCount; i++)
+            {
+                var contractTransform = contractContainer.GetChild(i);
+                var contract = contractTransform.GetComponent<Contract>();
+                if (contract != null && contract.State == EQuestState.Active && contract.IsTracked)
+                {
+                    AddContractPoIMarkerWorld(contract);
+                }
+            }
+        }
 
         private void CacheContractPoIIcon(Contract contract)
         {

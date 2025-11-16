@@ -73,7 +73,7 @@ namespace Small_Corner_Map.Helpers
             maskObject.AddComponent<Mask>().showMaskGraphic = false;
             
             var maskImage = maskObject.AddComponent<Image>();
-            maskImage.sprite = CreateCircleSprite((int)size, Color.black);
+            maskImage.sprite = CreateCircleSprite((int)size, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapMaskFeather, featherInside:true);
             maskImage.type = Image.Type.Sliced;
             maskImage.color = Color.black;
 
@@ -81,35 +81,106 @@ namespace Small_Corner_Map.Helpers
         }
 
         /// <summary>
-        /// Creates a filled circle sprite for the minimap mask/background.
+        /// Creates a thin border behind the minimap mask.
         /// </summary>
-        /// <param name="diameter">Diameter of the circle in pixels.</param>
-        /// <param name="color">Color of the circle.</param>
-        /// <param name="resolutionMultiplier">Resolution multiplier for higher quality.</param>
+        /// <param name="parent">Parent (frame) object.</param>
+        /// <param name="maskDiameter">Diameter of the current minimap mask.</param>
+        /// <returns>Border GameObject and Image.</returns>
+        public static (GameObject borderObject, Image borderImage) CreateBorder(GameObject parent, float maskDiameter)
+        {
+            var borderObject = new GameObject("MinimapBorder");
+            borderObject.transform.SetParent(parent.transform, false);
+            var thickness = Constants.MinimapBorderThickness;
+            var borderDiameter = maskDiameter + (thickness * 2f);
+            var rect = borderObject.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(borderDiameter, borderDiameter);
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+
+            var img = borderObject.AddComponent<Image>();
+            var borderColor = new Color(Constants.MinimapBorderR, Constants.MinimapBorderG, Constants.MinimapBorderB, Constants.MinimapBorderA);
+            img.sprite = CreateCircleSprite((int)borderDiameter, borderColor, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapBorderFeather, featherInside:false);
+            img.type = Image.Type.Simple;
+            img.raycastTarget = false;
+            // Ensure border rendered below mask
+            borderObject.transform.SetAsFirstSibling();
+            return (borderObject, img);
+        }
+
+        /// <summary>
+        /// Creates a filled circle sprite with optional feather (edge anti-aliasing).
+        /// </summary>
+        /// <param name="diameter">Base diameter in pixels.</param>
+        /// <param name="color">Fill color.</param>
+        /// <param name="resolutionMultiplier">Resolution multiplier for higher definition.</param>
+        /// <param name="featherWidth">Edge feather width in pixels (inside or outside based on featherInside).</param>
+        /// <param name="featherInside">If true, feather fades inward; else outward.</param>
         /// <returns>The created circle sprite.</returns>
-        public static Sprite CreateCircleSprite(int diameter, Color color, int resolutionMultiplier = 1)
+        public static Sprite CreateCircleSprite(int diameter, Color color, int resolutionMultiplier = 1, int featherWidth = 0, bool featherInside = true)
         {
             var texSize = diameter * resolutionMultiplier;
             var texture = new Texture2D(texSize, texSize, TextureFormat.ARGB32, false)
             {
                 filterMode = FilterMode.Bilinear
             };
-            
+
             var clear = new Color(0f, 0f, 0f, 0f);
-            for (var i = 0; i < texSize; i++)
-                for (var j = 0; j < texSize; j++)
-                    texture.SetPixel(j, i, clear);
-            
-            var radius = texSize / 2;
+            for (var y = 0; y < texSize; y++)
+                for (var x = 0; x < texSize; x++)
+                    texture.SetPixel(x, y, clear);
+
+            var radius = texSize / 2f;
             var center = new Vector2(radius, radius);
-            
-            for (var k = 0; k < texSize; k++)
-                for (var l = 0; l < texSize; l++)
-                    if (Vector2.Distance(new Vector2(l, k), center) <= radius)
-                        texture.SetPixel(l, k, color);
-            
+            var maxDist = radius;
+            var effectiveFeather = Mathf.Max(0, featherWidth * resolutionMultiplier);
+
+            for (var y = 0; y < texSize; y++)
+            {
+                for (var x = 0; x < texSize; x++)
+                {
+                    var dist = Vector2.Distance(new Vector2(x, y), center);
+                    float alpha = 0f;
+                    if (featherInside)
+                    {
+                        // Inside feather: fade alpha near the inner edge of the circle
+                        if (dist <= maxDist)
+                        {
+                            alpha = color.a;
+                            if (effectiveFeather > 0)
+                            {
+                                var edgeDist = maxDist - dist;
+                                if (edgeDist <= effectiveFeather)
+                                {
+                                    alpha *= Mathf.Clamp01(edgeDist / effectiveFeather);
+                                }
+                            }
+                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
+                        }
+                    }
+                    else
+                    {
+                        // Outward feather: fade alpha outside the edge of the circle
+                        if (dist <= maxDist)
+                        {
+                            // Solid inner region
+                            alpha = color.a;
+                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
+                        }
+                        else if (dist > maxDist && dist <= maxDist + effectiveFeather)
+                        {
+                            // Fade outwards from the edge
+                            var edgeDist = dist - maxDist;
+                            alpha = color.a * Mathf.Clamp01(1f - (edgeDist / effectiveFeather));
+                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
+                        }
+                    }
+                }
+            }
+
             texture.Apply();
-            return Sprite.Create(texture, new Rect(0f, 0f, texSize, texSize), new Vector2(0.5f, 0.5f), resolutionMultiplier);
+            return Sprite.Create(texture, new Rect(0, 0, texSize, texSize), new Vector2(0.5f, 0.5f), resolutionMultiplier);
         }
 
         /// <summary>
@@ -163,4 +234,3 @@ namespace Small_Corner_Map.Helpers
         }
     }
 }
-

@@ -3,7 +3,7 @@
     internal static class Constants
     {
         // Mod Info
-        public const string ModVersion = "2.1.2";
+        public const string ModVersion = "2.3.1";
         public const string ModName = "Small Corner Map";
         public const string ModAuthor = "winzaar";
         public const string GameName = "Schedule I";
@@ -32,6 +32,16 @@
         public const float PlayerMarkerSize = 10f;       // Width/height of player marker
         public const float DirectionIndicatorSize = 6f;  // Width/height of direction indicator
         public const float DirectionIndicatorDistance = 15f; // Distance from player marker center
+        
+        // Minimap Border
+        public const float MinimapBorderThickness = 4f;  // Pixel thickness outward from mask circle
+        public const float MinimapBorderR = 0.13f;      // Dark grey border color (R)
+        public const float MinimapBorderG = 0.13f;      // Dark grey border color (G)
+        public const float MinimapBorderB = 0.13f;      // Dark grey border color (B)
+        public const float MinimapBorderA = 1f;         // Border alpha
+        public const int MinimapBorderFeather = 4;      // Feather width in pixels for anti-aliased edge
+        public const int MinimapCircleResolutionMultiplier = 2; // Resolution multiplier for smoother circle
+        public const int MinimapMaskFeather = 2;         // Feather width for minimap mask edge (softer clipping)
         
         // Map Grid
         public const int DefaultGridSize = 20;           // Grid divisions for map background

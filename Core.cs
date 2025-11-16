@@ -53,6 +53,8 @@ namespace Small_Corner_Map
         {
             static void Postfix(Contract __instance)
             {
+                var trackContracts = Instance.mapPreferences?.TrackContracts;
+                if (trackContracts == null || !trackContracts.Value) return;
                 if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
 
                 Instance.minimapUI?.OnContractAccepted(__instance);
@@ -64,6 +66,8 @@ namespace Small_Corner_Map
         {
             static void Postfix(Contract __instance)
             {
+                var trackContracts = Instance.mapPreferences?.TrackContracts;
+                if (trackContracts == null || !trackContracts.Value) return;
                 if (__instance == null || !__instance.IsTracked) return;
                 Instance.minimapUI?.OnContractCompleted(__instance);
             }

@@ -28,6 +28,8 @@ public class MinimapUI
     private GameObject minimapObject;           // Root object for the minimap UI
     private GameObject minimapDisplayObject;    // The mask object for the minimap
     private RectTransform minimapFrameRect;     // The frame (positioned in the corner)
+    private GameObject minimapBorderObject;     // NEW: Border object
+    private Image minimapBorderImage;           // NEW: Border image
 
     // --- State ---
     private readonly MapPreferences mapPreferences;
@@ -40,6 +42,9 @@ public class MinimapUI
 
     // --- Cached Player Reference ---
     private Player playerObject;
+    
+    // --- Cached Map Content Reference ---
+    private GameObject cachedMapContent;
 
     // Handles contract PoI markers
     private ContractMarkerManager ContractMarkerManager { get; set; }
@@ -56,6 +61,8 @@ public class MinimapUI
         mapPreferences.MinimapEnabled.OnEntryValueChanged.Subscribe(OnMinimapEnableChanged);
         mapPreferences.ShowGameTime.OnEntryValueChanged.Subscribe(OnTimeBarEnableChanged);
         mapPreferences.IncreaseSize.OnEntryValueChanged.Subscribe(OnIncreaseSizeChanged);
+        mapPreferences.TrackContracts.OnEntryValueChanged.Subscribe(OnContractTrackingChanged);
+        mapPreferences.TrackProperties.OnEntryValueChanged.Subscribe(OnPropertyTrackingChanged);
         RecalculateScaledSizes();
     }
     
@@ -70,15 +77,13 @@ public class MinimapUI
     {
         if (!initialized) return;
         RecalculateScaledSizes();
+        minimapContent?.UpdateMapScale(Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor);
         UpdateMinimapSize(true); // regenerate mask sprite
-
-        // Update scale in ContractMarkerManager
         var currentScale = Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor;
         ContractMarkerManager?.UpdateMapScale(currentScale);
-        
-        // Reproject all PoI markers using new scale
         MinimapPoIHelper.UpdateAllMarkerPositions(CurrentWorldScale);
-        // Immediately recenter content so player marker remains centered after size jump
+        if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
+            PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
         UpdateMinimap();
     }
 
@@ -121,6 +126,11 @@ public class MinimapUI
         // Frame (positions minimap in the corner)
         var (frameObject, frameRect) = MinimapUIFactory.CreateFrame(canvasObject, scaledMinimapSize);
         minimapFrameRect = frameRect;
+
+        // Border (slightly larger circle behind mask)
+        var (borderObj, borderImg) = MinimapUIFactory.CreateBorder(frameObject, scaledMinimapSize);
+        minimapBorderObject = borderObj;
+        minimapBorderImage = borderImg;
 
         // Mask (circular area for minimap)
         var (maskObject, maskImage) = MinimapUIFactory.CreateMask(frameObject, scaledMinimapSize);
@@ -196,7 +206,20 @@ public class MinimapUI
             component.sizeDelta = new Vector2(scaledMinimapSize, scaledMinimapSize);
             
             if (regenerateMaskSprite && minimapMaskImage != null)
-                minimapMaskImage.sprite = MinimapUIFactory.CreateCircleSprite((int)scaledMinimapSize, Color.black);
+                minimapMaskImage.sprite = MinimapUIFactory.CreateCircleSprite((int)scaledMinimapSize, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapMaskFeather, featherInside:true);
+        }
+
+        // Resize border to remain slightly larger than mask
+        if (minimapBorderObject != null)
+        {
+            var borderRect = minimapBorderObject.GetComponent<RectTransform>();
+            var borderDiameter = scaledMinimapSize + (Constants.MinimapBorderThickness * 2f);
+            borderRect.sizeDelta = new Vector2(borderDiameter, borderDiameter);
+            if (regenerateMaskSprite && minimapBorderImage != null)
+            {
+                var borderColor = new Color(Constants.MinimapBorderR, Constants.MinimapBorderG, Constants.MinimapBorderB, Constants.MinimapBorderA);
+                minimapBorderImage.sprite = MinimapUIFactory.CreateCircleSprite((int)borderDiameter, borderColor, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapBorderFeather, featherInside:false);
+            }
         }
 
         if (minimapContent?.MapContentObject == null) return;
@@ -390,6 +413,8 @@ public class MinimapUI
 
         // Replace fallback player marker with real icon if available
         var cachedMapContent = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
+        this.cachedMapContent = cachedMapContent; // Cache for later use
+        
         if (cachedMapContent != null)
         {
             var playerPoI = cachedMapContent.transform.Find("PlayerPoI(Clone)");
@@ -404,16 +429,14 @@ public class MinimapUI
             }
         }
 
-        // Add default static markers if possible
+        // Always cache the icon container, but only add markers if tracking is enabled
         if (cachedMapContent != null)
         {
-            var propertyPoI = cachedMapContent.transform.Find("PropertyPoI(Clone)");
-            if (propertyPoI == null) yield break;
-            
-            var iconContainer = propertyPoI.Find("IconContainer");
-            if (iconContainer == null) yield break;
-            
-            PropertyPoIManager.Initialize(minimapContent, iconContainer);
+            PropertyPoIManager.CacheIconContainerIfNeeded(cachedMapContent);
+            if (mapPreferences.TrackProperties.Value)
+            {
+                PropertyPoIManager.Initialize(minimapContent, cachedMapContent);
+            }
         }
     }
 
@@ -505,5 +528,38 @@ public class MinimapUI
     internal void OnContractCompleted(S1Quests.Contract contract)
     {
         ContractMarkerManager.RemoveContractPoIMarkers(contract);
+    }
+    
+    private void OnContractTrackingChanged(bool previous, bool current)
+    {
+        MelonLogger.Msg("MinimapUI: OnContractTrackingChanged" + current);
+        if (ContractMarkerManager == null) return;
+        if (current)
+        {
+            ContractMarkerManager.AddAllContractPoIMarkers();
+        }
+        else
+        {
+            ContractMarkerManager.RemoveAllContractPoIMarkers();
+        }
+    }
+    
+    private void OnPropertyTrackingChanged(bool previous, bool current)
+    {
+        if (current)
+        {
+            if (cachedMapContent != null)
+            {
+                PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
+            }
+            else
+            {
+                MelonLogger.Warning("MinimapUI: Cannot add property markers, cachedMapContent is null");
+            }
+        }
+        else
+        {
+            PropertyPoIManager.DisableAllMarkers();
+        }
     }
 }

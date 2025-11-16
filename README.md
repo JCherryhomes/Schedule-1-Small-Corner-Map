@@ -83,3 +83,7 @@ Issues and PRs welcome. Please describe reproduction steps for bugs and include 
 ## Notes
 - Keep icon simple, high contrast.
 - If Thunderstore migrates to `thunderstore.toml`, mirror data from `manifest.json` there.
+
+## Visuals
+- Circular minimap now has a thin dark feathered border for better contrast.
+- Edge smoothing implemented via higher resolution + feathered alpha (no external assets).
