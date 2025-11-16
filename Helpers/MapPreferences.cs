@@ -32,7 +32,11 @@ namespace Small_Corner_Map.Helpers
         private const string VehicleTrackingKey = "TrackVehicles";
         private const string VehicleTrackingDisplayName = "Track Owned Vehicles on Minimap";
         private const bool VehicleTrackingDefault = true;
-
+        
+        private const string ShowCompassKey = Constants.CompassPreferenceKey;
+        private const string ShowCompassDisplayName = "Show Compass Ring";
+        private const bool ShowCompassDefault = true;
+        
         // Preference Entries
         private MelonPreferences_Category SettingsCategory { get; set; }
         public MelonPreferences_Entry<bool> MinimapEnabled { get; private set; }
@@ -41,6 +45,7 @@ namespace Small_Corner_Map.Helpers
         public MelonPreferences_Entry<bool> TrackContracts { get; private set; }
         public MelonPreferences_Entry<bool> TrackProperties { get; private set; }
         public MelonPreferences_Entry<bool> TrackVehicles { get; private set; }
+        public MelonPreferences_Entry<bool> ShowCompass { get; private set; }
         
         private readonly float defaultScaleFactor = 1.0f;
         private readonly float increasedScaleFactor = 1.5f;
@@ -63,6 +68,7 @@ namespace Small_Corner_Map.Helpers
                 TrackContracts = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ContractTrackingKey);
                 TrackProperties = MelonPreferences.GetEntry<bool>(CategoryIdentifier, PropertyTrackingKey);
                 TrackVehicles = MelonPreferences.GetEntry<bool>(CategoryIdentifier, VehicleTrackingKey);
+                ShowCompass = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ShowCompassKey);
                 MelonLogger.Msg("MapPreferences: Loaded existing preferences.");
             }
         }
@@ -100,6 +106,11 @@ namespace Small_Corner_Map.Helpers
                 VehicleTrackingKey, 
                 VehicleTrackingDefault, 
                 VehicleTrackingDisplayName);
+            
+            ShowCompass = SettingsCategory.CreateEntry(
+                ShowCompassKey,
+                ShowCompassDefault,
+                ShowCompassDisplayName);
         }
     }
 }

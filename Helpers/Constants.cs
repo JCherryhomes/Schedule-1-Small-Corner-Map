@@ -85,5 +85,31 @@
         
         // Vehicle Marker Settings
         public const float VehicleMarkerFadeDuration = 0.15f; // Seconds to fade vehicle markers in/out
+        
+        // Compass Settings
+        public const int CompassTickCount = 16; // Total ticks (including cardinal positions)
+        public const float CompassRingPadding = 6f; // Padding outside minimap mask to start compass ring
+        public const int CompassLetterFontSize = 12; // Font size for compass letters
+        public const float CompassLetterColorR = 1f;
+        public const float CompassLetterColorG = 1f;
+        public const float CompassLetterColorB = 1f;
+        public const float CompassLetterColorA = 0.9f;
+        public const float CompassTickColorR = 1f;
+        public const float CompassTickColorG = 1f;
+        public const float CompassTickColorB = 1f;
+        public const float CompassTickColorA = 0.75f;
+        public const float CompassTickMajorScale = 1f; // Scale multiplier for cardinal ticks
+        public const float CompassTickMinorScale = 0.6f; // Scale multiplier for non-cardinal ticks
+        public const float CompassTickWidth = 2f;
+        public const float CompassTickHeight = 8f; // Reduced base height to avoid overlap
+        public const float CompassRingExtraThickness = 2f; // Extra thickness beyond tallest element
+        public const string CompassPreferenceKey = "ShowCompass"; // Preference key
+        public const float CompassLetterRadialOffset = 4f; // Additional outward offset for letters beyond ticks
+        public const float CompassTickInset = 2f; // Inset ticks slightly inward relative to their half height
+        public const int CompassBorderThickness = 2; // Pixel thickness of compass inner/outer border lines
+        public const float CompassBorderColorR = 0.13f; // Dark grey
+        public const float CompassBorderColorG = 0.13f;
+        public const float CompassBorderColorB = 0.13f;
+        public const float CompassBorderColorA = 0.9f; // Less translucent for clarity
     }
 }

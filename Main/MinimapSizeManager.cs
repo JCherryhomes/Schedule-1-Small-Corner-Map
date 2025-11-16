@@ -14,6 +14,7 @@ internal class MinimapSizeManager
     private Image minimapMaskImage;
     private Image minimapBorderImage;
     private MinimapContent minimapContent;
+    private CompassManager compassManager;
     
     public float ScaledMinimapSize { get; private set; }
     public float ScaledMapContentSize { get; private set; }
@@ -41,6 +42,10 @@ internal class MinimapSizeManager
         minimapBorderImage = borderImage;
         minimapContent = content;
     }
+    public void SetCompassManager(CompassManager manager)
+    {
+        compassManager = manager;
+    }
     
     public void SetMinimapVisible(bool visible)
     {
@@ -49,6 +54,8 @@ internal class MinimapSizeManager
         
         if (minimapBorderObject != null)
             minimapBorderObject.SetActive(visible);
+        
+        compassManager?.SetVisible(visible); // rely on preference inside manager for final visibility
     }
     
     public void RecalculateScaledSizes()
@@ -106,5 +113,6 @@ internal class MinimapSizeManager
         var contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
         if (contentRect != null)
             contentRect.sizeDelta = new Vector2(ScaledMapContentSize, ScaledMapContentSize);
+        compassManager?.UpdateLayout(ScaledMinimapSize);
     }
 }
