@@ -9,6 +9,8 @@ namespace Small_Corner_Map.Main
         private readonly Color markerColor = new Color(0.2f, 0.6f, 1f, 1f);
 
         private GameObject Marker { get; set; }
+        private GameObject originalPlayerIconPrefab;
+        private bool showingVehicleIcon;
 
         public void CreatePlayerMarker(GameObject parent)
         {
@@ -17,31 +19,55 @@ namespace Small_Corner_Map.Main
 
         public void ReplaceWithRealPlayerIcon(GameObject realIconPrefab)
         {
-            if (Marker == null || realIconPrefab == null)
+            if (realIconPrefab == null) return;
+            originalPlayerIconPrefab = realIconPrefab; // cache for restore
+            ReplaceWithIcon(realIconPrefab, Constants.PlayerIconReplacementScale, isVehicle:false);
+        }
+        
+        public void ReplaceWithVehicleIcon(GameObject vehicleIconPrefab)
+        {
+            if (vehicleIconPrefab == null) return;
+            ReplaceWithIcon(vehicleIconPrefab, Constants.PlayerIconReplacementScale, isVehicle:true);
+        }
+        
+        private void ReplaceWithIcon(GameObject iconPrefab, float scale, bool isVehicle)
+        {
+            if (Marker == null)
+            {
+                MelonLoader.MelonLogger.Warning("PlayerMarkerManager: Cannot replace icon, Marker is null!");
                 return;
-
-            var newMarker = UnityEngine.Object.Instantiate(realIconPrefab, Marker.transform.parent, false);
-            newMarker.name = "PlayerMarker";
+            }
+            
+            var parent = Marker.transform.parent;
+            var newMarker = UnityEngine.Object.Instantiate(iconPrefab, parent, false);
+            newMarker.name = isVehicle ? "PlayerVehicleMarker" : "PlayerMarker";
             var newRect = newMarker.GetComponent<RectTransform>();
             if (newRect != null)
             {
                 newRect.anchoredPosition = Vector2.zero;
-                newRect.localScale = new Vector3(
-                    Constants.PlayerIconReplacementScale, 
-                    Constants.PlayerIconReplacementScale, 
-                    Constants.PlayerIconReplacementScale);
+                newRect.localScale = new Vector3(scale, scale, scale);
             }
-
-            // Remove arrow if present
+            // Remove arrow if present on prefab instance
             var arrowImage = newMarker.transform.Find("Image");
             if (arrowImage != null)
-            {
                 UnityEngine.Object.Destroy(arrowImage.gameObject);
+            
+            // Preserve existing directionIndicator by reparenting if it exists
+            if (directionIndicator != null)
+            {
+                directionIndicator.SetParent(newMarker.transform, false);
+                directionIndicator.SetAsLastSibling();
             }
-
             UnityEngine.Object.Destroy(Marker);
             Marker = newMarker;
             Marker.transform.SetAsLastSibling();
+            showingVehicleIcon = isVehicle;
+        }
+        
+        public void RestoreOriginalPlayerIcon()
+        {
+            if (originalPlayerIconPrefab == null) return;
+            ReplaceWithIcon(originalPlayerIconPrefab, Constants.PlayerIconReplacementScale, isVehicle:false);
         }
 
         public void UpdateDirectionIndicator(Transform playerTransform)

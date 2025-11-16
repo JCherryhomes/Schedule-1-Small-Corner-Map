@@ -5,8 +5,10 @@ using HarmonyLib;
 
 #if Mono
 using ScheduleOne.Quests;
+using ScheduleOne.Vehicles;
 #elif IL2CPP
 using Il2CppScheduleOne.Quests;
+using Il2CppScheduleOne.Vehicles;
 #endif
 
 [assembly: MelonInfo(typeof(Small_Corner_Map.Core), Constants.ModName, Constants.ModVersion, Constants.ModAuthor, null)]
@@ -70,6 +72,18 @@ namespace Small_Corner_Map
                 if (trackContracts == null || !trackContracts.Value) return;
                 if (__instance == null || !__instance.IsTracked) return;
                 Instance.minimapUI?.OnContractCompleted(__instance);
+            }
+        }
+
+        [HarmonyPatch(typeof(VehicleManager), "SpawnAndReturnVehicle")]
+        class Patch_VehicleManagerSpawnAndReturnVehicle
+        {
+            static void Postfix(VehicleManager __instance, LandVehicle __result)
+            {
+                var vehicle = __instance.GetVehiclePrefab(__result.VehicleCode);
+                var trackVehicles = Instance.mapPreferences?.TrackVehicles;
+                if (trackVehicles == null || !trackVehicles.Value) return;
+                Instance.minimapUI?.OnOwnedVehiclesAdded();
             }
         }
     }

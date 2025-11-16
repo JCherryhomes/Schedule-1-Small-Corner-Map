@@ -13,8 +13,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
-    <AssemblyVersion>2.3.1.0</AssemblyVersion>
-    <FileVersion>2.3.1.0</FileVersion>
+    <AssemblyVersion>2.4.0.0</AssemblyVersion>
+    <FileVersion>2.4.0.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
@@ -127,9 +127,13 @@
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Main\ContractMarkerManager.cs" />
     <Compile Include="Main\MinimapContent.cs" />
+    <Compile Include="Main\MinimapMarkerCoordinator.cs" />
+    <Compile Include="Main\MinimapSceneIntegration.cs" />
+    <Compile Include="Main\MinimapSizeManager.cs" />
     <Compile Include="Main\MinimapTimeDisplay.cs" />
     <Compile Include="Main\MinimapUI.cs" />
     <Compile Include="Main\MultiplayerManager.cs" />
+    <Compile Include="Main\OwnedVehiclesManager.cs" />
     <Compile Include="Main\PlayerMarkerManager.cs" />
     <Compile Include="Main\PropertyPoIManager.cs" />
   </ItemGroup>

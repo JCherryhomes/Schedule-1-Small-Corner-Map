@@ -28,6 +28,10 @@ namespace Small_Corner_Map.Helpers
         private const string PropertyTrackingKey = "TrackProperties";
         private const string PropertyTrackingDisplayName = "Track Owned Properties on Minimap";
         private const bool PropertyTrackingDefault = true;
+        
+        private const string VehicleTrackingKey = "TrackVehicles";
+        private const string VehicleTrackingDisplayName = "Track Owned Vehicles on Minimap";
+        private const bool VehicleTrackingDefault = true;
 
         // Preference Entries
         private MelonPreferences_Category SettingsCategory { get; set; }
@@ -36,6 +40,7 @@ namespace Small_Corner_Map.Helpers
         public MelonPreferences_Entry<bool> IncreaseSize { get; private set; }
         public MelonPreferences_Entry<bool> TrackContracts { get; private set; }
         public MelonPreferences_Entry<bool> TrackProperties { get; private set; }
+        public MelonPreferences_Entry<bool> TrackVehicles { get; private set; }
         
         private readonly float defaultScaleFactor = 1.0f;
         private readonly float increasedScaleFactor = 1.5f;
@@ -48,7 +53,6 @@ namespace Small_Corner_Map.Helpers
             {
                 MelonLogger.Msg("MapPreferences: No existing preferences found, creating default entries.");
                 CreateDefaultEntries();
-
             }
             else
             {
@@ -58,6 +62,7 @@ namespace Small_Corner_Map.Helpers
                 IncreaseSize = MelonPreferences.GetEntry<bool>(CategoryIdentifier, IncreaseSizeKey);
                 TrackContracts = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ContractTrackingKey);
                 TrackProperties = MelonPreferences.GetEntry<bool>(CategoryIdentifier, PropertyTrackingKey);
+                TrackVehicles = MelonPreferences.GetEntry<bool>(CategoryIdentifier, VehicleTrackingKey);
                 MelonLogger.Msg("MapPreferences: Loaded existing preferences.");
             }
         }
@@ -90,6 +95,11 @@ namespace Small_Corner_Map.Helpers
                 PropertyTrackingKey, 
                 PropertyTrackingDefault, 
                 PropertyTrackingDisplayName);
+            
+            TrackVehicles = SettingsCategory.CreateEntry(
+                VehicleTrackingKey, 
+                VehicleTrackingDefault, 
+                VehicleTrackingDisplayName);
         }
     }
 }

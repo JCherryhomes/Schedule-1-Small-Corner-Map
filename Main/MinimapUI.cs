@@ -1,89 +1,67 @@
 #if IL2CPP
+using S1Player = Il2CppScheduleOne.PlayerScripts;
 using S1Quests = Il2CppScheduleOne.Quests;
+using S1Vehicles = Il2CppScheduleOne.Vehicles;
 #else
+using S1Player = ScheduleOne.PlayerScripts;
 using S1Quests = ScheduleOne.Quests;
+using S1Vehicles = ScheduleOne.Vehicles;
 #endif
 
-using S1API.Entities;
 using MelonLoader;
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
 using Small_Corner_Map.Helpers;
 
 namespace Small_Corner_Map.Main;
 
-// The main orchestrator for the minimap UI and its managers.
+/// <summary>
+/// Main orchestrator for the minimap UI. Delegates responsibilities to specialized helper classes.
+/// </summary>
 public class MinimapUI
 {
-    // --- Managers and Content ---
-    // Handles map content (image, grid, static markers)
+    // --- Core Components ---
+    private readonly MapPreferences mapPreferences;
+    private MinimapSizeManager sizeManager;
+    private MinimapSceneIntegration sceneIntegration;
+    private MinimapMarkerCoordinator markerCoordinator;
+    
+    // --- Content and Managers ---
     private MinimapContent minimapContent;
-    // Handles player marker and direction indicator
     private PlayerMarkerManager playerMarkerManager;
-    // Handles minimap time display
     private MinimapTimeDisplay minimapTimeDisplay;
+    private ContractMarkerManager contractMarkerManager;
+    private OwnedVehiclesManager ownedVehiclesManager;
 
     // --- UI GameObjects ---
-    private GameObject minimapObject;           // Root object for the minimap UI
-    private GameObject minimapDisplayObject;    // The mask object for the minimap
-    private RectTransform minimapFrameRect;     // The frame (positioned in the corner)
-    private GameObject minimapBorderObject;     // NEW: Border object
-    private Image minimapBorderImage;           // NEW: Border image
+    private GameObject minimapObject;
+    private GameObject minimapDisplayObject;
 
     // --- State ---
-    private readonly MapPreferences mapPreferences;
-    private bool initialized = false;
-    
-    // --- Scaled sizes (calculated at runtime) ---
-    private float scaledMinimapSize;
-    private float scaledMapContentSize;
-    private Image minimapMaskImage; // Cache for regenerating mask sprite
-
-    // --- Cached Player Reference ---
-    private Player playerObject;
-    
-    // --- Cached Map Content Reference ---
-    private GameObject cachedMapContent;
-
-    // Handles contract PoI markers
-    private ContractMarkerManager ContractMarkerManager { get; set; }
+    private bool initialized;
 
     private bool TimeBarEnabled => mapPreferences.ShowGameTime.Value;
     private bool MinimapEnabled => mapPreferences.MinimapEnabled.Value;
 
-    // Dynamic world-to-minimap scale reflecting user preference.
-    private float CurrentWorldScale => Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor;
 
     public MinimapUI(MapPreferences preferences)
     {
         mapPreferences = preferences;
+        sizeManager = new MinimapSizeManager(mapPreferences);
+        
         mapPreferences.MinimapEnabled.OnEntryValueChanged.Subscribe(OnMinimapEnableChanged);
         mapPreferences.ShowGameTime.OnEntryValueChanged.Subscribe(OnTimeBarEnableChanged);
         mapPreferences.IncreaseSize.OnEntryValueChanged.Subscribe(OnIncreaseSizeChanged);
         mapPreferences.TrackContracts.OnEntryValueChanged.Subscribe(OnContractTrackingChanged);
         mapPreferences.TrackProperties.OnEntryValueChanged.Subscribe(OnPropertyTrackingChanged);
-        RecalculateScaledSizes();
-    }
-    
-    private void RecalculateScaledSizes()
-    {
-        var scale = mapPreferences.MinimapScaleFactor;
-        scaledMinimapSize = Constants.BaseMinimapSize * scale;
-        scaledMapContentSize = Constants.BaseMapContentSize * scale;
+        mapPreferences.TrackVehicles.OnEntryValueChanged.Subscribe(OnVehicleTrackingChanged);
     }
     
     private void OnIncreaseSizeChanged(bool oldValue, bool newValue)
     {
         if (!initialized) return;
-        RecalculateScaledSizes();
-        minimapContent?.UpdateMapScale(Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor);
-        UpdateMinimapSize(true); // regenerate mask sprite
-        var currentScale = Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor;
-        ContractMarkerManager?.UpdateMapScale(currentScale);
-        MinimapPoIHelper.UpdateAllMarkerPositions(CurrentWorldScale);
-        if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
-            PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
+        sizeManager.UpdateMinimapSize(true);
+        markerCoordinator.OnSizeChanged();
         UpdateMinimap();
     }
 
@@ -114,8 +92,6 @@ public class MinimapUI
     /// </summary>
     private void CreateMinimapDisplay()
     {
-        RecalculateScaledSizes();
-        
         // Root container for minimap UI
         minimapObject = new GameObject("MinimapContainer");
         UnityEngine.Object.DontDestroyOnLoad(minimapObject);
@@ -123,60 +99,63 @@ public class MinimapUI
         // Canvas for UI rendering
         var canvasObject = MinimapUIFactory.CreateCanvas(minimapObject);
 
-        // Frame (positions minimap in the corner)
-        var (frameObject, frameRect) = MinimapUIFactory.CreateFrame(canvasObject, scaledMinimapSize);
-        minimapFrameRect = frameRect;
+        // Frame (positions minimap in the corner) - size managed by sizeManager
+        var (frameObject, frameRect) = MinimapUIFactory.CreateFrame(canvasObject, sizeManager.ScaledFrameSize);
 
         // Border (slightly larger circle behind mask)
-        var (borderObj, borderImg) = MinimapUIFactory.CreateBorder(frameObject, scaledMinimapSize);
-        minimapBorderObject = borderObj;
-        minimapBorderImage = borderImg;
+        var (borderObj, borderImg) = MinimapUIFactory.CreateBorder(frameObject, sizeManager.ScaledMinimapSize);
 
         // Mask (circular area for minimap)
-        var (maskObject, maskImage) = MinimapUIFactory.CreateMask(frameObject, scaledMinimapSize);
+        var (maskObject, maskImage) = MinimapUIFactory.CreateMask(frameObject, sizeManager.ScaledMinimapSize);
         minimapDisplayObject = maskObject;
-        minimapMaskImage = maskImage;
 
         // Map content (holds the map image, grid, and markers)
-        minimapContent = new MinimapContent(
-            scaledMapContentSize, 
-            20, 
-            Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor);
+        minimapContent = new MinimapContent(sizeManager.ScaledMapContentSize, sizeManager.CurrentWorldScale);
         minimapContent.Create(maskObject);
-        TryApplyMapSprite(); // Try to assign the map image immediately
 
         // Player marker (centered in the minimap)
         playerMarkerManager = new PlayerMarkerManager();
         playerMarkerManager.CreatePlayerMarker(maskObject);
 
         // Contract PoI markers
-        ContractMarkerManager = new ContractMarkerManager(
-            minimapContent, 
-            Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor, 
-            Constants.ContractMarkerXOffset, 
-            Constants.ContractMarkerZOffset,
+        contractMarkerManager = new ContractMarkerManager(
+            minimapContent,
+            Constants.MarkerXOffset, 
+            mapPreferences);
+        
+        // Owned vehicles manager
+        ownedVehiclesManager = new OwnedVehiclesManager(
+            minimapContent,
             mapPreferences);
 
         // Time display (shows in-game time)
         minimapTimeDisplay = new MinimapTimeDisplay();
-        minimapTimeDisplay.Create(minimapFrameRect, mapPreferences.ShowGameTime);
+        minimapTimeDisplay.Create(frameRect, mapPreferences.ShowGameTime);
+        
+        // Set UI references in size manager
+        sizeManager.SetUIReferences(frameRect, maskObject, borderObj, maskImage, borderImg, minimapContent);
+        
+        // Initialize scene integration helper
+        sceneIntegration = new MinimapSceneIntegration(minimapContent, playerMarkerManager, mapPreferences);
+        
+        // Initialize marker coordinator
+        markerCoordinator = new MinimapMarkerCoordinator(contractMarkerManager, mapPreferences, minimapContent, sizeManager);
     }
 
     private void OnMinimapEnableChanged(bool oldValue, bool newValue)
     {
-
         if (newValue && !initialized)
         {
             Initialize();
         }
 
         if (oldValue == newValue) return;
-        if (minimapDisplayObject != null)
-            minimapDisplayObject.SetActive(MinimapEnabled);
+        
+        sizeManager?.SetMinimapVisible(MinimapEnabled);
 
-        if (MinimapEnabled)
+        if (MinimapEnabled && initialized)
         {
-            UpdateMinimapSize();
+            sizeManager?.UpdateMinimapSize();
         }
 
         minimapTimeDisplay?.SetTimeBarEnabled(TimeBarEnabled);
@@ -191,77 +170,6 @@ public class MinimapUI
     }
 
     /// <summary>
-    /// Updates the minimap and its elements when the size changes (e.g., 2x toggle).
-    /// </summary>
-    private void UpdateMinimapSize(bool regenerateMaskSprite = false)
-    {
-        RecalculateScaledSizes();
-
-        if (minimapFrameRect != null)
-            minimapFrameRect.sizeDelta = new Vector2(scaledMinimapSize, scaledMinimapSize);
-
-        if (minimapDisplayObject != null)
-        {
-            var component = minimapDisplayObject.GetComponent<RectTransform>();
-            component.sizeDelta = new Vector2(scaledMinimapSize, scaledMinimapSize);
-            
-            if (regenerateMaskSprite && minimapMaskImage != null)
-                minimapMaskImage.sprite = MinimapUIFactory.CreateCircleSprite((int)scaledMinimapSize, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapMaskFeather, featherInside:true);
-        }
-
-        // Resize border to remain slightly larger than mask
-        if (minimapBorderObject != null)
-        {
-            var borderRect = minimapBorderObject.GetComponent<RectTransform>();
-            var borderDiameter = scaledMinimapSize + (Constants.MinimapBorderThickness * 2f);
-            borderRect.sizeDelta = new Vector2(borderDiameter, borderDiameter);
-            if (regenerateMaskSprite && minimapBorderImage != null)
-            {
-                var borderColor = new Color(Constants.MinimapBorderR, Constants.MinimapBorderG, Constants.MinimapBorderB, Constants.MinimapBorderA);
-                minimapBorderImage.sprite = MinimapUIFactory.CreateCircleSprite((int)borderDiameter, borderColor, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapBorderFeather, featherInside:false);
-            }
-        }
-
-        if (minimapContent?.MapContentObject == null) return;
-        var contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
-        if (contentRect != null)
-            contentRect.sizeDelta = new Vector2(scaledMapContentSize, scaledMapContentSize);
-    }
-
-    /// <summary>
-    /// Attempts to find and assign the map sprite from the game's UI to the minimap.
-    /// </summary>
-    private void TryApplyMapSprite()
-    {
-        
-        var contentGo = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
-        Image contentImage = null;
-        if (contentGo != null)
-        {
-            contentImage = contentGo.GetComponent<Image>();
-            if (contentImage == null && contentGo.transform.childCount > 0)
-                contentImage = contentGo.transform.GetChild(0).GetComponent<Image>();
-        }
-
-        if (contentImage != null && minimapContent != null)
-        {
-            var minimapImage = minimapContent.MapContentObject.GetComponent<Image>();
-            if (minimapImage == null)
-                minimapImage = minimapContent.MapContentObject.AddComponent<Image>();
-
-            minimapImage.sprite = contentImage.sprite;
-            minimapImage.type = Image.Type.Simple;
-            minimapImage.preserveAspect = true;
-            minimapImage.enabled = true;
-            MelonLogger.Msg("MinimapUI: Successfully applied map sprite to minimap.");
-        }
-        else
-        {
-            MelonLogger.Warning("MinimapUI: Could not find map sprite to apply to minimap.");
-        }
-    }
-
-    /// <summary>
     /// Starts the coroutine that integrates the minimap with the scene (finds player, map, markers).
     /// </summary>
     private void StartSceneIntegration()
@@ -270,174 +178,12 @@ public class MinimapUI
     }
 
     /// <summary>
-    /// Coroutine that finds the player, map sprite, and sets up markers after the scene loads.
+    /// Coroutine that delegates scene integration to the helper class.
     /// </summary>
     private IEnumerator SceneIntegrationRoutine()
     {
-        MelonLogger.Msg("MinimapUI: Looking for game objects...");
-
-        yield return new WaitForSeconds(2f);
-
-        GameObject mapAppObject = null;
-        GameObject viewportObject = null;
-
-        var attempts = 0;
-        while ((mapAppObject == null || playerObject == null) && attempts < 30)
-        {
-            attempts++;
-
-            // Find player by looking for a CharacterController not at world origin
-            playerObject ??= Player.Local;
-
-            // Find the MapApp UI object
-            if (mapAppObject == null)
-            {
-                var gameplayMenu = GameObject.Find("GameplayMenu");
-                if (gameplayMenu != null)
-                {
-                    var phoneTransform = gameplayMenu.transform.Find("Phone");
-                    if (phoneTransform != null)
-                    {
-                        var phoneChildTransform = phoneTransform.Find("phone");
-                        if (phoneChildTransform != null)
-                        {
-                            var appsCanvas = phoneChildTransform.Find("AppsCanvas");
-                            if (appsCanvas != null)
-                            {
-                                var mapApp = appsCanvas.Find("MapApp");
-                                if (mapApp != null)
-                                {
-                                    mapAppObject = mapApp.gameObject;
-                                    MelonLogger.Msg("MinimapUI: Found MapApp");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Find the viewport (where the map image is)
-            if (mapAppObject != null && viewportObject == null)
-            {
-                var container = mapAppObject.transform.Find("Container");
-                if (container != null)
-                {
-                    var scrollView = container.Find("Scroll View");
-                    if (scrollView != null)
-                    {
-                        var viewport = scrollView.Find("Viewport");
-                        if (viewport != null)
-                        {
-                            viewportObject = viewport.gameObject;
-                            MelonLogger.Msg("MinimapUI: Found Map Viewport");
-                        }
-                    }
-                }
-            }
-
-            if (mapAppObject == null || playerObject == null)
-                yield return new WaitForSeconds(Constants.SceneIntegrationRetryDelay);
-        }
-
-        if (mapAppObject == null)
-            MelonLogger.Warning("MinimapUI: Could not find Map App after multiple attempts");
-        else if (viewportObject == null)
-            MelonLogger.Warning("MinimapUI: Found MapApp but could not find Viewport");
-        if (playerObject == null)
-            MelonLogger.Warning("MinimapUI: Could not find Player after multiple attempts");
-
-        MelonLogger.Msg("MinimapUI: Game object search completed");
-
-        // Apply map sprite from the viewport's content image
-        if (viewportObject != null)
-        {
-            try
-            {
-                if (viewportObject.transform.childCount > 0)
-                {
-                    var contentTransform = viewportObject.transform.GetChild(0);
-                    MelonLogger.Msg("MinimapUI: Found viewport content: " + contentTransform.name);
-                    var contentImage = contentTransform.GetComponent<Image>();
-
-                    if (contentImage != null && contentImage.sprite != null)
-                    {
-                        MelonLogger.Msg("MinimapUI: Found content image with sprite: " + contentImage.sprite.name);
-
-                        var minimapImage = minimapContent.MapContentObject.GetComponent<Image>();
-                        if (minimapImage == null)
-                            minimapImage = minimapContent.MapContentObject.AddComponent<Image>();
-                        minimapImage.sprite = contentImage.sprite;
-                        minimapImage.type = Image.Type.Simple;
-                        minimapImage.preserveAspect = true;
-                        minimapImage.enabled = true;
-                        MelonLogger.Msg("MinimapUI: Successfully applied map sprite to minimap!");
-
-                        if (minimapContent.GridContainer != null)
-                            minimapContent.GridContainer.gameObject.SetActive(false);
-                    }
-                    else
-                    {
-                        MelonLogger.Msg("MinimapUI: Content doesn't have an Image component or sprite");
-                        // Try children for a valid image
-                        var childCount = contentTransform.childCount;
-                        for (var i = 0; i < childCount; i++)
-                        {
-                            var child = contentTransform.GetChild(i);
-                            var childImage = child.GetComponent<Image>();
-                            if (childImage != null && childImage.sprite != null)
-                            {
-                                MelonLogger.Msg("MinimapUI: Found image in content child: " + child.name + ", Sprite: " + childImage.sprite.name);
-
-                                var minimapImage = minimapContent.MapContentObject.GetComponent<Image>();
-                                if (minimapImage == null)
-                                    minimapImage = minimapContent.MapContentObject.AddComponent<Image>();
-                                minimapImage.sprite = childImage.sprite;
-                                minimapImage.type = Image.Type.Simple;
-                                minimapImage.preserveAspect = true;
-                                minimapImage.enabled = true;
-                                MelonLogger.Msg("MinimapUI: Successfully applied map sprite to minimap!");
-
-                                if (minimapContent.GridContainer != null)
-                                    minimapContent.GridContainer.gameObject.SetActive(false);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MelonLogger.Error("MinimapUI: Error accessing map content: " + ex.Message);
-            }
-        }
-
-        // Replace fallback player marker with real icon if available
-        var cachedMapContent = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
-        this.cachedMapContent = cachedMapContent; // Cache for later use
-        
-        if (cachedMapContent != null)
-        {
-            var playerPoI = cachedMapContent.transform.Find("PlayerPoI(Clone)");
-            if (playerPoI != null)
-            {
-                var realIcon = playerPoI.Find("IconContainer");
-                if (realIcon != null)
-                {
-                    playerMarkerManager.ReplaceWithRealPlayerIcon(realIcon.gameObject);
-                    MelonLogger.Msg("MinimapUI: Replaced fallback player marker with real player icon.");
-                }
-            }
-        }
-
-        // Always cache the icon container, but only add markers if tracking is enabled
-        if (cachedMapContent != null)
-        {
-            PropertyPoIManager.CacheIconContainerIfNeeded(cachedMapContent);
-            if (mapPreferences.TrackProperties.Value)
-            {
-                PropertyPoIManager.Initialize(minimapContent, cachedMapContent);
-            }
-        }
+        yield return sceneIntegration.IntegrateWithScene();
+        markerCoordinator.SetCachedMapContent(sceneIntegration.CachedMapContent);
     }
 
     /// <summary>
@@ -464,102 +210,121 @@ public class MinimapUI
     /// <summary>
     /// Updates the minimap's content position to keep the player centered, and updates the player marker direction.
     /// </summary>
+    private bool previousInVehicle;
+    private S1Vehicles.LandVehicle previousVehicle;
+    
     private void UpdateMinimap()
     {
-        if (playerObject == null)
-        {
-            playerObject = Player.Local;
+        var playerObject = S1Player.Player.Local;
+        if (playerObject == null || minimapContent?.MapContentObject == null) return;
 
-            if (playerObject == null)
-                return;
+        var currentVehicle = playerObject.CurrentVehicle?.transform?.GetComponentInParent<S1Vehicles.LandVehicle>();
+        var isInVehicle = currentVehicle != null;
+
+        // Swap marker icon when entering/exiting vehicle
+        if (isInVehicle != previousInVehicle && playerMarkerManager != null)
+        {
+            if (isInVehicle)
+            {
+                // Replace player icon with vehicle icon if available, otherwise keep player icon
+                if (OwnedVehiclesManager.IconContainer != null)
+                {
+                    playerMarkerManager.ReplaceWithVehicleIcon(OwnedVehiclesManager.IconContainer.gameObject);
+                }
+
+                // Hide the vehicle's original marker on the map (only if vehicle tracking is enabled)
+                if (mapPreferences.TrackVehicles.Value)
+                {
+                    ownedVehiclesManager?.HideVehicleMarker(currentVehicle);
+                    previousVehicle = currentVehicle;
+                }
+            }
+            else
+            {
+                // Only restore if we actually changed to a vehicle icon
+                if (OwnedVehiclesManager.IconContainer != null)
+                {
+                    playerMarkerManager.RestoreOriginalPlayerIcon();
+                }
+
+                // Show the vehicle marker again on the map (only if vehicle tracking is enabled)
+                if (mapPreferences.TrackVehicles.Value && previousVehicle != null)
+                {
+                    ownedVehiclesManager?.ShowVehicleMarker(previousVehicle);
+                }
+                previousVehicle = null;
+            }
+            previousInVehicle = isInVehicle;
         }
 
-        if (minimapContent?.MapContentObject == null)
-            return;
-        
-        // Use dynamic world scale that reflects current minimap size preference
-        var worldScale = CurrentWorldScale;
-        var position = playerObject.Position;
-        var mappedX = -position.x * worldScale;
-        var mappedZ = -position.z * worldScale;
-        var minimapMask = minimapDisplayObject.transform.Find("MinimapMask");
+        // Decide what to track: vehicle if occupied, otherwise player
+        var trackTransform = isInVehicle ? currentVehicle.transform : playerObject.transform;
+        var trackPosition = isInVehicle ? currentVehicle.transform.position : playerObject.PlayerBasePosition;
+
+        // Dynamic world scale reflecting current minimap size preference
+        var worldScale = sizeManager.CurrentWorldScale;
+        var mappedX = -trackPosition.x * worldScale;
+        var mappedZ = -trackPosition.z * worldScale;
+
+        // Legacy logic attempted to find a child named MinimapMask of the mask itself – always null.
+        // Retain structure but simplify: zero remains Vector2.zero.
         var zero = Vector2.zero;
 
-        if (minimapMask != null)
-        {
-            var contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
-            if (contentRect != null)
-            {
-                var rect = contentRect.rect;
-                var halfWidth = rect.width * 0.5f;
-                contentRect.anchoredPosition = new Vector2(mappedX, mappedZ);
-                zero = new Vector2(halfWidth, rect.height * 0.5f);
-            }
-        }
-
-        // Position of the player marker on the minimap (offset scaled with map)
         var scaleFactor = mapPreferences.MinimapScaleFactor;
         var sizeVector = new Vector2(
-            Constants.PlayerMarkerOffsetX * scaleFactor, 
+            Constants.PlayerMarkerOffsetX * scaleFactor,
             Constants.PlayerMarkerOffsetZ * scaleFactor);
         var heightVector = new Vector2(mappedX, mappedZ) + zero + sizeVector;
 
-        var contentObject = minimapContent.MapContentObject.GetComponent<RectTransform>();
-        if (contentObject != null)
+        var contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
+        if (contentRect != null)
         {
-            contentObject.anchoredPosition = Vector2.Lerp(
-                contentObject.anchoredPosition,
+            contentRect.anchoredPosition = Vector2.Lerp(
+                contentRect.anchoredPosition,
                 heightVector,
                 Time.deltaTime * Constants.MapContentLerpSpeed);
 
-            // Update player marker direction indicator
-            playerMarkerManager?.UpdateDirectionIndicator(playerObject.Transform);
+            // Update direction indicator based on tracked transform (player or vehicle)
+            playerMarkerManager?.UpdateDirectionIndicator(trackTransform);
         }
-        
+
         minimapTimeDisplay.UpdateMinimapTime();
     }
 
+    internal void OnOwnedVehiclesAdded()
+    {
+        ownedVehiclesManager.AddOwnedVehicleMarkers();
+    }
 
     internal void OnContractAccepted(S1Quests.Contract contract)
     {
-        ContractMarkerManager.AddContractPoIMarkerWorld(contract);
+        markerCoordinator?.OnContractAccepted(contract);
     }
 
     internal void OnContractCompleted(S1Quests.Contract contract)
     {
-        ContractMarkerManager.RemoveContractPoIMarkers(contract);
+        markerCoordinator?.OnContractCompleted(contract);
     }
     
     private void OnContractTrackingChanged(bool previous, bool current)
     {
-        MelonLogger.Msg("MinimapUI: OnContractTrackingChanged" + current);
-        if (ContractMarkerManager == null) return;
-        if (current)
-        {
-            ContractMarkerManager.AddAllContractPoIMarkers();
-        }
-        else
-        {
-            ContractMarkerManager.RemoveAllContractPoIMarkers();
-        }
+        markerCoordinator?.OnContractTrackingChanged(previous, current);
     }
     
     private void OnPropertyTrackingChanged(bool previous, bool current)
     {
+        markerCoordinator?.OnPropertyTrackingChanged(previous, current);
+    }
+
+    private void OnVehicleTrackingChanged(bool previous, bool current)
+    {
         if (current)
         {
-            if (cachedMapContent != null)
-            {
-                PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
-            }
-            else
-            {
-                MelonLogger.Warning("MinimapUI: Cannot add property markers, cachedMapContent is null");
-            }
+            ownedVehiclesManager.AddOwnedVehicleMarkers();
         }
         else
         {
-            PropertyPoIManager.DisableAllMarkers();
+            ownedVehiclesManager.RemoveOwnedVehicleMarkers();
         }
     }
 }

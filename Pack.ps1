@@ -6,16 +6,18 @@ Creates a Thunderstore-ready zip containing both Mono and IL2CPP builds.
 .DESCRIPTION
 Packages the mod for Thunderstore distribution. Optionally updates version numbers
 across all project files (manifest.json, Constants.cs, .csproj) before packaging.
+Also produces individual zip archives for Mono and IL2CPP DLLs (Mods folder only)
+named after the DLL (minus .dll extension) with version suffix (e.g. Small_Corner_Map.Mono-1.2.3.zip).
 
 .PARAMETER Version
 The version number to set (e.g., "2.2.0"). If not provided, uses existing version from manifest.json.
 
 .EXAMPLE
-.\Pack.ps1
+./Pack.ps1
 Creates package with current version
 
 .EXAMPLE
-.\Pack.ps1 -Version "2.2.0"
+./Pack.ps1 -Version "2.2.0"
 Updates version to 2.2.0 and creates package
 #>
 [CmdletBinding()]
@@ -100,11 +102,20 @@ if (-not $Version) {
 
 $packageName = 'SmallCornerMap'
 $work = Join-Path $root 'dist'
-if (Test-Path $work) { Remove-Item $work -Recurse -Force }
-New-Item -ItemType Directory -Path $work | Out-Null
+if (-not (Test-Path $work)) {
+    New-Item -ItemType Directory -Path $work | Out-Null
+}
 
-# Create package folder structure
+# Cleanup: remove previous package folder and ALL zip files in dist (fail on any locked zip)
 $pkg = Join-Path $work $packageName
+if (Test-Path $pkg) { Remove-Item $pkg -Recurse -Force -ErrorAction Stop }
+
+$allZips = Get-ChildItem -LiteralPath $work -Filter *.zip -File -ErrorAction SilentlyContinue
+foreach ($zip in $allZips) {
+    Remove-Item -LiteralPath $zip.FullName -Force -ErrorAction Stop
+    Write-Host "Removed zip: $($zip.Name)" -ForegroundColor DarkGray
+}
+
 New-Item -ItemType Directory -Path $pkg | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $pkg 'Mods') | Out-Null
 
@@ -120,10 +131,34 @@ $il2cppDll = Join-Path $root 'bin/IL2CPP/net6.0/Small_Corner_Map.Il2cpp.dll'
 Copy-Item $monoDll (Join-Path $pkg 'Mods')
 Copy-Item $il2cppDll (Join-Path $pkg 'Mods')
 
-# Zip
+# Zip (combined package)
 $zipName = "$packageName-$Version.zip"
 $zipPath = Join-Path $work $zipName
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::CreateFromDirectory($pkg, $zipPath)
-Write-Host "Created package: $zipPath"
+Write-Host "Created combined package: $zipPath" -ForegroundColor Green
 
+# --- Additional minimal DLL-only zips ---
+function New-DllOnlyZip {
+    param(
+        [Parameter(Mandatory)] [string] $DllPath
+    )
+    if (-not (Test-Path $DllPath)) {
+        Write-Warning "Skipping missing DLL: $DllPath"
+        return
+    }
+    $dllBase = [System.IO.Path]::GetFileNameWithoutExtension($DllPath)
+    $tempRoot = Join-Path $work $dllBase
+    $modsDir = Join-Path $tempRoot 'Mods'
+    New-Item -ItemType Directory -Path $modsDir -Force | Out-Null
+    Copy-Item $DllPath $modsDir -Force
+    $dllZip = Join-Path $work ("$dllBase-$Version.zip")
+    if (Test-Path $dllZip) { Remove-Item $dllZip -Force }
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($tempRoot, $dllZip)
+    Write-Host "Created DLL-only package: $dllZip" -ForegroundColor Cyan
+}
+
+New-DllOnlyZip -DllPath $monoDll
+New-DllOnlyZip -DllPath $il2cppDll
+
+Write-Host "Packaging complete." -ForegroundColor Green

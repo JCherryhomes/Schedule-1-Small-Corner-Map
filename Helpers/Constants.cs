@@ -3,7 +3,7 @@
     internal static class Constants
     {
         // Mod Info
-        public const string ModVersion = "2.3.1";
+        public const string ModVersion = "2.4.0";
         public const string ModName = "Small Corner Map";
         public const string ModAuthor = "winzaar";
         public const string GameName = "Schedule I";
@@ -13,10 +13,9 @@
         public const float DefaultMapScale = 1.2487098f;
         
         // Marker Offsets
-        public const float ContractMarkerXOffset = 12f;  // X offset for contract markers
+        public const float MarkerXOffset = 12f;          // X offset for markers (inverted for properties: -12f)
         public const float ContractMarkerZOffset = -3f;  // Z offset for contract markers
-        public const float PropertyMarkerXOffset = -12f; // Horizontal calibration for property markers
-        public const float PropertyMarkerZOffset = 0f;   // Vertical calibration for property markers
+        public const float PropertyMarkerZOffset = 0f;   // Z offset for property markers
         
         // Minimap UI Sizing
         public const float BaseMinimapSize = 150f;       // Base size of the minimap mask/frame
@@ -34,14 +33,15 @@
         public const float DirectionIndicatorDistance = 15f; // Distance from player marker center
         
         // Minimap Border
-        public const float MinimapBorderThickness = 4f;  // Pixel thickness outward from mask circle
+        public const float MinimapBorderThickness = 2f;  // Pixel thickness outward from mask circle (reduced for less extension)
         public const float MinimapBorderR = 0.13f;      // Dark grey border color (R)
         public const float MinimapBorderG = 0.13f;      // Dark grey border color (G)
         public const float MinimapBorderB = 0.13f;      // Dark grey border color (B)
         public const float MinimapBorderA = 1f;         // Border alpha
-        public const int MinimapBorderFeather = 4;      // Feather width in pixels for anti-aliased edge
+        public const int MinimapBorderFeather = 2;      // Feather width in pixels for anti-aliased edge (reduced to prevent clipping)
         public const int MinimapCircleResolutionMultiplier = 2; // Resolution multiplier for smoother circle
-        public const int MinimapMaskFeather = 2;         // Feather width for minimap mask edge (softer clipping)
+        public const int MinimapMaskFeather = 2;         // Feather width for minimap mask edge (softer clipping, reduced from 2)
+        public const int MinimapMaskDiameterOffset = 2;  // Extra pixels added to mask diameter to compensate feather shrink
         
         // Map Grid
         public const int DefaultGridSize = 20;           // Grid divisions for map background
@@ -82,5 +82,8 @@
         // GameObject Paths
         public const string GameplayMenuPath = "GameplayMenu";
         public const string MapAppPath = "GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content";
+        
+        // Vehicle Marker Settings
+        public const float VehicleMarkerFadeDuration = 0.15f; // Seconds to fade vehicle markers in/out
     }
 }
