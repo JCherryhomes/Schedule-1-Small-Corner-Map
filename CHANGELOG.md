@@ -1,5 +1,10 @@
 ﻿# Changelog
 
+## 2.3.1 - 2025-11-15
+### Improved
+- Enhanced packaging script to automatically open CHANGELOG.md for editing when version entry is missing
+- Added automatic verification that changelog has been updated before packaging
+
 ## 2.3.0 - 2025-11-15
 ### Added
 - Added preferences to toggle contract and property marker tracking on/off
