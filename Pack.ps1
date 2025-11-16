@@ -66,6 +66,26 @@ if (-not $Version) {
     Write-Host "Updated Small Corner Map.csproj"
     
     Write-Host ""
+    
+    # Check if CHANGELOG.md has been updated for this version
+    $changelogPath = Join-Path $root 'CHANGELOG.md'
+    if (Test-Path $changelogPath) {
+        $changelogContent = Get-Content $changelogPath -Raw
+        if ($changelogContent -notmatch "## $Version") {
+            Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Yellow
+            Write-Host "⚠️  REMINDER: CHANGELOG.md does not appear to contain version $Version" -ForegroundColor Yellow
+            Write-Host "   Please update CHANGELOG.md with release notes before packaging!" -ForegroundColor Yellow
+            Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Yellow
+            Write-Host ""
+            
+            $response = Read-Host "Continue with packaging anyway? (y/N)"
+            if ($response -ne 'y' -and $response -ne 'Y') {
+                Write-Host "Packaging cancelled. Please update CHANGELOG.md and run again." -ForegroundColor Cyan
+                exit 0
+            }
+            Write-Host ""
+        }
+    }
 }
 
 $packageName = 'SmallCornerMap'
