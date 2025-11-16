@@ -203,7 +203,7 @@ public class MinimapUI
             component.sizeDelta = new Vector2(scaledMinimapSize, scaledMinimapSize);
             
             if (regenerateMaskSprite && minimapMaskImage != null)
-                minimapMaskImage.sprite = MinimapUIFactory.CreateCircleSprite((int)scaledMinimapSize, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapBorderFeather, featherInside:true);
+                minimapMaskImage.sprite = MinimapUIFactory.CreateCircleSprite((int)scaledMinimapSize, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapMaskFeather, featherInside:true);
         }
 
         // Resize border to remain slightly larger than mask

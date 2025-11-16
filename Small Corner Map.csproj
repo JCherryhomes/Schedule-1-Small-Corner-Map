@@ -21,6 +21,10 @@
     <Configurations>IL2CPP;Mono</Configurations>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Mono'">
+    <NoWarn>NU1605;NU1701;CS1701;CS1702;MSB3277</NoWarn>
+  </PropertyGroup>
+
 
   <ItemGroup Condition="'$(Configuration)' == 'Mono'">
     <Reference Include="0Harmony">

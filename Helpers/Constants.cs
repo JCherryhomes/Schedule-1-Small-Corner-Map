@@ -41,6 +41,7 @@
         public const float MinimapBorderA = 1f;         // Border alpha
         public const int MinimapBorderFeather = 4;      // Feather width in pixels for anti-aliased edge
         public const int MinimapCircleResolutionMultiplier = 2; // Resolution multiplier for smoother circle
+        public const int MinimapMaskFeather = 2;         // Feather width for minimap mask edge (softer clipping)
         
         // Map Grid
         public const int DefaultGridSize = 20;           // Grid divisions for map background

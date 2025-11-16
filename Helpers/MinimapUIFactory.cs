@@ -73,7 +73,7 @@ namespace Small_Corner_Map.Helpers
             maskObject.AddComponent<Mask>().showMaskGraphic = false;
             
             var maskImage = maskObject.AddComponent<Image>();
-            maskImage.sprite = CreateCircleSprite((int)size, Color.black);
+            maskImage.sprite = CreateCircleSprite((int)size, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapMaskFeather, featherInside:true);
             maskImage.type = Image.Type.Sliced;
             maskImage.color = Color.black;
 
