@@ -546,7 +546,6 @@ public class MinimapUI
     
     private void OnPropertyTrackingChanged(bool previous, bool current)
     {
-        MelonLogger.Msg("MinimapUI: OnPropertyTrackingChanged" + current);
         if (current)
         {
             if (cachedMapContent != null)
