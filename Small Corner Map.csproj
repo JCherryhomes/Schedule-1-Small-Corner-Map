@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Import local developer settings if they exist (not committed to source control) -->
+  <Import Project="Local.props" Condition="Exists('Local.props')" />
+
   <PropertyGroup>
+    <!-- Game installation paths - must be configured in Local.props -->
+    <!-- MonoGamePath and IL2CPPGamePath should contain full paths to game folders -->
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
@@ -8,8 +13,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
+    <AssemblyVersion>2.1.2.0</AssemblyVersion>
+    <FileVersion>2.1.2.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
@@ -17,76 +22,88 @@
   </PropertyGroup>
 
 
-  <ItemGroup Condition="'$(Configuration)' == 'IL2CPP'">
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\Assemblies\IL2CPP\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2CppFishNet.Runtime">
-      <HintPath>..\..\Assemblies\IL2CPP\Il2CppFishNet.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\Assemblies\IL2CPP\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\Assemblies\IL2CPP\UnityEngine.InputLegacyModule.dll</HintPath>
-    </Reference>
+  <ItemGroup Condition="'$(Configuration)' == 'Mono'">
     <Reference Include="0Harmony">
-      <HintPath>..\..\Assemblies\IL2CPP\0Harmony.dll</HintPath>
+      <HintPath>$(MonoGamePath)\MelonLoader\net6\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Il2Cppmscorlib">
-      <HintPath>..\..\Assemblies\IL2CPP\Il2Cppmscorlib.dll</HintPath>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\Assemblies\IL2CPP\UnityEngine.CoreModule.dll</HintPath>
+    <Reference Include="FishNet.Runtime">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\FishNet.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\Assemblies\IL2CPP\UnityEngine.TextRenderingModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\Assemblies\IL2CPP\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\Assemblies\IL2CPP\UnityEngine.UIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="S1API">
-      <HintPath>..\..\Assemblies\IL2CPP\S1API.Il2Cpp.MelonLoader.dll</HintPath>
+    <Reference Include="Il2CppInterop.Common">
+      <HintPath>$(MonoGamePath)\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>..\..\Assemblies\IL2CPP\Il2CppInterop.Runtime.dll</HintPath>
+      <HintPath>$(MonoGamePath)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\mscorlib.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="S1API">
+      <HintPath>$(MonoGamePath)\Mods\S1API.Mono.MelonLoader.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
 
-  <ItemGroup Condition="'$(Configuration)' == 'Mono'">
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\Assemblies\Mono\Assembly-CSharp.dll</HintPath>
-    </Reference>
+  <ItemGroup Condition="'$(Configuration)' == 'IL2CPP'">
     <Reference Include="0Harmony">
-      <HintPath>..\..\Assemblies\Mono\0Harmony.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\net6\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="MelonLoader">
-      <HintPath>..\..\Assemblies\Mono\MelonLoader.dll</HintPath>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppFishNet.Runtime">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\Il2CppFishNet.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppInterop.Common">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\Assemblies\Mono\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="S1API">
-      <HintPath>..\..\Assemblies\Mono\S1API.Mono.MelonLoader.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\Assemblies\Mono\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\Assemblies\Mono\UnityEngine.TextRenderingModule.dll</HintPath>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\Assemblies\Mono\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\Assemblies\Mono\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="FishNet.Runtime">
-      <HintPath>..\..\Assemblies\Mono\FishNet.Runtime.dll</HintPath>
+    <Reference Include="S1API">
+      <HintPath>$(IL2CPPGamePath)\Mods\S1API.Il2Cpp.MelonLoader.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -122,6 +139,7 @@
   <ItemGroup>
     <Content Include=".github\CODEOWNERS" />
   </ItemGroup>
+  
 
   <PropertyGroup Condition="'$(Configuration)' == 'IL2CPP'">
     <TargetFramework>net6.0</TargetFramework>
@@ -136,7 +154,7 @@
   </PropertyGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Condition="$(Configuration) == 'Mono'" Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I\Mods&quot;" />
-    <Exec Condition="$(Configuration) == 'IL2CPP'" Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I - IL2CPP\Mods&quot;" />
+    <Exec Condition="$(Configuration) == 'Mono'" Command="COPY &quot;$(TargetPath)&quot; &quot;$(MonoGamePath)\Mods&quot;" />
+    <Exec Condition="$(Configuration) == 'IL2CPP'" Command="COPY &quot;$(TargetPath)&quot; &quot;$(IL2CPPGamePath)\Mods&quot;" />
   </Target>
 </Project>

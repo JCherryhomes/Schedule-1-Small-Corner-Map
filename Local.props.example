@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <!-- 
+      Local Developer Configuration
+      
+      Copy this file to "Local.props" (without .example) and update the paths
+      to match your game installation locations. Local.props is git-ignored.
+      
+      IMPORTANT: Include the full path to the game folder (e.g., "Schedule I" or "Schedule I - IL2CPP")
+      
+      Common configurations:
+      - Both in same Steam library (default location):
+        <MonoGamePath>C:\Program Files (x86)\Steam\steamapps\common\Schedule I</MonoGamePath>
+        <IL2CPPGamePath>C:\Program Files (x86)\Steam\steamapps\common\Schedule I - IL2CPP</IL2CPPGamePath>
+      
+      - Both in same Steam library (custom location):
+        <MonoGamePath>D:\SteamLibrary\steamapps\common\Schedule I</MonoGamePath>
+        <IL2CPPGamePath>D:\SteamLibrary\steamapps\common\Schedule I</IL2CPPGamePath>
+      
+      - Different Steam libraries:
+        <MonoGamePath>C:\Program Files (x86)\Steam\steamapps\common\Schedule I</MonoGamePath>
+        <IL2CPPGamePath>E:\Games\Steam\steamapps\common\Schedule I</IL2CPPGamePath>
+      
+      - Only building one configuration (e.g., only Mono):
+        <MonoGamePath>D:\SteamLibrary\steamapps\common\Schedule I</MonoGamePath>
+    -->
+    
+    <!-- Full path to Mono game installation -->
+    <MonoGamePath>C:\Program Files (x86)\Steam\steamapps\common\Schedule I</MonoGamePath>
+    
+    <!-- Full path to IL2CPP game installation -->
+    <IL2CPPGamePath>C:\Program Files (x86)\Steam\steamapps\common\Schedule I</IL2CPPGamePath>
+  </PropertyGroup>
+</Project>
+

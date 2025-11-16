@@ -363,3 +363,18 @@ MigrationBackup/
 FodyWeavers.xsd
 
 dist/
+
+# JetBrains Rider + GitHub Copilot files
+.idea/**/copilot*.xml
+.idea/**/github-copilot*.xml
+.idea/**/*.copilot*.xml
+
+# GitHub Copilot cache and temporary files
+.github-copilot/
+.copilot/
+*.copilot-chat-history
+copilot-index/
+
+# Local developer configuration (machine-specific paths)
+Local.props
+

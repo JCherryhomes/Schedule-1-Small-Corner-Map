@@ -38,6 +38,29 @@ Use the Visual Studio / Rider configurations:
 
 After building, run the provided `Pack.ps1` script to create the Thunderstore zip.
 
+### Development Setup
+The project references DLLs from your Schedule I game installation. To configure your local paths:
+
+1. Copy `Local.props.example` to `Local.props` in the project root
+2. Edit `Local.props` and set the full paths to your game installations:
+   
+   **Example (both in same Steam library):**
+   ```xml
+   <MonoGamePath>D:\SteamLibrary\steamapps\common\Schedule I</MonoGamePath>
+   <IL2CPPGamePath>D:\SteamLibrary\steamapps\common\Schedule I - IL2CPP</IL2CPPGamePath>
+   ```
+   
+   **Example (different Steam libraries):**
+   ```xml
+   <MonoGamePath>C:\Program Files (x86)\Steam\steamapps\common\Schedule I</MonoGamePath>
+   <IL2CPPGamePath>E:\Games\Steam\steamapps\common\Schedule I - IL2CPP</IL2CPPGamePath>
+   ```
+
+3. The project will automatically use these paths for all game DLL references and PostBuild deployment
+4. `Local.props` is git-ignored, so each developer can have their own configuration
+
+**Note:** You must have both the Mono and IL2CPP versions of Schedule I installed to build both configurations.
+
 ## Preferences
 A preferences file is created automatically (MapPreferences) allowing scale adjustment and future options.
 
