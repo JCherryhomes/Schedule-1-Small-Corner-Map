@@ -102,18 +102,20 @@ if (-not $Version) {
 
 $packageName = 'SmallCornerMap'
 $work = Join-Path $root 'dist'
-if (Test-Path $work) {
-    try {
-        Remove-Item $work -Recurse -Force -ErrorAction Stop
-    } catch {
-        Write-Warning "Could not fully remove dist directory (likely locked). Reusing existing folder."        
-    }
+if (-not (Test-Path $work)) {
+    New-Item -ItemType Directory -Path $work | Out-Null
 }
-if (-not (Test-Path $work)) { New-Item -ItemType Directory -Path $work | Out-Null }
 
-# Ensure fresh package subfolder
+# Cleanup: remove previous package folder and ALL zip files in dist (fail on any locked zip)
 $pkg = Join-Path $work $packageName
-if (Test-Path $pkg) { Remove-Item $pkg -Recurse -Force -ErrorAction SilentlyContinue }
+if (Test-Path $pkg) { Remove-Item $pkg -Recurse -Force -ErrorAction Stop }
+
+$allZips = Get-ChildItem -LiteralPath $work -Filter *.zip -File -ErrorAction SilentlyContinue
+foreach ($zip in $allZips) {
+    Remove-Item -LiteralPath $zip.FullName -Force -ErrorAction Stop
+    Write-Host "Removed zip: $($zip.Name)" -ForegroundColor DarkGray
+}
+
 New-Item -ItemType Directory -Path $pkg | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $pkg 'Mods') | Out-Null
 
@@ -145,12 +147,11 @@ function New-DllOnlyZip {
         Write-Warning "Skipping missing DLL: $DllPath"
         return
     }
-    $dllBase = [System.IO.Path]::GetFileNameWithoutExtension($DllPath) # e.g. Small_Corner_Map.Mono
+    $dllBase = [System.IO.Path]::GetFileNameWithoutExtension($DllPath)
     $tempRoot = Join-Path $work $dllBase
     $modsDir = Join-Path $tempRoot 'Mods'
     New-Item -ItemType Directory -Path $modsDir -Force | Out-Null
     Copy-Item $DllPath $modsDir -Force
-    # Updated to include version suffix in zip filename
     $dllZip = Join-Path $work ("$dllBase-$Version.zip")
     if (Test-Path $dllZip) { Remove-Item $dllZip -Force }
     [System.IO.Compression.ZipFile]::CreateFromDirectory($tempRoot, $dllZip)

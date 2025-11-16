@@ -1,5 +1,13 @@
 ﻿# Changelog
 
+## 2.4.0 - 2025-11-16
+### Added
+- Separate Mono-only and IL2CPP-only zip packages (each contains just its respective DLL in the Mods folder) to simplify choosing the appropriate runtime.
+- Vehicle markers: owned vehicles now appear on the minimap (toggleable in settings).
+
+### Improved
+- All package zip names now include the version number for clearer identification when managing installed mods.
+
 ## 2.3.1 - 2025-11-15
 ### Improved
 - Enhanced packaging script to automatically open CHANGELOG.md for editing when version entry is missing
@@ -28,4 +36,3 @@
 - Initial public minimap release
 - Added property & contract markers
 - Added time display
-
