@@ -1,5 +1,7 @@
+using MelonLoader;
 using UnityEngine;
 using Small_Corner_Map.Main;
+using UnityEngine.UI;
 
 namespace Small_Corner_Map.Helpers
 {
@@ -34,13 +36,13 @@ namespace Small_Corner_Map.Helpers
             if (rect != null)
             {
                 // Apply calibration offsets on initial placement
-                rect.anchoredPosition += new Vector2(Constants.PropertyMarkerXOffset, Constants.PropertyMarkerZOffset);
+                rect.anchoredPosition += new Vector2(-Constants.MarkerXOffset, Constants.PropertyMarkerZOffset);
 
                 MarkerStore[uniqueName] = new MarkerEntry
                 {
                     Marker = whiteMarker,
                     WorldPos = worldPos,
-                    XOffset = Constants.PropertyMarkerXOffset,
+                    XOffset = -Constants.MarkerXOffset,
                     ZOffset = Constants.PropertyMarkerZOffset
                 };
                 whiteMarker.transform.SetAsLastSibling();
@@ -53,7 +55,22 @@ namespace Small_Corner_Map.Helpers
 
         public static void AddRedPoIMarker(MinimapContent minimapContent, Vector3 worldPos)
         {
-            minimapContent.AddRedStaticMarker(worldPos);
+            var mapContentObject = minimapContent.MapContentObject;
+            if (mapContentObject == null)
+            {
+                MelonLogger.Warning("MinimapContent: Cannot add marker, missing map content.");
+                return;
+            }
+
+            var markerObject = new GameObject("StaticMarker_Red");
+            markerObject.transform.SetParent(mapContentObject.transform, false);
+            var markerRect = markerObject.AddComponent<RectTransform>();
+            markerRect.sizeDelta = new Vector2(Constants.RedMarkerSize, Constants.RedMarkerSize);
+            var mappedX = worldPos.x * Constants.DefaultMapScale;
+            var mappedZ = worldPos.z * Constants.DefaultMapScale;
+            markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
+            var markerImage = markerObject.AddComponent<Image>();
+            markerImage.color = Color.red;
         }
 
         public static void UpdateMarkerPosition(string name, Vector2 mappedPosition)
@@ -88,7 +105,21 @@ namespace Small_Corner_Map.Helpers
             }
         }
 
-        public static void AddMarkersToMap(
+        public static bool MarkerExists(string name, string baseKey = "StaticMarker_White")
+        {
+            MelonLogger.Msg("MinimapPoIHelper: Checking for markers with base key: " + baseKey);
+            foreach (var (key, value) in MarkerStore.ToList())
+            {
+                if (key.StartsWith(baseKey))
+                {
+                    MelonLogger.Msg("MinimapPoIHelper: Objects matching base key: " + key);
+                }
+            }
+            MelonLogger.Msg("Looking for key: " + name);
+            return MarkerStore.ContainsKey(name);
+        }
+
+        public static void AddMarkerToMap(
             GameObject markerPrefab,
             GameObject mapContentObject,
             string name,
@@ -140,6 +171,28 @@ namespace Small_Corner_Map.Helpers
                     UnityEngine.Object.Destroy(entry.Marker);
                 MarkerStore.Remove(k);
             }
+        }
+
+        public static IEnumerable<string> GetAllMarkerNames() => MarkerStore.Keys.ToList();
+        public static GameObject TryGetMarker(string name)
+        {
+            return MarkerStore.TryGetValue(name, out var entry) ? entry.Marker : null;
+        }
+
+        public static bool RenameMarker(string oldName, string newName)
+        {
+            if (oldName == newName) return true;
+            if (!MarkerStore.TryGetValue(oldName, out var entry)) return false;
+            if (MarkerStore.ContainsKey(newName)) return false; // avoid collision
+            if (entry.Marker == null)
+            {
+                MarkerStore.Remove(oldName);
+                return false;
+            }
+            entry.Marker.name = newName;
+            MarkerStore.Remove(oldName);
+            MarkerStore[newName] = entry;
+            return true;
         }
     }
 }

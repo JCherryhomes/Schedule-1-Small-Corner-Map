@@ -133,6 +133,7 @@
     <Compile Include="Main\MinimapTimeDisplay.cs" />
     <Compile Include="Main\MinimapUI.cs" />
     <Compile Include="Main\MultiplayerManager.cs" />
+    <Compile Include="Main\OwnedVehiclesManager.cs" />
     <Compile Include="Main\PlayerMarkerManager.cs" />
     <Compile Include="Main\PropertyPoIManager.cs" />
   </ItemGroup>

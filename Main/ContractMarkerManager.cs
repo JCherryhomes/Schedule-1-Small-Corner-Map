@@ -48,7 +48,7 @@ namespace Small_Corner_Map.Main
                 CacheContractPoIIcon(contract);
             }
 
-            MinimapPoIHelper.AddMarkersToMap(
+            MinimapPoIHelper.AddMarkerToMap(
                 contractPoIIconPrefab,
                 mapContentObject,
                 ContractPoIMarkerKey + "_" + contract.GUID,

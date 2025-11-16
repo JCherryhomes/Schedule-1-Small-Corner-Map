@@ -13,10 +13,9 @@
         public const float DefaultMapScale = 1.2487098f;
         
         // Marker Offsets
-        public const float ContractMarkerXOffset = 12f;  // X offset for contract markers
+        public const float MarkerXOffset = 12f;          // X offset for markers (inverted for properties: -12f)
         public const float ContractMarkerZOffset = -3f;  // Z offset for contract markers
-        public const float PropertyMarkerXOffset = -12f; // Horizontal calibration for property markers
-        public const float PropertyMarkerZOffset = 0f;   // Vertical calibration for property markers
+        public const float PropertyMarkerZOffset = 0f;   // Z offset for property markers
         
         // Minimap UI Sizing
         public const float BaseMinimapSize = 150f;       // Base size of the minimap mask/frame
@@ -83,5 +82,8 @@
         // GameObject Paths
         public const string GameplayMenuPath = "GameplayMenu";
         public const string MapAppPath = "GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content";
+        
+        // Vehicle Marker Settings
+        public const float VehicleMarkerFadeDuration = 0.15f; // Seconds to fade vehicle markers in/out
     }
 }

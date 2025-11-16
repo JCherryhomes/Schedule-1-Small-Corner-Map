@@ -9,25 +9,21 @@ namespace Small_Corner_Map.Main
     {
         public GameObject MapContentObject { get; private set; }
         public RectTransform GridContainer { get; private set; }
+        public float CurrentMapScale { get; private set; }
 
         private readonly float mapContentSize;
-        private readonly int gridSize;
-        private Color gridColor;
-        private float mapScale; // was readonly, now mutable to reflect dynamic scale changes
 
-        public MinimapContent(float mapContentSize = 500f, int gridSize = 20, float mapScale = 1.2487098f, Color? gridColor = null)
+        public MinimapContent(float mapContentSize = 500f, float mapScale = 1.2487098f)
         {
             this.mapContentSize = mapContentSize;
-            this.gridSize = gridSize;
-            this.mapScale = mapScale;
-            this.gridColor = gridColor ?? new Color(0.3f, 0.3f, 0.3f, 1f);
+            this.CurrentMapScale = mapScale;
         }
 
         public void Create(GameObject parent)
         {
             MapContentObject = new GameObject("MapContent");
             MapContentObject.transform.SetParent(parent.transform, false);
-            RectTransform mapContentRect = MapContentObject.AddComponent<RectTransform>();
+            var mapContentRect = MapContentObject.AddComponent<RectTransform>();
             mapContentRect.sizeDelta = new Vector2(mapContentSize, mapContentSize);
             mapContentRect.anchorMin = new Vector2(0.5f, 0.5f);
             mapContentRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -35,7 +31,7 @@ namespace Small_Corner_Map.Main
             mapContentRect.anchoredPosition = Vector2.zero;
 
             // Create grid container
-            GameObject gridObject = new GameObject("GridContainer");
+            var gridObject = new GameObject("GridContainer");
             gridObject.transform.SetParent(MapContentObject.transform, false);
             GridContainer = gridObject.AddComponent<RectTransform>();
             GridContainer.sizeDelta = new Vector2(mapContentSize, mapContentSize);
@@ -53,19 +49,17 @@ namespace Small_Corner_Map.Main
                 return null;
             }
 
-            GameObject markerObject = UnityEngine.Object.Instantiate(iconPrefab);
+            var markerObject = UnityEngine.Object.Instantiate(iconPrefab, MapContentObject.transform, false);
             markerObject.name = "StaticMarker_White"; // base name; helper may override for uniqueness
-            markerObject.transform.SetParent(MapContentObject.transform, false);
-            RectTransform markerRect = markerObject.GetComponent<RectTransform>();
+            var markerRect = markerObject.GetComponent<RectTransform>();
 
-            if (markerRect != null)
-            {
-                markerRect.sizeDelta = new Vector2(10f, 10f);
-                float mappedX = worldPos.x * mapScale;
-                float mappedZ = worldPos.z * mapScale;
-                markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
-                markerObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-            }
+            if (markerRect == null) return markerObject; // ensure a return even if markerRect was null
+            
+            markerRect.sizeDelta = new Vector2(10f, 10f);
+            var mappedX = worldPos.x * CurrentMapScale;
+            var mappedZ = worldPos.z * CurrentMapScale;
+            markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
+            markerObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             return markerObject; // ensure a return even if markerRect was null
         }
 
@@ -77,22 +71,21 @@ namespace Small_Corner_Map.Main
                 return;
             }
 
-            GameObject markerObject = new GameObject("StaticMarker_Red");
+            var markerObject = new GameObject("StaticMarker_Red");
             markerObject.transform.SetParent(MapContentObject.transform, false);
-            RectTransform markerRect = markerObject.AddComponent<RectTransform>();
+            var markerRect = markerObject.AddComponent<RectTransform>();
             markerRect.sizeDelta = new Vector2(Constants.RedMarkerSize, Constants.RedMarkerSize);
-            float mappedX = worldPos.x * mapScale;
-            float mappedZ = worldPos.z * mapScale;
+            var mappedX = worldPos.x * CurrentMapScale;
+            var mappedZ = worldPos.z * CurrentMapScale;
             markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
-            Image markerImage = markerObject.AddComponent<Image>();
+            var markerImage = markerObject.AddComponent<Image>();
             markerImage.color = Color.red;
         }
 
         public void UpdateMapScale(float newScale)
         {
-            mapScale = newScale;
+            CurrentMapScale = newScale;
         }
 
-        public float CurrentMapScale => mapScale;
     }
 }

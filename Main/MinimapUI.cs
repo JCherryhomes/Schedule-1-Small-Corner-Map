@@ -1,13 +1,15 @@
 #if IL2CPP
+using S1Player = Il2CppScheduleOne.PlayerScripts;
 using S1Quests = Il2CppScheduleOne.Quests;
+using S1Vehicles = Il2CppScheduleOne.Vehicles;
 #else
+using S1Player = ScheduleOne.PlayerScripts;
 using S1Quests = ScheduleOne.Quests;
+using S1Vehicles = ScheduleOne.Vehicles;
 #endif
 
-using S1API.Entities;
 using MelonLoader;
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
 using Small_Corner_Map.Helpers;
 
@@ -29,6 +31,7 @@ public class MinimapUI
     private PlayerMarkerManager playerMarkerManager;
     private MinimapTimeDisplay minimapTimeDisplay;
     private ContractMarkerManager contractMarkerManager;
+    private OwnedVehiclesManager ownedVehiclesManager;
 
     // --- UI GameObjects ---
     private GameObject minimapObject;
@@ -51,6 +54,7 @@ public class MinimapUI
         mapPreferences.IncreaseSize.OnEntryValueChanged.Subscribe(OnIncreaseSizeChanged);
         mapPreferences.TrackContracts.OnEntryValueChanged.Subscribe(OnContractTrackingChanged);
         mapPreferences.TrackProperties.OnEntryValueChanged.Subscribe(OnPropertyTrackingChanged);
+        mapPreferences.TrackVehicles.OnEntryValueChanged.Subscribe(OnVehicleTrackingChanged);
     }
     
     private void OnIncreaseSizeChanged(bool oldValue, bool newValue)
@@ -106,10 +110,7 @@ public class MinimapUI
         minimapDisplayObject = maskObject;
 
         // Map content (holds the map image, grid, and markers)
-        minimapContent = new MinimapContent(
-            sizeManager.ScaledMapContentSize, 
-            20, 
-            sizeManager.CurrentWorldScale);
+        minimapContent = new MinimapContent(sizeManager.ScaledMapContentSize, sizeManager.CurrentWorldScale);
         minimapContent.Create(maskObject);
 
         // Player marker (centered in the minimap)
@@ -119,7 +120,12 @@ public class MinimapUI
         // Contract PoI markers
         contractMarkerManager = new ContractMarkerManager(
             minimapContent,
-            Constants.ContractMarkerXOffset, 
+            Constants.MarkerXOffset, 
+            mapPreferences);
+        
+        // Owned vehicles manager
+        ownedVehiclesManager = new OwnedVehiclesManager(
+            minimapContent,
             mapPreferences);
 
         // Time display (shows in-game time)
@@ -204,58 +210,91 @@ public class MinimapUI
     /// <summary>
     /// Updates the minimap's content position to keep the player centered, and updates the player marker direction.
     /// </summary>
+    private bool previousInVehicle;
+    private S1Vehicles.LandVehicle previousVehicle;
+    
     private void UpdateMinimap()
     {
-        var playerObject = sceneIntegration?.PlayerObject ?? Player.Local;
-        
-        if (playerObject == null)
-            return;
+        var playerObject = S1Player.Player.Local;
+        if (playerObject == null || minimapContent?.MapContentObject == null) return;
 
-        if (minimapContent?.MapContentObject == null)
-            return;
-        
-        // Use dynamic world scale that reflects current minimap size preference
-        var worldScale = sizeManager.CurrentWorldScale;
-        var position = playerObject.Position;
-        var mappedX = -position.x * worldScale;
-        var mappedZ = -position.z * worldScale;
-        var minimapMask = minimapDisplayObject.transform.Find("MinimapMask");
-        var zero = Vector2.zero;
+        var currentVehicle = playerObject.CurrentVehicle?.transform?.GetComponentInParent<S1Vehicles.LandVehicle>();
+        var isInVehicle = currentVehicle != null;
 
-        if (minimapMask != null)
+        // Swap marker icon when entering/exiting vehicle
+        if (isInVehicle != previousInVehicle && playerMarkerManager != null)
         {
-            var contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
-            if (contentRect != null)
+            if (isInVehicle)
             {
-                var rect = contentRect.rect;
-                var halfWidth = rect.width * 0.5f;
-                contentRect.anchoredPosition = new Vector2(mappedX, mappedZ);
-                zero = new Vector2(halfWidth, rect.height * 0.5f);
+                // Replace player icon with vehicle icon if available, otherwise keep player icon
+                if (OwnedVehiclesManager.IconContainer != null)
+                {
+                    playerMarkerManager.ReplaceWithVehicleIcon(OwnedVehiclesManager.IconContainer.gameObject);
+                }
+
+                // Hide the vehicle's original marker on the map (only if vehicle tracking is enabled)
+                if (mapPreferences.TrackVehicles.Value)
+                {
+                    ownedVehiclesManager?.HideVehicleMarker(currentVehicle);
+                    previousVehicle = currentVehicle;
+                }
             }
+            else
+            {
+                // Only restore if we actually changed to a vehicle icon
+                if (OwnedVehiclesManager.IconContainer != null)
+                {
+                    playerMarkerManager.RestoreOriginalPlayerIcon();
+                }
+
+                // Show the vehicle marker again on the map (only if vehicle tracking is enabled)
+                if (mapPreferences.TrackVehicles.Value && previousVehicle != null)
+                {
+                    ownedVehiclesManager?.ShowVehicleMarker(previousVehicle);
+                }
+                previousVehicle = null;
+            }
+            previousInVehicle = isInVehicle;
         }
 
-        // Position of the player marker on the minimap (offset scaled with map)
+        // Decide what to track: vehicle if occupied, otherwise player
+        var trackTransform = isInVehicle ? currentVehicle.transform : playerObject.transform;
+        var trackPosition = isInVehicle ? currentVehicle.transform.position : playerObject.PlayerBasePosition;
+
+        // Dynamic world scale reflecting current minimap size preference
+        var worldScale = sizeManager.CurrentWorldScale;
+        var mappedX = -trackPosition.x * worldScale;
+        var mappedZ = -trackPosition.z * worldScale;
+
+        // Legacy logic attempted to find a child named MinimapMask of the mask itself – always null.
+        // Retain structure but simplify: zero remains Vector2.zero.
+        var zero = Vector2.zero;
+
         var scaleFactor = mapPreferences.MinimapScaleFactor;
         var sizeVector = new Vector2(
-            Constants.PlayerMarkerOffsetX * scaleFactor, 
+            Constants.PlayerMarkerOffsetX * scaleFactor,
             Constants.PlayerMarkerOffsetZ * scaleFactor);
         var heightVector = new Vector2(mappedX, mappedZ) + zero + sizeVector;
 
-        var contentObject = minimapContent.MapContentObject.GetComponent<RectTransform>();
-        if (contentObject != null)
+        var contentRect = minimapContent.MapContentObject.GetComponent<RectTransform>();
+        if (contentRect != null)
         {
-            contentObject.anchoredPosition = Vector2.Lerp(
-                contentObject.anchoredPosition,
+            contentRect.anchoredPosition = Vector2.Lerp(
+                contentRect.anchoredPosition,
                 heightVector,
                 Time.deltaTime * Constants.MapContentLerpSpeed);
 
-            // Update player marker direction indicator
-            playerMarkerManager?.UpdateDirectionIndicator(playerObject.Transform);
+            // Update direction indicator based on tracked transform (player or vehicle)
+            playerMarkerManager?.UpdateDirectionIndicator(trackTransform);
         }
-        
+
         minimapTimeDisplay.UpdateMinimapTime();
     }
 
+    internal void OnOwnedVehiclesAdded()
+    {
+        ownedVehiclesManager.AddOwnedVehicleMarkers();
+    }
 
     internal void OnContractAccepted(S1Quests.Contract contract)
     {
@@ -275,5 +314,17 @@ public class MinimapUI
     private void OnPropertyTrackingChanged(bool previous, bool current)
     {
         markerCoordinator?.OnPropertyTrackingChanged(previous, current);
+    }
+
+    private void OnVehicleTrackingChanged(bool previous, bool current)
+    {
+        if (current)
+        {
+            ownedVehiclesManager.AddOwnedVehicleMarkers();
+        }
+        else
+        {
+            ownedVehiclesManager.RemoveOwnedVehicleMarkers();
+        }
     }
 }
