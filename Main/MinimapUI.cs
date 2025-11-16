@@ -33,7 +33,7 @@ public class MinimapUI
 
     // --- State ---
     private readonly MapPreferences mapPreferences;
-    private bool initialized = false;
+    private bool initialized;
     
     // --- Scaled sizes (calculated at runtime) ---
     private float scaledMinimapSize;
@@ -79,8 +79,6 @@ public class MinimapUI
         RecalculateScaledSizes();
         minimapContent?.UpdateMapScale(Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor);
         UpdateMinimapSize(true); // regenerate mask sprite
-        var currentScale = Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor;
-        ContractMarkerManager?.UpdateMapScale(currentScale);
         MinimapPoIHelper.UpdateAllMarkerPositions(CurrentWorldScale);
         if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
             PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
@@ -151,10 +149,8 @@ public class MinimapUI
 
         // Contract PoI markers
         ContractMarkerManager = new ContractMarkerManager(
-            minimapContent, 
-            Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor, 
+            minimapContent,
             Constants.ContractMarkerXOffset, 
-            Constants.ContractMarkerZOffset,
             mapPreferences);
 
         // Time display (shows in-game time)
@@ -412,8 +408,7 @@ public class MinimapUI
         }
 
         // Replace fallback player marker with real icon if available
-        var cachedMapContent = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
-        this.cachedMapContent = cachedMapContent; // Cache for later use
+        cachedMapContent = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
         
         if (cachedMapContent != null)
         {
