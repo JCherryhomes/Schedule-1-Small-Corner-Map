@@ -62,9 +62,9 @@ namespace Small_Corner_Map.Helpers
         {
             var maskObject = new GameObject("MinimapMask");
             maskObject.transform.SetParent(parent.transform, false);
-            
+            var adjustedSize = size + Constants.MinimapMaskDiameterOffset;
             var maskRect = maskObject.AddComponent<RectTransform>();
-            maskRect.sizeDelta = new Vector2(size, size);
+            maskRect.sizeDelta = new Vector2(adjustedSize, adjustedSize);
             maskRect.anchorMin = new Vector2(0.5f, 0.5f);
             maskRect.anchorMax = new Vector2(0.5f, 0.5f);
             maskRect.pivot = new Vector2(0.5f, 0.5f);
@@ -73,7 +73,7 @@ namespace Small_Corner_Map.Helpers
             maskObject.AddComponent<Mask>().showMaskGraphic = false;
             
             var maskImage = maskObject.AddComponent<Image>();
-            maskImage.sprite = CreateCircleSprite((int)size, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapMaskFeather, featherInside:true);
+            maskImage.sprite = CreateCircleSprite((int)adjustedSize, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapMaskFeather, featherInside:true);
             maskImage.type = Image.Type.Sliced;
             maskImage.color = Color.black;
 
