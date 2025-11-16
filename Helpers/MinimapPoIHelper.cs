@@ -16,13 +16,16 @@ namespace Small_Corner_Map.Helpers
 
         private static readonly Dictionary<string, MarkerEntry> MarkerStore = new();
 
-        public static void AddWhitePoIMarker(MinimapContent minimapContent, Vector3 worldPos, GameObject iconPrefab)
+        public static void AddWhitePoIMarker(
+            MinimapContent minimapContent, 
+            Vector3 worldPos, 
+            GameObject iconPrefab, 
+            string keyPrefix = "StaticMarker_White")
         {
             var whiteMarker = minimapContent.AddWhiteStaticMarker(worldPos, iconPrefab);
             if (whiteMarker == null) return;
-
-            var baseName = "StaticMarker_White";
-            var uniqueName = baseName + "_" + worldPos.x.ToString("F2") + "_" + worldPos.z.ToString("F2");
+            
+            var uniqueName = keyPrefix + "_" + worldPos.x.ToString("F2") + "_" + worldPos.z.ToString("F2");
 
             RemoveMarker(uniqueName);
 

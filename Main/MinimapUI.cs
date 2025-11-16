@@ -42,6 +42,9 @@ public class MinimapUI
 
     // --- Cached Player Reference ---
     private Player playerObject;
+    
+    // --- Cached Map Content Reference ---
+    private GameObject cachedMapContent;
 
     // Handles contract PoI markers
     private ContractMarkerManager ContractMarkerManager { get; set; }
@@ -58,6 +61,8 @@ public class MinimapUI
         mapPreferences.MinimapEnabled.OnEntryValueChanged.Subscribe(OnMinimapEnableChanged);
         mapPreferences.ShowGameTime.OnEntryValueChanged.Subscribe(OnTimeBarEnableChanged);
         mapPreferences.IncreaseSize.OnEntryValueChanged.Subscribe(OnIncreaseSizeChanged);
+        mapPreferences.TrackContracts.OnEntryValueChanged.Subscribe(OnContractTrackingChanged);
+        mapPreferences.TrackProperties.OnEntryValueChanged.Subscribe(OnPropertyTrackingChanged);
         RecalculateScaledSizes();
     }
     
@@ -72,15 +77,13 @@ public class MinimapUI
     {
         if (!initialized) return;
         RecalculateScaledSizes();
+        minimapContent?.UpdateMapScale(Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor);
         UpdateMinimapSize(true); // regenerate mask sprite
-
-        // Update scale in ContractMarkerManager
         var currentScale = Constants.DefaultMapScale * mapPreferences.MinimapScaleFactor;
         ContractMarkerManager?.UpdateMapScale(currentScale);
-        
-        // Reproject all PoI markers using new scale
         MinimapPoIHelper.UpdateAllMarkerPositions(CurrentWorldScale);
-        // Immediately recenter content so player marker remains centered after size jump
+        if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
+            PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
         UpdateMinimap();
     }
 
@@ -410,6 +413,8 @@ public class MinimapUI
 
         // Replace fallback player marker with real icon if available
         var cachedMapContent = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
+        this.cachedMapContent = cachedMapContent; // Cache for later use
+        
         if (cachedMapContent != null)
         {
             var playerPoI = cachedMapContent.transform.Find("PlayerPoI(Clone)");
@@ -424,16 +429,14 @@ public class MinimapUI
             }
         }
 
-        // Add default static markers if possible
+        // Always cache the icon container, but only add markers if tracking is enabled
         if (cachedMapContent != null)
         {
-            var propertyPoI = cachedMapContent.transform.Find("PropertyPoI(Clone)");
-            if (propertyPoI == null) yield break;
-            
-            var iconContainer = propertyPoI.Find("IconContainer");
-            if (iconContainer == null) yield break;
-            
-            PropertyPoIManager.Initialize(minimapContent, iconContainer);
+            PropertyPoIManager.CacheIconContainerIfNeeded(cachedMapContent);
+            if (mapPreferences.TrackProperties.Value)
+            {
+                PropertyPoIManager.Initialize(minimapContent, cachedMapContent);
+            }
         }
     }
 
@@ -525,5 +528,39 @@ public class MinimapUI
     internal void OnContractCompleted(S1Quests.Contract contract)
     {
         ContractMarkerManager.RemoveContractPoIMarkers(contract);
+    }
+    
+    private void OnContractTrackingChanged(bool previous, bool current)
+    {
+        MelonLogger.Msg("MinimapUI: OnContractTrackingChanged" + current);
+        if (ContractMarkerManager == null) return;
+        if (current)
+        {
+            ContractMarkerManager.AddAllContractPoIMarkers();
+        }
+        else
+        {
+            ContractMarkerManager.RemoveAllContractPoIMarkers();
+        }
+    }
+    
+    private void OnPropertyTrackingChanged(bool previous, bool current)
+    {
+        MelonLogger.Msg("MinimapUI: OnPropertyTrackingChanged" + current);
+        if (current)
+        {
+            if (cachedMapContent != null)
+            {
+                PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
+            }
+            else
+            {
+                MelonLogger.Warning("MinimapUI: Cannot add property markers, cachedMapContent is null");
+            }
+        }
+        else
+        {
+            PropertyPoIManager.DisableAllMarkers();
+        }
     }
 }

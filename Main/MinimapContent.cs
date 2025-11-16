@@ -12,8 +12,8 @@ namespace Small_Corner_Map.Main
 
         private readonly float mapContentSize;
         private readonly int gridSize;
-        private readonly Color gridColor;
-        private readonly float mapScale;
+        private Color gridColor;
+        private float mapScale; // was readonly, now mutable to reflect dynamic scale changes
 
         public MinimapContent(float mapContentSize = 500f, int gridSize = 20, float mapScale = 1.2487098f, Color? gridColor = null)
         {
@@ -87,5 +87,12 @@ namespace Small_Corner_Map.Main
             Image markerImage = markerObject.AddComponent<Image>();
             markerImage.color = Color.red;
         }
+
+        public void UpdateMapScale(float newScale)
+        {
+            mapScale = newScale;
+        }
+
+        public float CurrentMapScale => mapScale;
     }
 }

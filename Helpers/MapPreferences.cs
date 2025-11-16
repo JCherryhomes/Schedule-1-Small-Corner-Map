@@ -21,11 +21,21 @@ namespace Small_Corner_Map.Helpers
         private const string IncreaseSizeDisplayName = "Increase Minimap Size";
         private const bool IncreaseSizeDefault = false;
 
+        private const string ContractTrackingKey = "TrackContracts";
+        private const string ContractTrackingDisplayName = "Track Active Contracts on Minimap";
+        private const bool ContractTrackingDefault = true;
+        
+        private const string PropertyTrackingKey = "TrackProperties";
+        private const string PropertyTrackingDisplayName = "Track Owned Properties on Minimap";
+        private const bool PropertyTrackingDefault = true;
+
         // Preference Entries
         private MelonPreferences_Category SettingsCategory { get; set; }
         public MelonPreferences_Entry<bool> MinimapEnabled { get; private set; }
         public MelonPreferences_Entry<bool> ShowGameTime { get; private set; }
         public MelonPreferences_Entry<bool> IncreaseSize { get; private set; }
+        public MelonPreferences_Entry<bool> TrackContracts { get; private set; }
+        public MelonPreferences_Entry<bool> TrackProperties { get; private set; }
         
         private readonly float defaultScaleFactor = 1.0f;
         private readonly float increasedScaleFactor = 1.5f;
@@ -46,6 +56,8 @@ namespace Small_Corner_Map.Helpers
                 MinimapEnabled = MelonPreferences.GetEntry<bool>(CategoryIdentifier, MinimapEnabledKey);
                 ShowGameTime = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ShowGameTimeKey);
                 IncreaseSize = MelonPreferences.GetEntry<bool>(CategoryIdentifier, IncreaseSizeKey);
+                TrackContracts = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ContractTrackingKey);
+                TrackProperties = MelonPreferences.GetEntry<bool>(CategoryIdentifier, PropertyTrackingKey);
                 MelonLogger.Msg("MapPreferences: Loaded existing preferences.");
             }
         }
@@ -68,6 +80,16 @@ namespace Small_Corner_Map.Helpers
                 IncreaseSizeKey, 
                 IncreaseSizeDefault, 
                 IncreaseSizeDisplayName);
+            
+            TrackContracts = SettingsCategory.CreateEntry(
+                ContractTrackingKey, 
+                ContractTrackingDefault, 
+                ContractTrackingDisplayName);
+            
+            TrackProperties = SettingsCategory.CreateEntry(
+                PropertyTrackingKey, 
+                PropertyTrackingDefault, 
+                PropertyTrackingDisplayName);
         }
     }
 }
