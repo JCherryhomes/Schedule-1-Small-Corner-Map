@@ -28,6 +28,8 @@ public class MinimapUI
     private GameObject minimapObject;           // Root object for the minimap UI
     private GameObject minimapDisplayObject;    // The mask object for the minimap
     private RectTransform minimapFrameRect;     // The frame (positioned in the corner)
+    private GameObject minimapBorderObject;     // NEW: Border object
+    private Image minimapBorderImage;           // NEW: Border image
 
     // --- State ---
     private readonly MapPreferences mapPreferences;
@@ -122,6 +124,11 @@ public class MinimapUI
         var (frameObject, frameRect) = MinimapUIFactory.CreateFrame(canvasObject, scaledMinimapSize);
         minimapFrameRect = frameRect;
 
+        // Border (slightly larger circle behind mask)
+        var (borderObj, borderImg) = MinimapUIFactory.CreateBorder(frameObject, scaledMinimapSize);
+        minimapBorderObject = borderObj;
+        minimapBorderImage = borderImg;
+
         // Mask (circular area for minimap)
         var (maskObject, maskImage) = MinimapUIFactory.CreateMask(frameObject, scaledMinimapSize);
         minimapDisplayObject = maskObject;
@@ -196,7 +203,20 @@ public class MinimapUI
             component.sizeDelta = new Vector2(scaledMinimapSize, scaledMinimapSize);
             
             if (regenerateMaskSprite && minimapMaskImage != null)
-                minimapMaskImage.sprite = MinimapUIFactory.CreateCircleSprite((int)scaledMinimapSize, Color.black);
+                minimapMaskImage.sprite = MinimapUIFactory.CreateCircleSprite((int)scaledMinimapSize, Color.black, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapBorderFeather, featherInside:true);
+        }
+
+        // Resize border to remain slightly larger than mask
+        if (minimapBorderObject != null)
+        {
+            var borderRect = minimapBorderObject.GetComponent<RectTransform>();
+            var borderDiameter = scaledMinimapSize + (Constants.MinimapBorderThickness * 2f);
+            borderRect.sizeDelta = new Vector2(borderDiameter, borderDiameter);
+            if (regenerateMaskSprite && minimapBorderImage != null)
+            {
+                var borderColor = new Color(Constants.MinimapBorderR, Constants.MinimapBorderG, Constants.MinimapBorderB, Constants.MinimapBorderA);
+                minimapBorderImage.sprite = MinimapUIFactory.CreateCircleSprite((int)borderDiameter, borderColor, Constants.MinimapCircleResolutionMultiplier, Constants.MinimapBorderFeather, featherInside:false);
+            }
         }
 
         if (minimapContent?.MapContentObject == null) return;

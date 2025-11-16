@@ -33,6 +33,15 @@
         public const float DirectionIndicatorSize = 6f;  // Width/height of direction indicator
         public const float DirectionIndicatorDistance = 15f; // Distance from player marker center
         
+        // Minimap Border
+        public const float MinimapBorderThickness = 4f;  // Pixel thickness outward from mask circle
+        public const float MinimapBorderR = 0.13f;      // Dark grey border color (R)
+        public const float MinimapBorderG = 0.13f;      // Dark grey border color (G)
+        public const float MinimapBorderB = 0.13f;      // Dark grey border color (B)
+        public const float MinimapBorderA = 1f;         // Border alpha
+        public const int MinimapBorderFeather = 4;      // Feather width in pixels for anti-aliased edge
+        public const int MinimapCircleResolutionMultiplier = 2; // Resolution multiplier for smoother circle
+        
         // Map Grid
         public const int DefaultGridSize = 20;           // Grid divisions for map background
         
