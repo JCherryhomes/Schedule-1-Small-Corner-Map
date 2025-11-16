@@ -74,14 +74,24 @@ if (-not $Version) {
         if ($changelogContent -notmatch "## $Version") {
             Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Yellow
             Write-Host "⚠️  REMINDER: CHANGELOG.md does not appear to contain version $Version" -ForegroundColor Yellow
-            Write-Host "   Please update CHANGELOG.md with release notes before packaging!" -ForegroundColor Yellow
+            Write-Host "   Opening CHANGELOG.md for you to add release notes..." -ForegroundColor Yellow
             Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Yellow
             Write-Host ""
             
-            $response = Read-Host "Continue with packaging anyway? (y/N)"
-            if ($response -ne 'y' -and $response -ne 'Y') {
-                Write-Host "Packaging cancelled. Please update CHANGELOG.md and run again." -ForegroundColor Cyan
-                exit 0
+            # Open CHANGELOG.md in default editor
+            Start-Process -FilePath $changelogPath -Wait
+            
+            # Re-check if changelog was updated
+            $changelogContent = Get-Content $changelogPath -Raw
+            if ($changelogContent -notmatch "## $Version") {
+                Write-Host "⚠️  CHANGELOG.md still does not contain version $Version" -ForegroundColor Yellow
+                $response = Read-Host "Continue with packaging anyway? (y/N)"
+                if ($response -ne 'y' -and $response -ne 'Y') {
+                    Write-Host "Packaging cancelled. Please update CHANGELOG.md and run again." -ForegroundColor Cyan
+                    exit 0
+                }
+            } else {
+                Write-Host "✓ CHANGELOG.md has been updated with version $Version" -ForegroundColor Green
             }
             Write-Host ""
         }
