@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Import local developer settings if they exist (not committed to source control) -->
+  <Import Project="Local.props" Condition="Exists('Local.props')" />
+
   <PropertyGroup>
+    <!-- Game installation paths - must be configured in Local.props -->
+    <!-- MonoGamePath and IL2CPPGamePath should contain full paths to game folders -->
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
@@ -19,86 +24,86 @@
 
   <ItemGroup Condition="'$(Configuration)' == 'Mono'">
     <Reference Include="0Harmony">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net6\0Harmony.dll</HintPath>
+      <HintPath>$(MonoGamePath)\MelonLoader\net6\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="FishNet.Runtime">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\FishNet.Runtime.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\FishNet.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppInterop.Common">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
+      <HintPath>$(MonoGamePath)\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <HintPath>$(MonoGamePath)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\mscorlib.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\mscorlib.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
     <Reference Include="S1API">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Mods\S1API.Mono.MelonLoader.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Mods\S1API.Mono.MelonLoader.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
 
   <ItemGroup Condition="'$(Configuration)' == 'IL2CPP'">
     <Reference Include="0Harmony">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\net6\0Harmony.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\net6\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppFishNet.Runtime">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\Il2CppFishNet.Runtime.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\Il2CppFishNet.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppInterop.Common">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Il2Cppmscorlib">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
     </Reference>
     <Reference Include="S1API">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\Mods\S1API.Il2Cpp.MelonLoader.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\Mods\S1API.Il2Cpp.MelonLoader.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\Schedule I - IL2CPP\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -149,7 +154,7 @@
   </PropertyGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Condition="$(Configuration) == 'Mono'" Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I\Mods&quot;" />
-    <Exec Condition="$(Configuration) == 'IL2CPP'" Command="COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I - IL2CPP\Mods&quot;" />
+    <Exec Condition="$(Configuration) == 'Mono'" Command="COPY &quot;$(TargetPath)&quot; &quot;$(MonoGamePath)\Mods&quot;" />
+    <Exec Condition="$(Configuration) == 'IL2CPP'" Command="COPY &quot;$(TargetPath)&quot; &quot;$(IL2CPPGamePath)\Mods&quot;" />
   </Target>
 </Project>
