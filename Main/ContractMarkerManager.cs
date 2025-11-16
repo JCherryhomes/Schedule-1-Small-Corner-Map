@@ -58,13 +58,13 @@ namespace Small_Corner_Map.Main
                 0f);
         }
 
-        internal static void RemoveContractPoIMarkers(Contract contract)
+        internal void RemoveContractPoIMarkers(Contract contract)
         {
             var name = ContractPoIMarkerKey + "_" + contract.GUID;
             MinimapPoIHelper.RemoveMarker(name);
         }
 
-        internal static void RemoveAllContractPoIMarkers()
+        internal void RemoveAllContractPoIMarkers()
         {
             MinimapPoIHelper.RemoveAllByKey(ContractPoIMarkerKey);
         }
