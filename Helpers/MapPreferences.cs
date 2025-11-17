@@ -56,7 +56,6 @@ namespace Small_Corner_Map.Helpers
         {
             if (!MelonPreferences.HasEntry(CategoryIdentifier, MinimapEnabledKey))
             {
-                MelonLogger.Msg("MapPreferences: No existing preferences found, creating default entries.");
                 CreateDefaultEntries();
             }
             else
@@ -69,7 +68,6 @@ namespace Small_Corner_Map.Helpers
                 TrackProperties = MelonPreferences.GetEntry<bool>(CategoryIdentifier, PropertyTrackingKey);
                 TrackVehicles = MelonPreferences.GetEntry<bool>(CategoryIdentifier, VehicleTrackingKey);
                 ShowCompass = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ShowCompassKey);
-                MelonLogger.Msg("MapPreferences: Loaded existing preferences.");
             }
         }
 

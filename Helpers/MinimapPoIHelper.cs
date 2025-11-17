@@ -107,15 +107,6 @@ namespace Small_Corner_Map.Helpers
 
         public static bool MarkerExists(string name, string baseKey = "StaticMarker_White")
         {
-            MelonLogger.Msg("MinimapPoIHelper: Checking for markers with base key: " + baseKey);
-            foreach (var (key, value) in MarkerStore.ToList())
-            {
-                if (key.StartsWith(baseKey))
-                {
-                    MelonLogger.Msg("MinimapPoIHelper: Objects matching base key: " + key);
-                }
-            }
-            MelonLogger.Msg("Looking for key: " + name);
             return MarkerStore.ContainsKey(name);
         }
 

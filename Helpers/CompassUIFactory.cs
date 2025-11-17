@@ -33,7 +33,6 @@ namespace Small_Corner_Map.Helpers
         internal GameObject CloneSourceMarker(GameObject source)
         {
             if (source == null) return null;
-            MelonLogger.Msg($"[CompassUIFactory] Cloning source marker '{source.name}'");
             var clone = UnityEngine.Object.Instantiate(source);
             foreach (var img in clone.GetComponentsInChildren<Image>(true))
             {
@@ -80,9 +79,6 @@ namespace Small_Corner_Map.Helpers
                 live = OwnedVehiclesManager.VehicleIconPrototype;
             var proto = live != null ? CloneSourceMarker(live) : CreateFallback(category);
             prototypeCache[category] = proto;
-            MelonLogger.Msg(live != null
-                ? $"[CompassUIFactory] Prototype acquired from live marker '{markerName}' for category {category}."
-                : $"[CompassUIFactory] Fallback prototype created for category {category} (marker '{markerName}').");
             return proto;
         }
 
@@ -119,7 +115,6 @@ namespace Small_Corner_Map.Helpers
                 var localMax = Mathf.Max(w, h);
                 bool spriteCandidate = HasSprite(r) && !IsBackgroundOrOverlay(r) && localMax > 0.01f;
                 if (spriteCandidate) candidateDims.Add(localMax);
-                MelonLogger.Msg($"[CompassUIFactory] Child '{r.gameObject.name}' size=({size.x},{size.y}) scaledMax={localMax:F2} sprite={(spriteCandidate ? "Y" : "N")}");
             }
             if (candidateDims.Count > 0)
             {
@@ -128,10 +123,8 @@ namespace Small_Corner_Map.Helpers
                 if (chosen < unifiedSize * 0.25f)
                 {
                     var largest = candidateDims[^1];
-                    MelonLogger.Msg($"[CompassUIFactory] Median {chosen:F2} too small; using largest candidate {largest:F2}.");
                     chosen = largest;
                 }
-                MelonLogger.Msg($"[CompassUIFactory] Using median sprite dimension {chosen:F2} (candidates={candidateDims.Count}) for '{icon.name}'");
                 return new DimensionInfo { Dim = chosen, HadSprite = true };
             }
             // Fallback no sprite candidates
@@ -144,7 +137,6 @@ namespace Small_Corner_Map.Helpers
                 var localMax = Mathf.Max(w, h);
                 if (localMax > maxDim) maxDim = localMax;
             }
-            MelonLogger.Msg($"[CompassUIFactory] No sprite candidates; fallback maxDim={maxDim:F2} for '{icon.name}'");
             return new DimensionInfo { Dim = maxDim, HadSprite = false };
         }
 
@@ -172,7 +164,6 @@ namespace Small_Corner_Map.Helpers
                 CompassMarkerCategory.Contract => 0.85f, // slightly smaller
                 _ => 1.00f
             };
-            MelonLogger.Msg($"[CompassUIFactory] Normalizing '{iconRoot.name}' cat={category} effectiveDim={effectiveDim:F2} target={targetSize:F2} baseScale={baseScaleFactor:F3} spriteBoost={spriteBoost:F2} spriteCandidates={info.HadSprite}");
             iconRoot.transform.localScale = Vector3.one;
             foreach (var r in iconRoot.GetComponentsInChildren<RectTransform>(true))
             {
@@ -192,7 +183,6 @@ namespace Small_Corner_Map.Helpers
             {
                 img.preserveAspect = true; img.raycastTarget = false;
             }
-            MelonLogger.Msg($"[CompassUIFactory] Post-normalization sizeDelta=({rootRect.sizeDelta.x},{rootRect.sizeDelta.y}) baseScale={baseScaleFactor:F3} appliedBoost={spriteBoost:F2}");
         }
     }
 }

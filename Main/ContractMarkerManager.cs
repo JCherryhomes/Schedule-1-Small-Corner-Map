@@ -73,8 +73,6 @@ namespace Small_Corner_Map.Main
         internal void AddAllContractPoIMarkers()
         {
             var contractContainer = QuestManager.Instance.ContractContainer;
-            MelonLogger.Msg("Adding ContractPoIMarkers");
-            MelonLogger.Msg("Contract Container Child Count: " + contractContainer.childCount);
             for (var i = 0; i < contractContainer.childCount; i++)
             {
                 var contractTransform = contractContainer.GetChild(i);
