@@ -107,15 +107,6 @@ namespace Small_Corner_Map.Helpers
 
         public static bool MarkerExists(string name, string baseKey = "StaticMarker_White")
         {
-            MelonLogger.Msg("MinimapPoIHelper: Checking for markers with base key: " + baseKey);
-            foreach (var (key, value) in MarkerStore.ToList())
-            {
-                if (key.StartsWith(baseKey))
-                {
-                    MelonLogger.Msg("MinimapPoIHelper: Objects matching base key: " + key);
-                }
-            }
-            MelonLogger.Msg("Looking for key: " + name);
             return MarkerStore.ContainsKey(name);
         }
 
@@ -193,6 +184,22 @@ namespace Small_Corner_Map.Helpers
             MarkerStore.Remove(oldName);
             MarkerStore[newName] = entry;
             return true;
+        }
+
+        public static IEnumerable<(string Name, Vector3 WorldPos)> EnumerateWorldPositions()
+        {
+            foreach (var kv in MarkerStore)
+            {
+                yield return (kv.Key, kv.Value.WorldPos);
+            }
+        }
+
+        public static IEnumerable<(string Name, Vector3 WorldPos, float XOffset, float ZOffset)> EnumerateWorldPositionsWithOffsets()
+        {
+            foreach (var kv in MarkerStore)
+            {
+                yield return (kv.Key, kv.Value.WorldPos, kv.Value.XOffset, kv.Value.ZOffset);
+            }
         }
     }
 }

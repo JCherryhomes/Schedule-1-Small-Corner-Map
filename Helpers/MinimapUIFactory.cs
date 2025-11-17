@@ -133,7 +133,6 @@ namespace Small_Corner_Map.Helpers
 
             var radius = texSize / 2f;
             var center = new Vector2(radius, radius);
-            var maxDist = radius;
             var effectiveFeather = Mathf.Max(0, featherWidth * resolutionMultiplier);
 
             for (var y = 0; y < texSize; y++)
@@ -141,37 +140,35 @@ namespace Small_Corner_Map.Helpers
                 for (var x = 0; x < texSize; x++)
                 {
                     var dist = Vector2.Distance(new Vector2(x, y), center);
-                    float alpha = 0f;
+                    var alpha = 0f;
                     if (featherInside)
                     {
                         // Inside feather: fade alpha near the inner edge of the circle
-                        if (dist <= maxDist)
+                        if (!(dist <= radius)) continue;
+                        alpha = color.a;
+                        if (effectiveFeather > 0)
                         {
-                            alpha = color.a;
-                            if (effectiveFeather > 0)
+                            var edgeDist = radius - dist;
+                            if (edgeDist <= effectiveFeather)
                             {
-                                var edgeDist = maxDist - dist;
-                                if (edgeDist <= effectiveFeather)
-                                {
-                                    alpha *= Mathf.Clamp01(edgeDist / effectiveFeather);
-                                }
+                                alpha *= Mathf.Clamp01(edgeDist / effectiveFeather);
                             }
-                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
                         }
+                        texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
                     }
                     else
                     {
                         // Outward feather: fade alpha outside the edge of the circle
-                        if (dist <= maxDist)
+                        if (dist <= radius)
                         {
                             // Solid inner region
                             alpha = color.a;
                             texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
                         }
-                        else if (dist > maxDist && dist <= maxDist + effectiveFeather)
+                        else if (dist > radius && dist <= radius + effectiveFeather)
                         {
                             // Fade outwards from the edge
-                            var edgeDist = dist - maxDist;
+                            var edgeDist = dist - radius;
                             alpha = color.a * Mathf.Clamp01(1f - (edgeDist / effectiveFeather));
                             texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
                         }
@@ -231,6 +228,159 @@ namespace Small_Corner_Map.Helpers
             image.color = indicatorColor;
 
             return directionIndicator;
+        }
+
+        /// <summary>
+        /// Creates the compass UI elements (letters and ticks) attached to the minimap frame.
+        /// </summary>
+        /// <param name="frameObject">Parent GameObject (minimap frame) to attach the compass to.</param>
+        /// <param name="minimapDiameter">Diameter of the minimap area.</param>
+        /// <returns>The created compass root GameObject, its RectTransform, and arrays of letter and tick RectTransforms and Images.</returns>
+        public static (GameObject root, RectTransform rootRect, RectTransform[] letters, Image[] ticks) CreateCompass(GameObject frameObject, float minimapDiameter)
+        {
+            var root = new GameObject("CompassRoot");
+            root.transform.SetParent(frameObject.transform, false);
+            var rootRect = root.AddComponent<RectTransform>();
+            rootRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rootRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rootRect.pivot = new Vector2(0.5f, 0.5f);
+            rootRect.anchoredPosition = Vector2.zero;
+            
+            // Determine ring radius (outer) based on minimap diameter
+            var letterColor = new Color(
+                Constants.CompassLetterColorR,
+                Constants.CompassLetterColorG,
+                Constants.CompassLetterColorB,
+                Constants.CompassLetterColorA);
+            var tickColor = new Color(
+                Constants.CompassTickColorR,
+                Constants.CompassTickColorG,
+                Constants.CompassTickColorB,
+                Constants.CompassTickColorA);
+            
+            var maskRadius = minimapDiameter / 2f;
+            const float tickHalfHeightMajor = (Constants.CompassTickHeight * Constants.CompassTickMajorScale) / 2f;
+            const float ringThickness = tickHalfHeightMajor + Constants.CompassRingExtraThickness + Constants.CompassRingPadding;
+            var ringRadius = maskRadius + ringThickness;
+            rootRect.sizeDelta = new Vector2(ringRadius * 2f, ringRadius * 2f);
+            // Remove inner ring; only outer ring retained for cleaner look
+            // Outer ring (covers letter radius)
+            var borderColor = new Color(
+                Constants.CompassBorderColorR,
+                Constants.CompassBorderColorG,
+                Constants.CompassBorderColorB,
+                Constants.CompassBorderColorA);
+            var outerRingObj = new GameObject("CompassOuterRing");
+            outerRingObj.transform.SetParent(root.transform, false);
+            var outerRect = outerRingObj.AddComponent<RectTransform>();
+            outerRect.anchorMin = outerRect.anchorMax = new Vector2(0.5f,0.5f);
+            outerRect.pivot = new Vector2(0.5f,0.5f);
+            var outerDiameter = (ringRadius + Constants.CompassLetterRadialOffset + Constants.CompassBorderThickness) * 2f;
+            outerRect.sizeDelta = new Vector2(outerDiameter, outerDiameter);
+            var outerImg = outerRingObj.AddComponent<Image>();
+            outerImg.sprite = CreateHollowRingSprite((int)outerDiameter, Constants.CompassBorderThickness, borderColor);
+            outerImg.type = Image.Type.Simple;
+            outerImg.raycastTarget = false;
+            outerRingObj.transform.SetAsFirstSibling();
+            
+            var bgObj = new GameObject("CompassBackground");
+            bgObj.transform.SetParent(root.transform, false);
+            var bgRect = bgObj.AddComponent<RectTransform>();
+            bgRect.anchorMin = bgRect.anchorMax = new Vector2(0.5f,0.5f);
+            bgRect.pivot = new Vector2(0.5f,0.5f);
+            var bgDiameter = (ringRadius + Constants.CompassLetterRadialOffset) * 2f;
+            bgRect.sizeDelta = new Vector2(bgDiameter, bgDiameter);
+            var bgImg = bgObj.AddComponent<Image>();
+            var bgColor = new Color(
+                Constants.CompassBackgroundColorR,
+                Constants.CompassBackgroundColorG,
+                Constants.CompassBackgroundColorB,
+                Constants.CompassBackgroundColorA);
+            bgImg.sprite = CreateCircleSprite((int)bgDiameter, bgColor, 2, 4, true);
+            bgImg.type = Image.Type.Simple;
+            bgImg.raycastTarget = false;
+            bgObj.transform.SetAsFirstSibling();
+            
+            // Create letters
+            var letters = new RectTransform[4];
+            string[] letterTexts = ["N", "E", "S", "W"];
+            float[] letterAnglesDeg = [0f, 90f, 180f, 270f]; // Up = North (0°)
+            for (var i = 0; i < letters.Length; i++)
+            {
+                var letterObj = new GameObject("CompassLetter_" + letterTexts[i]);
+                letterObj.transform.SetParent(root.transform, false);
+                var rect = letterObj.AddComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                var text = letterObj.AddComponent<Text>();
+                text.text = letterTexts[i];
+                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                text.fontSize = Constants.CompassLetterFontSize;
+                text.alignment = TextAnchor.MiddleCenter;
+                text.color = letterColor;
+                // Position letter slightly beyond tick radius
+                var angleRad = Mathf.Deg2Rad * (90f - letterAnglesDeg[i]);
+                var letterDistance = ringRadius + Constants.CompassLetterRadialOffset; // push letters slightly outward
+                rect.anchoredPosition = new Vector2(
+                    letterDistance * Mathf.Cos(angleRad),
+                    letterDistance * Mathf.Sin(angleRad));
+                letters[i] = rect;
+            }
+            
+            // Create ticks (exclude letter objects but include cardinal positions as larger ticks)
+            var ticks = new Image[Constants.CompassTickCount];
+            for (var t = 0; t < Constants.CompassTickCount; t++)
+            {
+                var angleDeg = (360f / Constants.CompassTickCount) * t;
+                var isCardinal = angleDeg % 90f == 0f;
+                var tickObj = new GameObject("CompassTick_" + t);
+                tickObj.transform.SetParent(root.transform, false);
+                var rect = tickObj.AddComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                var scale = isCardinal ? Constants.CompassTickMajorScale : Constants.CompassTickMinorScale;
+                rect.sizeDelta = new Vector2(Constants.CompassTickWidth, Constants.CompassTickHeight * scale);
+                var img = tickObj.AddComponent<Image>();
+                img.color = tickColor;
+                // Position tick at ring radius minus half its height so ticks lie on ring thickness
+                var angleRad = Mathf.Deg2Rad * (90f - angleDeg);
+                var tickDistance = maskRadius + Constants.CompassRingPadding + (rect.sizeDelta.y / 2f) - Constants.CompassTickInset;
+                rect.anchoredPosition = new Vector2(
+                    tickDistance * Mathf.Cos(angleRad),
+                    tickDistance * Mathf.Sin(angleRad));
+                rect.localRotation = Quaternion.Euler(0f, 0f, -angleDeg);
+                ticks[t] = img;
+            }
+            // Place compass root behind mask (but above frame border) by moving it earlier in sibling order
+            root.transform.SetSiblingIndex(frameObject.transform.GetSiblingIndex());
+            return (root, rootRect, letters, ticks);
+        }
+
+        private static Sprite CreateHollowRingSprite(int diameter, int thickness, Color color)
+        {
+            var texSize = diameter;
+            var texture = new Texture2D(texSize, texSize, TextureFormat.ARGB32, false)
+            {
+                filterMode = FilterMode.Bilinear
+            };
+            var transparent = new Color(0,0,0,0);
+            for (int y=0;y<texSize;y++)
+                for (int x=0;x<texSize;x++)
+                    texture.SetPixel(x,y,transparent);
+            var radius = texSize/2f;
+            for (int y=0;y<texSize;y++)
+            {
+                for (int x=0;x<texSize;x++)
+                {
+                    var dist = Vector2.Distance(new Vector2(x,y), new Vector2(radius,radius));
+                    if (dist <= radius && dist >= radius - thickness)
+                        texture.SetPixel(x,y,color);
+                }
+            }
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0,0,texSize,texSize), new Vector2(0.5f,0.5f), 1);
         }
     }
 }

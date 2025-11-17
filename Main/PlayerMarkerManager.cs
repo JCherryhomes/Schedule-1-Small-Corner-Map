@@ -34,7 +34,6 @@ namespace Small_Corner_Map.Main
         {
             if (Marker == null)
             {
-                MelonLoader.MelonLogger.Warning("PlayerMarkerManager: Cannot replace icon, Marker is null!");
                 return;
             }
             

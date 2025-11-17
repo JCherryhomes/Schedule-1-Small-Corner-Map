@@ -42,7 +42,6 @@ internal class MinimapMarkerCoordinator
     }
     public void OnContractTrackingChanged(bool previous, bool current)
     {
-        MelonLogger.Msg("MinimapUI: OnContractTrackingChanged " + current);
         if (contractMarkerManager == null) return;
         if (current)
         {
@@ -55,16 +54,11 @@ internal class MinimapMarkerCoordinator
     }
     public void OnPropertyTrackingChanged(bool previous, bool current)
     {
-        MelonLogger.Msg("MinimapUI: OnPropertyTrackingChanged " + current);
         if (current)
         {
             if (cachedMapContent != null)
             {
                 PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
-            }
-            else
-            {
-                MelonLogger.Warning("MinimapUI: Cannot add property markers, cachedMapContent is null");
             }
         }
         else

@@ -32,6 +32,7 @@ public class MinimapUI
     private MinimapTimeDisplay minimapTimeDisplay;
     private ContractMarkerManager contractMarkerManager;
     private OwnedVehiclesManager ownedVehiclesManager;
+    private CompassManager compassManager;
 
     // --- UI GameObjects ---
     private GameObject minimapObject;
@@ -55,6 +56,7 @@ public class MinimapUI
         mapPreferences.TrackContracts.OnEntryValueChanged.Subscribe(OnContractTrackingChanged);
         mapPreferences.TrackProperties.OnEntryValueChanged.Subscribe(OnPropertyTrackingChanged);
         mapPreferences.TrackVehicles.OnEntryValueChanged.Subscribe(OnVehicleTrackingChanged);
+        mapPreferences.ShowCompass.OnEntryValueChanged.Subscribe(OnShowCompassChanged);
     }
     
     private void OnIncreaseSizeChanged(bool oldValue, bool newValue)
@@ -85,6 +87,7 @@ public class MinimapUI
         if (minimapObject == null) return;
         UnityEngine.Object.Destroy(minimapObject);
         minimapObject = null;
+        compassManager?.Dispose();
     }
 
     /// <summary>
@@ -132,8 +135,15 @@ public class MinimapUI
         minimapTimeDisplay = new MinimapTimeDisplay();
         minimapTimeDisplay.Create(frameRect, mapPreferences.ShowGameTime);
         
+        // Compass Manager & UI
+        var maskDiameterWithOffset = sizeManager.ScaledMinimapSize + Constants.MinimapMaskDiameterOffset;
+        compassManager = new CompassManager(mapPreferences);
+        compassManager.Create(frameObject, maskDiameterWithOffset);
+        compassManager.Subscribe();
+        
         // Set UI references in size manager
         sizeManager.SetUIReferences(frameRect, maskObject, borderObj, maskImage, borderImg, minimapContent);
+        sizeManager.SetCompassManager(compassManager);
         
         // Initialize scene integration helper
         sceneIntegration = new MinimapSceneIntegration(minimapContent, playerMarkerManager, mapPreferences);
@@ -159,6 +169,7 @@ public class MinimapUI
         }
 
         minimapTimeDisplay?.SetTimeBarEnabled(TimeBarEnabled);
+        compassManager?.SetVisible(MinimapEnabled && mapPreferences.ShowCompass.Value);
     }
 
     private void OnTimeBarEnableChanged(bool oldValue, bool newValue)
@@ -167,6 +178,11 @@ public class MinimapUI
         {
             minimapTimeDisplay?.SetTimeBarEnabled(TimeBarEnabled);
         }
+    }
+
+    private void OnShowCompassChanged(bool oldValue, bool newValue)
+    {
+        compassManager?.SetVisible(MinimapEnabled && newValue);
     }
 
     /// <summary>
@@ -283,9 +299,10 @@ public class MinimapUI
                 contentRect.anchoredPosition,
                 heightVector,
                 Time.deltaTime * Constants.MapContentLerpSpeed);
-
-            // Update direction indicator based on tracked transform (player or vehicle)
             playerMarkerManager?.UpdateDirectionIndicator(trackTransform);
+            compassManager?.SetWorldScale(worldScale);
+            compassManager?.UpdateTargets(playerObject.PlayerBasePosition);
+            compassManager?.SyncFromPoIMarkers(playerObject.PlayerBasePosition, worldScale);
         }
 
         minimapTimeDisplay.UpdateMinimapTime();

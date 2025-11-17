@@ -13,8 +13,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
-    <AssemblyVersion>2.4.0.0</AssemblyVersion>
-    <FileVersion>2.4.0.0</FileVersion>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
@@ -120,11 +120,13 @@
 
   <ItemGroup>
     <Compile Include="Core.cs" />
+    <Compile Include="Helpers\CompassUIFactory.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
     <Compile Include="Helpers\MinimapPoIHelper.cs" />
     <Compile Include="Helpers\MinimapUIFactory.cs" />
     <Compile Include="Helpers\Utils.cs" />
+    <Compile Include="Main\CompassManager.cs" />
     <Compile Include="Main\ContractMarkerManager.cs" />
     <Compile Include="Main\MinimapContent.cs" />
     <Compile Include="Main\MinimapMarkerCoordinator.cs" />

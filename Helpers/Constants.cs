@@ -3,7 +3,7 @@
     internal static class Constants
     {
         // Mod Info
-        public const string ModVersion = "2.4.0";
+        public const string ModVersion = "3.0.0";
         public const string ModName = "Small Corner Map";
         public const string ModAuthor = "winzaar";
         public const string GameName = "Schedule I";
@@ -59,7 +59,7 @@
         // Time Display
         public const float TimeDisplayWidth = 100f;      // Width of time display container
         public const float TimeDisplayHeight = 50f;      // Height of time display container
-        public const float TimeDisplayOffsetY = 20f;     // Vertical offset from minimap
+        public const float TimeDisplayOffsetY = -20f;    // Vertical offset from minimap bottom
         
         // Colors (RGBA)
         public const float TimeBackgroundR = 0.2f;       // Time display background red
@@ -85,5 +85,44 @@
         
         // Vehicle Marker Settings
         public const float VehicleMarkerFadeDuration = 0.15f; // Seconds to fade vehicle markers in/out
+        
+        // Compass Settings
+        public const int CompassTickCount = 16; // Total ticks (including cardinal positions)
+        public const float CompassRingPadding = 6f; // Padding outside minimap mask to start compass ring
+        public const int CompassLetterFontSize = 12; // Font size for compass letters
+        public const float CompassLetterColorR = 1f;
+        public const float CompassLetterColorG = 1f;
+        public const float CompassLetterColorB = 1f;
+        public const float CompassLetterColorA = 0.9f;
+        public const float CompassTickColorR = 1f;
+        public const float CompassTickColorG = 1f;
+        public const float CompassTickColorB = 1f;
+        public const float CompassTickColorA = 0.75f;
+        public const float CompassTickMajorScale = 1f; // Scale multiplier for cardinal ticks
+        public const float CompassTickMinorScale = 0.6f; // Scale multiplier for non-cardinal ticks
+        public const float CompassTickWidth = 2f;
+        public const float CompassTickHeight = 8f; // Reduced base height to avoid overlap
+        public const float CompassRingExtraThickness = 2f; // Extra thickness beyond tallest element
+        public const string CompassPreferenceKey = "ShowCompass"; // Preference key
+        public const float CompassLetterRadialOffset = 4f; // Additional outward offset for letters beyond ticks
+        public const float CompassTickInset = 2f; // Inset ticks slightly inward relative to their half height
+        public const int CompassBorderThickness = 2; // Pixel thickness of compass inner/outer border lines
+        public const float CompassBorderColorR = 0.13f; // Dark grey
+        public const float CompassBorderColorG = 0.13f;
+        public const float CompassBorderColorB = 0.13f;
+        public const float CompassBorderColorA = 0.9f; // Less translucent for clarity
+        
+        // Compass Vehicle Marker Settings
+        public const float CompassVisibilityBuffer = 4f; // Extra pixels beyond map radius before showing on compass
+        
+        // Compass Background Color
+        public const float CompassBackgroundColorR = 0.8f; // Light grey
+        public const float CompassBackgroundColorG = 0.8f;
+        public const float CompassBackgroundColorB = 0.8f;
+        public const float CompassBackgroundColorA = 0.3f; // Slight transparency
+
+        // Compass Icon Sizes
+        public const float CompassDefaultIconSize = 20f; // Default size for vehicle/property/other compass icons
+        public const float CompassContractIconSize = 20f; // Contract marker size
     }
 }
