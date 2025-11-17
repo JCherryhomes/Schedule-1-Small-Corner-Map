@@ -1,7 +1,7 @@
 ﻿{
     "name":  "SmallCornerMap",
     "description":  "Adds a compact corner minimap with contract/property markers, player tracking, and time display for Schedule I.",
-    "version_number":  "2.4.0",
+    "version_number":  "3.0.0",
     "dependencies":  [
                          "LavaGang-MelonLoader-0.7.0",
                          "ifBars-S1API_Forked-2.6.1"

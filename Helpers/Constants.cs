@@ -3,7 +3,7 @@
     internal static class Constants
     {
         // Mod Info
-        public const string ModVersion = "2.4.0";
+        public const string ModVersion = "3.0.0";
         public const string ModName = "Small Corner Map";
         public const string ModAuthor = "winzaar";
         public const string GameName = "Schedule I";
