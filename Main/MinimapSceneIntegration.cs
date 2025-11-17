@@ -42,7 +42,7 @@ internal class MinimapSceneIntegration
         }
         LogIntegrationResults(mapAppObject, viewportObject);
         if (viewportObject != null) ApplyMapSprite(viewportObject);
-        CachedMapContent = GameObject.Find("GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content");
+        CachedMapContent = GameObject.Find(Constants.MapAppPath);
         if (CachedMapContent != null)
         {
             ReplacePlayerMarkerIcon();

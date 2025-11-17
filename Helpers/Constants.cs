@@ -59,7 +59,7 @@
         // Time Display
         public const float TimeDisplayWidth = 100f;      // Width of time display container
         public const float TimeDisplayHeight = 50f;      // Height of time display container
-        public const float TimeDisplayOffsetY = 20f;     // Vertical offset from minimap
+        public const float TimeDisplayOffsetY = -20f;    // Vertical offset from minimap bottom
         
         // Colors (RGBA)
         public const float TimeBackgroundR = 0.2f;       // Time display background red
@@ -111,5 +111,18 @@
         public const float CompassBorderColorG = 0.13f;
         public const float CompassBorderColorB = 0.13f;
         public const float CompassBorderColorA = 0.9f; // Less translucent for clarity
+        
+        // Compass Vehicle Marker Settings
+        public const float CompassVisibilityBuffer = 4f; // Extra pixels beyond map radius before showing on compass
+        
+        // Compass Background Color
+        public const float CompassBackgroundColorR = 0.8f; // Light grey
+        public const float CompassBackgroundColorG = 0.8f;
+        public const float CompassBackgroundColorB = 0.8f;
+        public const float CompassBackgroundColorA = 0.3f; // Slight transparency
+
+        // Compass Icon Sizes
+        public const float CompassDefaultIconSize = 20f; // Default size for vehicle/property/other compass icons
+        public const float CompassContractIconSize = 20f; // Contract marker size
     }
 }

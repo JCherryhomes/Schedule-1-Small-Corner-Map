@@ -136,8 +136,9 @@ public class MinimapUI
         minimapTimeDisplay.Create(frameRect, mapPreferences.ShowGameTime);
         
         // Compass Manager & UI
+        var maskDiameterWithOffset = sizeManager.ScaledMinimapSize + Constants.MinimapMaskDiameterOffset;
         compassManager = new CompassManager(mapPreferences);
-        compassManager.Create(frameObject, sizeManager.ScaledMinimapSize);
+        compassManager.Create(frameObject, maskDiameterWithOffset);
         compassManager.Subscribe();
         
         // Set UI references in size manager
@@ -298,9 +299,10 @@ public class MinimapUI
                 contentRect.anchoredPosition,
                 heightVector,
                 Time.deltaTime * Constants.MapContentLerpSpeed);
-            // Compass remains static (map does not rotate)
-            // Update direction indicator based on tracked transform (player or vehicle)
             playerMarkerManager?.UpdateDirectionIndicator(trackTransform);
+            compassManager?.SetWorldScale(worldScale);
+            compassManager?.UpdateTargets(playerObject.PlayerBasePosition);
+            compassManager?.SyncFromPoIMarkers(playerObject.PlayerBasePosition, worldScale);
         }
 
         minimapTimeDisplay.UpdateMinimapTime();

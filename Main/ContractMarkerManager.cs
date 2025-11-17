@@ -16,6 +16,7 @@ namespace Small_Corner_Map.Main
     public class ContractMarkerManager
     {
         private GameObject contractPoIIconPrefab;
+        internal GameObject ContractIconPrototype => contractPoIIconPrefab;
         private readonly float markerXAdjustment;
         private readonly GameObject mapContentObject;
         private readonly MapPreferences mapPreferences;
@@ -87,6 +88,7 @@ namespace Small_Corner_Map.Main
 
         private void CacheContractPoIIcon(Contract contract)
         {
+            if (contract == null || contract.IconPrefab == null) return;
             contractPoIIconPrefab = contract.IconPrefab.gameObject;
         }
     }

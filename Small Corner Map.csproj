@@ -120,6 +120,7 @@
 
   <ItemGroup>
     <Compile Include="Core.cs" />
+    <Compile Include="Helpers\CompassUIFactory.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
     <Compile Include="Helpers\MinimapPoIHelper.cs" />

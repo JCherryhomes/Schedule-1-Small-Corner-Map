@@ -194,5 +194,21 @@ namespace Small_Corner_Map.Helpers
             MarkerStore[newName] = entry;
             return true;
         }
+
+        public static IEnumerable<(string Name, Vector3 WorldPos)> EnumerateWorldPositions()
+        {
+            foreach (var kv in MarkerStore)
+            {
+                yield return (kv.Key, kv.Value.WorldPos);
+            }
+        }
+
+        public static IEnumerable<(string Name, Vector3 WorldPos, float XOffset, float ZOffset)> EnumerateWorldPositionsWithOffsets()
+        {
+            foreach (var kv in MarkerStore)
+            {
+                yield return (kv.Key, kv.Value.WorldPos, kv.Value.XOffset, kv.Value.ZOffset);
+            }
+        }
     }
 }

@@ -21,6 +21,7 @@ public class OwnedVehiclesManager
     private MapPreferences MapPreferences { get; }
     
     internal static RectTransform IconContainer { get; private set; }
+    internal static GameObject VehicleIconPrototype => IconContainer != null ? IconContainer.gameObject : null;
     
     private readonly Dictionary<string, object> activeFades = new();
     private readonly Dictionary<int,string> vehicleInstanceToMarkerKey = new(); // instanceID -> current marker key

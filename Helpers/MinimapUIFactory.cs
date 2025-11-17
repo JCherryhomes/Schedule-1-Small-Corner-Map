@@ -263,26 +263,13 @@ namespace Small_Corner_Map.Helpers
             const float ringThickness = tickHalfHeightMajor + Constants.CompassRingExtraThickness + Constants.CompassRingPadding;
             var ringRadius = maskRadius + ringThickness;
             rootRect.sizeDelta = new Vector2(ringRadius * 2f, ringRadius * 2f);
-            // Create inner/outer border rings
+            // Remove inner ring; only outer ring retained for cleaner look
+            // Outer ring (covers letter radius)
             var borderColor = new Color(
                 Constants.CompassBorderColorR,
                 Constants.CompassBorderColorG,
                 Constants.CompassBorderColorB,
                 Constants.CompassBorderColorA);
-            // Inner ring (just outside mask)
-            var innerRingObj = new GameObject("CompassInnerRing");
-            innerRingObj.transform.SetParent(root.transform, false);
-            var innerRect = innerRingObj.AddComponent<RectTransform>();
-            innerRect.anchorMin = innerRect.anchorMax = new Vector2(0.5f,0.5f);
-            innerRect.pivot = new Vector2(0.5f,0.5f);
-            var innerDiameter = (maskRadius + Constants.CompassRingPadding - Constants.CompassTickInset) * 2f;
-            innerRect.sizeDelta = new Vector2(innerDiameter, innerDiameter);
-            var innerImg = innerRingObj.AddComponent<Image>();
-            // Inner ring hollow stroke
-            innerImg.sprite = CreateHollowRingSprite((int)innerDiameter, Constants.CompassBorderThickness, borderColor);
-            innerImg.type = Image.Type.Simple;
-            innerImg.raycastTarget = false;
-            // Outer ring (covers letter radius)
             var outerRingObj = new GameObject("CompassOuterRing");
             outerRingObj.transform.SetParent(root.transform, false);
             var outerRect = outerRingObj.AddComponent<RectTransform>();
@@ -291,13 +278,28 @@ namespace Small_Corner_Map.Helpers
             var outerDiameter = (ringRadius + Constants.CompassLetterRadialOffset + Constants.CompassBorderThickness) * 2f;
             outerRect.sizeDelta = new Vector2(outerDiameter, outerDiameter);
             var outerImg = outerRingObj.AddComponent<Image>();
-            // Outer ring hollow stroke
             outerImg.sprite = CreateHollowRingSprite((int)outerDiameter, Constants.CompassBorderThickness, borderColor);
             outerImg.type = Image.Type.Simple;
             outerImg.raycastTarget = false;
-            // Ensure rings render behind letters and ticks but above frame border
-            innerRingObj.transform.SetAsFirstSibling();
             outerRingObj.transform.SetAsFirstSibling();
+            
+            var bgObj = new GameObject("CompassBackground");
+            bgObj.transform.SetParent(root.transform, false);
+            var bgRect = bgObj.AddComponent<RectTransform>();
+            bgRect.anchorMin = bgRect.anchorMax = new Vector2(0.5f,0.5f);
+            bgRect.pivot = new Vector2(0.5f,0.5f);
+            var bgDiameter = (ringRadius + Constants.CompassLetterRadialOffset) * 2f;
+            bgRect.sizeDelta = new Vector2(bgDiameter, bgDiameter);
+            var bgImg = bgObj.AddComponent<Image>();
+            var bgColor = new Color(
+                Constants.CompassBackgroundColorR,
+                Constants.CompassBackgroundColorG,
+                Constants.CompassBackgroundColorB,
+                Constants.CompassBackgroundColorA);
+            bgImg.sprite = CreateCircleSprite((int)bgDiameter, bgColor, 2, 4, true);
+            bgImg.type = Image.Type.Simple;
+            bgImg.raycastTarget = false;
+            bgObj.transform.SetAsFirstSibling();
             
             // Create letters
             var letters = new RectTransform[4];

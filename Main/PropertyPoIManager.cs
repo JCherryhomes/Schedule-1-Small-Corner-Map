@@ -81,4 +81,6 @@ public static class PropertyPoIManager
         DisableAllMarkers();
         Initialize(minimapContent, cachedMapContent);
     }
+
+    public static GameObject PropertyIconPrototype => IconContainer != null ? IconContainer.gameObject : null;
 }
