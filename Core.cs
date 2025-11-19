@@ -2,6 +2,8 @@
 using Small_Corner_Map.Main;
 using MelonLoader;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
 
 #if Mono
 using ScheduleOne.Quests;
@@ -50,31 +52,6 @@ namespace Small_Corner_Map
             }
         }
 
-        [HarmonyPatch(typeof(Contract), "Start")]
-        class Patch_ContractStart
-        {
-            static void Postfix(Contract __instance)
-            {
-                var trackContracts = Instance.mapPreferences?.TrackContracts;
-                if (trackContracts == null || !trackContracts.Value) return;
-                if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
-
-                Instance.minimapUI?.OnContractAccepted(__instance);
-            }
-        }
-
-        [HarmonyPatch(typeof(Contract), "End")]
-        class Patch_ContractEnd
-        {
-            static void Postfix(Contract __instance)
-            {
-                var trackContracts = Instance.mapPreferences?.TrackContracts;
-                if (trackContracts == null || !trackContracts.Value) return;
-                if (__instance == null || !__instance.IsTracked) return;
-                Instance.minimapUI?.OnContractCompleted(__instance);
-            }
-        }
-
         [HarmonyPatch(typeof(VehicleManager), "SpawnAndReturnVehicle")]
         class Patch_VehicleManagerSpawnAndReturnVehicle
         {
@@ -84,6 +61,54 @@ namespace Small_Corner_Map
                 var trackVehicles = Instance.mapPreferences?.TrackVehicles;
                 if (trackVehicles == null || !trackVehicles.Value) return;
                 Instance.minimapUI?.OnOwnedVehiclesAdded();
+            }
+        }
+
+        // [HarmonyPatch(typeof(Quest), "Start")]
+        // class Patch_QuestStart
+        // {
+        //     static void Postfix(Quest __instance)
+        //     {
+        //         MelonLogger.Msg("Other Quest name and tracked: " + __instance.name + " : " + __instance.IsTracked);
+        //         MelonLogger.Msg("Quest State: " + __instance.State);
+        //         if (__instance is Contract || !__instance.IsTracked) return;
+        //
+        //         Instance.minimapUI.OnQuestStarted(__instance);
+        //     }
+        // }
+
+        [HarmonyPatch(typeof(Quest), "Start")]
+        class Patch_QuestStart
+        {
+            static void Postfix(Quest __instance)
+            {
+                if (!QuestManager.InstanceExists) return;
+                if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
+
+                Instance.minimapUI?.OnQuestStarted(__instance);
+            }
+        }
+
+        [HarmonyPatch(typeof(Quest), "End")]
+        class Patch_QuestEnd
+        {
+            static void Postfix(Quest __instance)
+            {
+                if (!QuestManager.InstanceExists) return;
+                if (__instance == null || !__instance.IsTracked) return;
+                Instance.minimapUI?.OnQuestCompleted(__instance);
+            }
+        }
+        
+        [HarmonyPatch(typeof(Contract), "Complete")]
+        class Patch_ContractEnd
+        {
+            static void Postfix(Contract __instance)
+            {
+                var trackContracts = Instance.mapPreferences?.TrackContracts;
+                if (trackContracts == null || !trackContracts.Value) return;
+                if (__instance == null || !__instance.IsTracked) return;
+                Instance.minimapUI?.OnContractCompleted(__instance);
             }
         }
     }

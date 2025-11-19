@@ -22,7 +22,7 @@ public class MinimapUI
 {
     // --- Core Components ---
     private readonly MapPreferences mapPreferences;
-    private MinimapSizeManager sizeManager;
+    private readonly MinimapSizeManager sizeManager;
     private MinimapSceneIntegration sceneIntegration;
     private MinimapMarkerCoordinator markerCoordinator;
     
@@ -30,7 +30,7 @@ public class MinimapUI
     private MinimapContent minimapContent;
     private PlayerMarkerManager playerMarkerManager;
     private MinimapTimeDisplay minimapTimeDisplay;
-    private ContractMarkerManager contractMarkerManager;
+    private QuestMarkerManager questMarkerManager;
     private OwnedVehiclesManager ownedVehiclesManager;
     private CompassManager compassManager;
 
@@ -40,6 +40,8 @@ public class MinimapUI
 
     // --- State ---
     private bool initialized;
+    private bool previousInVehicle;
+    private S1Vehicles.LandVehicle previousVehicle;
 
     private bool TimeBarEnabled => mapPreferences.ShowGameTime.Value;
     private bool MinimapEnabled => mapPreferences.MinimapEnabled.Value;
@@ -58,14 +60,6 @@ public class MinimapUI
         mapPreferences.TrackVehicles.OnEntryValueChanged.Subscribe(OnVehicleTrackingChanged);
         mapPreferences.ShowCompass.OnEntryValueChanged.Subscribe(OnShowCompassChanged);
     }
-    
-    private void OnIncreaseSizeChanged(bool oldValue, bool newValue)
-    {
-        if (!initialized) return;
-        sizeManager.UpdateMinimapSize(true);
-        markerCoordinator.OnSizeChanged();
-        UpdateMinimap();
-    }
 
     /// <summary>
     /// Initializes the minimap UI and starts integration and update coroutines.
@@ -76,6 +70,7 @@ public class MinimapUI
         CreateMinimapDisplay();
         StartSceneIntegration();    // Finds map sprite, player, and sets up markers
         StartMinimapUpdateLoop();   // Continuously updates minimap as player moves
+        StartQuestInitializationLoop(); // Initializes quest markers after scene integration
         initialized = true;
     }
 
@@ -90,9 +85,33 @@ public class MinimapUI
         compassManager?.Dispose();
     }
 
-    /// <summary>
-    /// Creates the minimap UI hierarchy, including mask, background, content, and managers.
-    /// </summary>
+    // --- Internal Methods ---
+    internal void OnContractAccepted(S1Quests.Contract contract)
+    {
+        markerCoordinator?.OnContractAccepted(contract);
+    }
+
+    internal void OnContractCompleted(S1Quests.Contract contract)
+    {
+        markerCoordinator?.OnContractCompleted(contract);
+    }
+    
+    internal void OnOwnedVehiclesAdded()
+    {
+        ownedVehiclesManager.AddOwnedVehicleMarkers();
+    }
+
+    internal void OnQuestCompleted(S1Quests.Quest quest)
+    {
+        markerCoordinator.OnQuestCompleted(quest);
+    }
+    
+    internal void OnQuestStarted(S1Quests.Quest quest)
+    {
+        markerCoordinator?.OnQuestStarted(quest);
+    }
+
+    // --- Private Methods ---
     private void CreateMinimapDisplay()
     {
         // Root container for minimap UI
@@ -119,12 +138,9 @@ public class MinimapUI
         // Player marker (centered in the minimap)
         playerMarkerManager = new PlayerMarkerManager();
         playerMarkerManager.CreatePlayerMarker(maskObject);
-
-        // Contract PoI markers
-        contractMarkerManager = new ContractMarkerManager(
-            minimapContent,
-            Constants.MarkerXOffset, 
-            mapPreferences);
+        
+        // Quest PoI markers
+        questMarkerManager = new QuestMarkerManager(minimapContent, mapPreferences);
         
         // Owned vehicles manager
         ownedVehiclesManager = new OwnedVehiclesManager(
@@ -149,7 +165,29 @@ public class MinimapUI
         sceneIntegration = new MinimapSceneIntegration(minimapContent, playerMarkerManager, mapPreferences);
         
         // Initialize marker coordinator
-        markerCoordinator = new MinimapMarkerCoordinator(contractMarkerManager, mapPreferences, minimapContent, sizeManager);
+        markerCoordinator = new MinimapMarkerCoordinator(questMarkerManager, mapPreferences, minimapContent, sizeManager);
+    }
+
+    private IEnumerator InitializeQuestManagerRoutine()
+    {
+        while (questMarkerManager is { IsInitialized: false })
+        {
+            questMarkerManager.Initialize();
+            yield return new WaitForSeconds(1);
+        }
+    }
+
+    private void OnContractTrackingChanged(bool previous, bool current)
+    {
+        markerCoordinator?.OnContractTrackingChanged(previous, current);
+    }
+    
+    private void OnIncreaseSizeChanged(bool oldValue, bool newValue)
+    {
+        if (!initialized) return;
+        sizeManager.UpdateMinimapSize(true);
+        markerCoordinator.OnSizeChanged();
+        UpdateMinimap();
     }
 
     private void OnMinimapEnableChanged(bool oldValue, bool newValue)
@@ -172,6 +210,16 @@ public class MinimapUI
         compassManager?.SetVisible(MinimapEnabled && mapPreferences.ShowCompass.Value);
     }
 
+    private void OnPropertyTrackingChanged(bool previous, bool current)
+    {
+        markerCoordinator?.OnPropertyTrackingChanged(previous, current);
+    }
+
+    private void OnShowCompassChanged(bool oldValue, bool newValue)
+    {
+        compassManager?.SetVisible(MinimapEnabled && newValue);
+    }
+
     private void OnTimeBarEnableChanged(bool oldValue, bool newValue)
     {
         if (oldValue != newValue)
@@ -180,39 +228,39 @@ public class MinimapUI
         }
     }
 
-    private void OnShowCompassChanged(bool oldValue, bool newValue)
+    private void OnVehicleTrackingChanged(bool previous, bool current)
     {
-        compassManager?.SetVisible(MinimapEnabled && newValue);
+        if (current)
+        {
+            ownedVehiclesManager.AddOwnedVehicleMarkers();
+        }
+        else
+        {
+            ownedVehiclesManager.RemoveOwnedVehicleMarkers();
+        }
+    }
+    
+    private void StartMinimapUpdateLoop()
+    {
+        MelonCoroutines.Start(MinimapUpdateLoopCoroutine());
     }
 
-    /// <summary>
-    /// Starts the coroutine that integrates the minimap with the scene (finds player, map, markers).
-    /// </summary>
+    private void StartQuestInitializationLoop()
+    {
+        MelonCoroutines.Start(InitializeQuestManagerRoutine());
+    }
+
     private void StartSceneIntegration()
     {
         MelonCoroutines.Start(SceneIntegrationRoutine());
     }
 
-    /// <summary>
-    /// Coroutine that delegates scene integration to the helper class.
-    /// </summary>
     private IEnumerator SceneIntegrationRoutine()
     {
         yield return sceneIntegration.IntegrateWithScene();
         markerCoordinator.SetCachedMapContent(sceneIntegration.CachedMapContent);
     }
 
-    /// <summary>
-    /// Starts the coroutine that updates the minimap every frame.
-    /// </summary>
-    private void StartMinimapUpdateLoop()
-    {
-        MelonCoroutines.Start(MinimapUpdateLoopCoroutine());
-    }
-
-    /// <summary>
-    /// Coroutine that updates the minimap's content position and player marker direction.
-    /// </summary>
     private IEnumerator MinimapUpdateLoopCoroutine()
     {
         while (true)
@@ -223,12 +271,6 @@ public class MinimapUI
         // ReSharper disable once IteratorNeverReturns
     }
 
-    /// <summary>
-    /// Updates the minimap's content position to keep the player centered, and updates the player marker direction.
-    /// </summary>
-    private bool previousInVehicle;
-    private S1Vehicles.LandVehicle previousVehicle;
-    
     private void UpdateMinimap()
     {
         var playerObject = S1Player.Player.Local;
@@ -306,42 +348,5 @@ public class MinimapUI
         }
 
         minimapTimeDisplay.UpdateMinimapTime();
-    }
-
-    internal void OnOwnedVehiclesAdded()
-    {
-        ownedVehiclesManager.AddOwnedVehicleMarkers();
-    }
-
-    internal void OnContractAccepted(S1Quests.Contract contract)
-    {
-        markerCoordinator?.OnContractAccepted(contract);
-    }
-
-    internal void OnContractCompleted(S1Quests.Contract contract)
-    {
-        markerCoordinator?.OnContractCompleted(contract);
-    }
-    
-    private void OnContractTrackingChanged(bool previous, bool current)
-    {
-        markerCoordinator?.OnContractTrackingChanged(previous, current);
-    }
-    
-    private void OnPropertyTrackingChanged(bool previous, bool current)
-    {
-        markerCoordinator?.OnPropertyTrackingChanged(previous, current);
-    }
-
-    private void OnVehicleTrackingChanged(bool previous, bool current)
-    {
-        if (current)
-        {
-            ownedVehiclesManager.AddOwnedVehicleMarkers();
-        }
-        else
-        {
-            ownedVehiclesManager.RemoveOwnedVehicleMarkers();
-        }
     }
 }

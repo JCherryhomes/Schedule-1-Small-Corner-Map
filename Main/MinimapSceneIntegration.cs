@@ -1,9 +1,15 @@
 ﻿using System.Collections;
 using MelonLoader;
-using S1API.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
+
+#if IL2CPP
+using Il2CppScheduleOne.PlayerScripts;
+#else
+using ScheduleOne.PlayerScripts;
+#endif
+
 namespace Small_Corner_Map.Main;
 /// <summary>
 /// Handles scene integration: finding game objects, setting up markers, and applying sprites.
@@ -31,10 +37,10 @@ internal class MinimapSceneIntegration
         GameObject mapAppObject = null;
         GameObject viewportObject = null;
         var attempts = 0;
+        PlayerObject ??= Player.Local;
         while ((mapAppObject == null || PlayerObject == null) && attempts < 30)
         {
             attempts++;
-            PlayerObject ??= Player.Local;
             if (mapAppObject == null) mapAppObject = FindMapApp();
             if (mapAppObject != null && viewportObject == null) viewportObject = FindViewport(mapAppObject);
             if (mapAppObject == null || PlayerObject == null)

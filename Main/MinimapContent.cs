@@ -63,25 +63,6 @@ namespace Small_Corner_Map.Main
             return markerObject; // ensure a return even if markerRect was null
         }
 
-        public void AddRedStaticMarker(Vector3 worldPos)
-        {
-            if (MapContentObject == null)
-            {
-                MelonLogger.Warning("MinimapContent: Cannot add marker, missing map content.");
-                return;
-            }
-
-            var markerObject = new GameObject("StaticMarker_Red");
-            markerObject.transform.SetParent(MapContentObject.transform, false);
-            var markerRect = markerObject.AddComponent<RectTransform>();
-            markerRect.sizeDelta = new Vector2(Constants.RedMarkerSize, Constants.RedMarkerSize);
-            var mappedX = worldPos.x * CurrentMapScale;
-            var mappedZ = worldPos.z * CurrentMapScale;
-            markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
-            var markerImage = markerObject.AddComponent<Image>();
-            markerImage.color = Color.red;
-        }
-
         public void UpdateMapScale(float newScale)
         {
             CurrentMapScale = newScale;

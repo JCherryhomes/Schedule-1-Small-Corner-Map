@@ -119,6 +119,15 @@ namespace Small_Corner_Map.Helpers
             float xOffset = 0f,
             float zOffset = 0f)
         {
+            if (markerPrefab == null)
+            {
+                MelonLogger.Msg("AddMarkerToMap: Cannot add marker, missing prefab.");
+                return;
+            }
+            
+            MelonLogger.Msg("[MinimapPoIHelper] Adding marker: " + name);
+            MelonLogger.Msg("[MinimapPoIHelper] Prefab ID: " + markerPrefab.GetInstanceID().ToString());
+            
             // Remove existing marker with same name
             RemoveMarker(name);
             var markerObject = UnityEngine.Object.Instantiate(markerPrefab, mapContentObject.transform, false);

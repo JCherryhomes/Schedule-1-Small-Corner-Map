@@ -3,7 +3,6 @@ using S1Quests = Il2CppScheduleOne.Quests;
 #else
 using S1Quests = ScheduleOne.Quests;
 #endif
-using MelonLoader;
 using UnityEngine;
 using Small_Corner_Map.Helpers;
 namespace Small_Corner_Map.Main;
@@ -12,46 +11,52 @@ namespace Small_Corner_Map.Main;
 /// </summary>
 internal class MinimapMarkerCoordinator
 {
-    private readonly ContractMarkerManager contractMarkerManager;
+    private readonly QuestMarkerManager questMarkerManager;
     private readonly MapPreferences mapPreferences;
     private readonly MinimapContent minimapContent;
     private readonly MinimapSizeManager sizeManager;
     private GameObject cachedMapContent;
+    
     public MinimapMarkerCoordinator(
-        ContractMarkerManager contractManager,
+        QuestMarkerManager questManager,
         MapPreferences preferences,
         MinimapContent content,
         MinimapSizeManager sizeMgr)
     {
-        contractMarkerManager = contractManager;
+        questMarkerManager = questManager;
         mapPreferences = preferences;
         minimapContent = content;
         sizeManager = sizeMgr;
     }
+    
     public void SetCachedMapContent(GameObject mapContent)
     {
         cachedMapContent = mapContent;
     }
-    public void OnContractAccepted(S1Quests.Contract contract)
+    
+    public void OnQuestStarted(S1Quests.Quest quest)
     {
-        contractMarkerManager.AddContractPoIMarkerWorld(contract);
+        questMarkerManager.AddQuestPoIMarkerWorld(quest);
     }
-    public void OnContractCompleted(S1Quests.Contract contract)
+    
+    public void OnQuestCompleted(S1Quests.Quest quest)
     {
-        contractMarkerManager.RemoveContractPoIMarkers(contract);
+        questMarkerManager.RemoveQuestPoIMarker(quest);
     }
+    
     public void OnContractTrackingChanged(bool previous, bool current)
     {
-        if (contractMarkerManager == null) return;
+        if (questMarkerManager == null) return;
         if (current)
         {
-            contractMarkerManager.AddAllContractPoIMarkers();
+            questMarkerManager.AddAllContractPoIMarkers();
         }
         else
         {
-            contractMarkerManager.RemoveAllContractPoIMarkers();
+            questMarkerManager.RemoveAllContractPoIMarkers();
         }
     }
+    
     public void OnPropertyTrackingChanged(bool previous, bool current)
     {
         if (current)
@@ -66,11 +71,22 @@ internal class MinimapMarkerCoordinator
             PropertyPoIManager.DisableAllMarkers();
         }
     }
+    
     public void OnSizeChanged()
     {
         minimapContent?.UpdateMapScale(sizeManager.CurrentWorldScale);
         MinimapPoIHelper.UpdateAllMarkerPositions(sizeManager.CurrentWorldScale);
         if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
             PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
+    }
+
+    public void OnContractAccepted(S1Quests.Contract contract)
+    {
+        questMarkerManager.AddQuestPoIMarkerWorld(contract);
+    }
+
+    public void OnContractCompleted(S1Quests.Contract contract)
+    {
+        questMarkerManager.RemoveQuestPoIMarker(contract);
     }
 }

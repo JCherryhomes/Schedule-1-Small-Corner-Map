@@ -20,11 +20,14 @@ namespace Small_Corner_Map.Main
         private readonly float markerXAdjustment;
         private readonly GameObject mapContentObject;
         private readonly MapPreferences mapPreferences;
+        private readonly MinimapContent minimapContent;
 
         private const string ContractPoIMarkerKey = "ContractPoI_Marker";
+        public MinimapContent MinimapContent => minimapContent;
 
         public ContractMarkerManager(MinimapContent minimapContent, float markerXAdjustment, MapPreferences preferences)
         {
+            this.minimapContent = minimapContent;
             this.mapContentObject = minimapContent.MapContentObject;
             this.markerXAdjustment = markerXAdjustment;
             this.mapPreferences = preferences;
@@ -84,7 +87,7 @@ namespace Small_Corner_Map.Main
             }
         }
 
-        private void CacheContractPoIIcon(Contract contract)
+        internal void CacheContractPoIIcon(Contract contract)
         {
             if (contract == null || contract.IconPrefab == null) return;
             contractPoIIconPrefab = contract.IconPrefab.gameObject;

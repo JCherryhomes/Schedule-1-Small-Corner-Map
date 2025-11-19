@@ -60,9 +60,6 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="S1API">
-      <HintPath>$(MonoGamePath)\Mods\S1API.Mono.MelonLoader.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -103,9 +100,6 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="S1API">
-      <HintPath>$(IL2CPPGamePath)\Mods\S1API.Il2Cpp.MelonLoader.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -134,10 +128,16 @@
     <Compile Include="Main\MinimapSizeManager.cs" />
     <Compile Include="Main\MinimapTimeDisplay.cs" />
     <Compile Include="Main\MinimapUI.cs" />
-    <Compile Include="Main\MultiplayerManager.cs" />
     <Compile Include="Main\OwnedVehiclesManager.cs" />
     <Compile Include="Main\PlayerMarkerManager.cs" />
     <Compile Include="Main\PropertyPoIManager.cs" />
+    <Compile Include="Main\QuestMarkerManager.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\ContractMarkerStrategy.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\DeadDropQuestMarkerStrategy.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\IQuestMarkerStrategy.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\QuestMarkerStrategyBase.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
   </ItemGroup>
 
 

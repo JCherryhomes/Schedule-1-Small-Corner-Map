@@ -19,14 +19,17 @@ namespace Small_Corner_Map.Helpers
             this.unifiedSize = unifiedSize;
         }
 
-        internal enum CompassMarkerCategory { Vehicle, Contract, Property, White, Other }
+        internal enum CompassMarkerCategory { Contract, DeadDrop, Property, Quest, Vehicle, White, Other }
 
         internal CompassMarkerCategory DetermineCategory(string name)
         {
+            MelonLogger.Msg($"[CompassUIFactory] Determining category for '{name}'");
             if (string.IsNullOrEmpty(name)) return CompassMarkerCategory.Other;
             if (name.StartsWith("StaticMarker_White")) return CompassMarkerCategory.White;
             if (name.Contains("Vehicle")) return CompassMarkerCategory.Vehicle;
             if (name.Contains("Contract")) return CompassMarkerCategory.Contract;
+            if (name.Contains("Quest")) return CompassMarkerCategory.Quest;
+            if (name.Contains("DeadDrop")) return CompassMarkerCategory.DeadDrop;
             return name.Contains("Property") ? CompassMarkerCategory.Property : CompassMarkerCategory.Other;
         }
 
@@ -157,9 +160,9 @@ namespace Small_Corner_Map.Helpers
             var rootRect = iconRoot.GetComponent<RectTransform>() ?? iconRoot.AddComponent<RectTransform>();
             var baseScaleFactor = targetSize / effectiveDim;
             // Category-specific sprite boost factors (inner icon emphasis)
-            float spriteBoost = category switch
+            var spriteBoost = category switch
             {
-                CompassMarkerCategory.Vehicle => 1.20f,
+                CompassMarkerCategory.Vehicle => 1.21f,
                 CompassMarkerCategory.Property => 1.20f,
                 CompassMarkerCategory.Contract => 0.85f, // slightly smaller
                 _ => 1.00f
