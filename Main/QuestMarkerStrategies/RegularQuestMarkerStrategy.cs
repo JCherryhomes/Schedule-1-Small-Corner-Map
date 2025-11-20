@@ -1,5 +1,4 @@
-﻿
-using Small_Corner_Map.Helpers;
+﻿using Small_Corner_Map.Helpers;
 using UnityEngine;
 
 #if IL2CPP
@@ -12,41 +11,38 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies
 {
     internal class RegularQuestMarkerStrategy : QuestMarkerStrategyBase, IQuestMarkerStrategy
     {
-        public RegularQuestMarkerStrategy(MinimapContent minimapContent, MapPreferences preferences) : base(minimapContent, preferences)
+        private readonly MarkerRegistry markerRegistry;
+        public RegularQuestMarkerStrategy(MinimapContent minimapContent, MapPreferences preferences, MarkerRegistry registry) : base(minimapContent, preferences)
         {
+            MarkerKeyPrefix = "Regular_Quest";
+            markerRegistry = registry;
         }
 
         public void AddMarker(Quest quest)
         {
+            if (!quest.IsTracked || quest.State != EQuestState.Active) return;
+            
             var activeEntry = quest.GetFirstActiveEntry();
-
-            // Use current dynamic scale factor from preferences
-            var currentScale = Constants.DefaultMapScale * Preferences.MinimapScaleFactor;
             var worldPos = activeEntry?.PoILocation?.position ??
                            activeEntry?.transform.position ?? quest.PoIPrefab.transform.position;
-            var xPosition = worldPos.x * currentScale;
-            var zPosition = worldPos.z * currentScale;
-            var mappedPos = new Vector2(xPosition, zPosition);
-
-            if (MapContentObject == null) return;
-            if (IconPrefab == null)
+            var markerData = new MarkerRegistry.MarkerData
             {
-                CachePoIIcon(quest);
-            }
-
-            MinimapPoIHelper.AddMarkerToMap(
-                IconPrefab,
-                MapContentObject,
-                MarkerKeyPrefix + "_" + quest.GUID,
-                mappedPos,
-                worldPos,
-                -Constants.MarkerXOffset);
+                Id = GetMarkerName(quest),
+                WorldPos = worldPos,
+                IconPrefab = quest.IconPrefab?.gameObject,
+                Type = MarkerType.RegularQuest,
+                DisplayName = quest.name,
+                XOffset = -Constants.MarkerXOffset,
+                ZOffset = 0f,
+                IsTracked = quest.IsTracked,
+                IsVisibleOnMinimap = true,
+                IsVisibleOnCompass = true
+            };
+            markerRegistry.AddOrUpdateMarker(markerData);
         }
-        
         public void AddAllMarkers()
         {
             var quests = QuestManager.Instance.QuestContainer.GetComponentsInChildren<Quest>();
-
             foreach (var quest in quests)
             {
                 if (quest is Contract || !quest.IsTracked || quest.State != EQuestState.Active) continue;
@@ -54,22 +50,25 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies
                 AddMarker(quest);
             }
         }
-        
         public void RemoveMarker(Quest quest)
         {
-            MinimapPoIHelper.RemoveMarker(GetMarkerName(quest));
+            markerRegistry.RemoveMarker(GetMarkerName(quest));
         }
-        
         public void RemoveAllMarkers()
         {
-            MinimapPoIHelper.RemoveAllByKey(MarkerKeyPrefix);
+            var quests = QuestManager.Instance.QuestContainer.GetComponentsInChildren<Quest>();
+            foreach (var quest in quests)
+            {
+                if (quest is Contract || !quest.IsTracked || quest.State != EQuestState.Active) continue;
+                if (quest.name == DeadDropQuestName || quest is DeaddropQuest) continue;
+                RemoveMarker(quest);
+            }
         }
 
-        private new void CachePoIIcon(Quest quest)
+        internal override void CachePoIIcon(Quest quest)
         {
             if (quest == null || quest.IconPrefab == null) return;
             IconPrefab = quest.IconPrefab.gameObject;
         }
     }
 }
-

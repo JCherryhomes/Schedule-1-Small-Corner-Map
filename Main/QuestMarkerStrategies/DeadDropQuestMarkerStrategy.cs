@@ -1,5 +1,4 @@
-﻿
-using MelonLoader;
+﻿using MelonLoader;
 using Small_Corner_Map.Helpers;
 using UnityEngine;
 
@@ -13,54 +12,42 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies
 {
     internal class DeadDropQuestMarkerStrategy : QuestMarkerStrategyBase, IQuestMarkerStrategy
     {
-        public DeadDropQuestMarkerStrategy(MinimapContent minimapContent, MapPreferences preferences) : base(minimapContent, preferences)
+        private readonly MarkerRegistry markerRegistry;
+        public DeadDropQuestMarkerStrategy(MinimapContent minimapContent, MapPreferences preferences, MarkerRegistry registry) : base(minimapContent, preferences)
         {
             MarkerKeyPrefix = "DeadDrop_Marker";
+            markerRegistry = registry;
         }
         
         public void AddMarker(Quest quest)
         {
-            if (quest == null || MapContentObject == null)
-                return;
-
+            if (quest == null) return;
+            if (!quest.IsTracked || quest.State != EQuestState.Active) return;
+            
             var activeEntry = quest.GetFirstActiveEntry();
-
-            // Use current dynamic scale factor from preferences
-            var currentScale = Constants.DefaultMapScale * Preferences.MinimapScaleFactor;
             var worldPos = activeEntry?.PoILocation?.position ??
                            activeEntry?.transform.position ?? quest.PoIPrefab.transform.position;
-            var xPosition = worldPos.x * currentScale;
-            var zPosition = worldPos.z * currentScale;
-            var mappedPos = new Vector2(xPosition, zPosition);
-
-            if (MapContentObject == null) return;
-            if (IconPrefab == null)
+            var markerData = new MarkerRegistry.MarkerData
             {
-                CachePoIIcon(quest);
-            }
-
-            MelonLogger.Msg("Marker Key: " + (MarkerKeyPrefix + "_" + quest.GUID + " for quest " + quest.name));
-            MinimapPoIHelper.AddMarkerToMap(
-                IconPrefab,
-                MapContentObject,
-                MarkerKeyPrefix + "_" + quest.GUID,
-                mappedPos,
-                worldPos,
-                -Constants.MarkerXOffset,
-                0f);
+                Id = GetMarkerName(quest),
+                WorldPos = worldPos,
+                IconPrefab = quest.IconPrefab?.gameObject,
+                Type = MarkerType.DeadDrop,
+                DisplayName = quest.name,
+                XOffset = -Constants.MarkerXOffset,
+                ZOffset = 0f,
+                IsTracked = quest.IsTracked,
+                IsVisibleOnMinimap = true,
+                IsVisibleOnCompass = true
+            };
+            markerRegistry.AddOrUpdateMarker(markerData);
         }
 
         public void AddAllMarkers()
         {
             var quests = QuestManager.Instance.DeaddropCollectionPrefab.GetComponentsInChildren<Quest>();
-            var deaddrops = QuestManager.Instance.DeaddropCollectionPrefab.GetComponentsInChildren<DeaddropQuest>();
-            
-            MelonLogger.Msg("Found " + quests.Length + " quests in DeadDropCollection.");
-            MelonLogger.Msg("Found " + deaddrops.Length + " deaddrop quests in DeadDropCollection.");
-
             foreach (var quest in quests)
             {
-                MelonLogger.Msg("Adding " + quest.name);
                 if (quest is Contract || !quest.IsTracked || quest.State != EQuestState.Active) continue;
                 if (quest.name != DeadDropQuestName) continue;
                 AddMarker(quest);
@@ -69,15 +56,21 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies
 
         public void RemoveMarker(Quest quest)
         {
-            MinimapPoIHelper.RemoveMarker(GetMarkerName(quest));
+            markerRegistry.RemoveMarker(GetMarkerName(quest));
         }
 
         public void RemoveAllMarkers()
         {
-            MinimapPoIHelper.RemoveAllByKey(MarkerKeyPrefix);
+            var quests = QuestManager.Instance.DeaddropCollectionPrefab.GetComponentsInChildren<Quest>();
+            foreach (var quest in quests)
+            {
+                if (quest is Contract || !quest.IsTracked || quest.State != EQuestState.Active) continue;
+                if (quest.name != DeadDropQuestName) continue;
+                RemoveMarker(quest);
+            }
         }
         
-        private new void CachePoIIcon(Quest quest)
+        internal override void CachePoIIcon(Quest quest)
         {
             if (quest == null) return;
             var entry = quest.GetFirstActiveEntry();
@@ -85,4 +78,3 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies
         }
     }
 }
-

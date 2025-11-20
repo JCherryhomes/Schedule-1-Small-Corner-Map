@@ -16,6 +16,7 @@ public class QuestMarkerManager
     private bool isInitialized;
     private readonly MinimapContent minimapContent;
     private readonly MapPreferences mapPreferences;
+    private readonly MarkerRegistry markerRegistry;
     
     private const string ContractKey = "Contract";
     private const string DeadDropKey = "DeadDrop";
@@ -23,10 +24,11 @@ public class QuestMarkerManager
     
     public bool IsInitialized => isInitialized;
 
-    public QuestMarkerManager(MinimapContent minimapContent, MapPreferences preferences)
+    public QuestMarkerManager(MinimapContent minimapContent, MapPreferences preferences, MarkerRegistry registry)
     {
         this.minimapContent = minimapContent;
         this.mapPreferences = preferences;
+        this.markerRegistry = registry;
     }
     
     public void Initialize()
@@ -50,28 +52,25 @@ public class QuestMarkerManager
 
     internal void AddQuestPoIMarkerWorld(Quest quest)
     {
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, GetStrategyKey(quest));
-        MelonLogger.Msg("Adding quest poi Marker: " + quest.name);
-        MelonLogger.Msg("Using strategy: " + GetStrategyKey(quest));
-        MelonLogger.Msg("Quest Is Contract: " + (quest is Contract));
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, GetStrategyKey(quest), markerRegistry);
         strategy.AddMarker(quest);
     }
     
     internal void AddAllContractPoIMarkers()
     {
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, ContractKey);
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, ContractKey, markerRegistry);
         strategy.AddAllMarkers();
     }
     
     internal void AddAllDeadDropPoIMarkers()
     {
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, DeadDropKey);
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, DeadDropKey, markerRegistry);
         strategy.AddAllMarkers();
     }
     
     internal void AddAllQuestPoIMarkers()
     {
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, RegularKey);
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, RegularKey, markerRegistry);
         strategy.AddAllMarkers();
     }
 
@@ -80,25 +79,25 @@ public class QuestMarkerManager
         var strategyKey = GetStrategyKey(quest);
         MelonLogger.Msg("Removing quest poi Marker: " + quest.name);
         MelonLogger.Msg("Using strategy: " + strategyKey);
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, GetStrategyKey(quest));
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, GetStrategyKey(quest), markerRegistry);
         strategy.RemoveMarker(quest);
     }
 
     internal void RemoveAllContractPoIMarkers()
     {
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, ContractKey);
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, ContractKey, markerRegistry);
         strategy.RemoveAllMarkers();
     }
 
     internal void RemoveAllDeadDropPoIMarkers()
     {
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, DeadDropKey);
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, DeadDropKey, markerRegistry);
         strategy.RemoveAllMarkers();
     }
 
     internal void RemoveAllQuestPoIMarkers()
     {
-        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, RegularKey);
+        var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, RegularKey, markerRegistry);
         strategy.RemoveAllMarkers();
     }
 

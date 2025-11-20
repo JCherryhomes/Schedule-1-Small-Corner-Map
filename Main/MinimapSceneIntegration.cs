@@ -19,16 +19,19 @@ internal class MinimapSceneIntegration
     private readonly MinimapContent minimapContent;
     private readonly PlayerMarkerManager playerMarkerManager;
     private readonly MapPreferences mapPreferences;
+    private readonly MarkerRegistry markerRegistry;
     public Player PlayerObject { get; private set; }
     public GameObject CachedMapContent { get; private set; }
     public MinimapSceneIntegration(
         MinimapContent content,
         PlayerMarkerManager playerMarker,
-        MapPreferences preferences)
+        MapPreferences preferences,
+        MarkerRegistry registry)
     {
         minimapContent = content;
         playerMarkerManager = playerMarker;
         mapPreferences = preferences;
+        markerRegistry = registry;
     }
     public IEnumerator IntegrateWithScene()
     {
@@ -136,6 +139,6 @@ internal class MinimapSceneIntegration
     {
         PropertyPoIManager.CacheIconContainerIfNeeded(CachedMapContent);
         if (mapPreferences.TrackProperties.Value)
-            PropertyPoIManager.Initialize(minimapContent, CachedMapContent);
+            PropertyPoIManager.Initialize(minimapContent, CachedMapContent, markerRegistry);
     }
 }

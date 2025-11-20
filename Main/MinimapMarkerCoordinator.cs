@@ -16,17 +16,26 @@ internal class MinimapMarkerCoordinator
     private readonly MinimapContent minimapContent;
     private readonly MinimapSizeManager sizeManager;
     private GameObject cachedMapContent;
+    private readonly MarkerRegistry markerRegistry;
+    private CompassManager compassManager;
     
     public MinimapMarkerCoordinator(
         QuestMarkerManager questManager,
         MapPreferences preferences,
         MinimapContent content,
-        MinimapSizeManager sizeMgr)
+        MinimapSizeManager sizeMgr,
+        MarkerRegistry registry)
     {
         questMarkerManager = questManager;
         mapPreferences = preferences;
         minimapContent = content;
         sizeManager = sizeMgr;
+        markerRegistry = registry;
+    }
+    
+    public void SetCompassManager(CompassManager manager)
+    {
+        compassManager = manager;
     }
     
     public void SetCachedMapContent(GameObject mapContent)
@@ -63,21 +72,21 @@ internal class MinimapMarkerCoordinator
         {
             if (cachedMapContent != null)
             {
-                PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
+                PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent, markerRegistry);
             }
         }
         else
         {
-            PropertyPoIManager.DisableAllMarkers();
+            PropertyPoIManager.DisableAllMarkers(markerRegistry);
         }
     }
     
     public void OnSizeChanged()
     {
         minimapContent?.UpdateMapScale(sizeManager.CurrentWorldScale);
-        MinimapPoIHelper.UpdateAllMarkerPositions(sizeManager.CurrentWorldScale);
+        // No need to update marker positions directly; registry-based system will handle updates.
         if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
-            PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent);
+            PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent, markerRegistry);
     }
 
     public void OnContractAccepted(S1Quests.Contract contract)

@@ -117,11 +117,10 @@
     <Compile Include="Helpers\CompassUIFactory.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
-    <Compile Include="Helpers\MinimapPoIHelper.cs" />
     <Compile Include="Helpers\MinimapUIFactory.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Main\CompassManager.cs" />
-    <Compile Include="Main\ContractMarkerManager.cs" />
+    <Compile Include="Main\MarkerRegistry.cs" />
     <Compile Include="Main\MinimapContent.cs" />
     <Compile Include="Main\MinimapMarkerCoordinator.cs" />
     <Compile Include="Main\MinimapSceneIntegration.cs" />
@@ -148,6 +147,11 @@
 
   <ItemGroup>
     <Content Include=".github\CODEOWNERS" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include=".github\copilot-instructions.md" />
   </ItemGroup>
   
 

@@ -23,10 +23,10 @@
         public const float MinimapCornerOffset = -20f;   // Distance from screen corner
         
         // Marker Sizing
-        public const float ContractMarkerSize = 15f;     // Width/height of contract markers
-        public const float ContractMarkerScale = 0.5f;   // Scale applied to contract markers
-        public const float PropertyMarkerSize = 10f;     // Width/height of property markers
-        public const float PropertyMarkerScale = 0.5f;   // Scale applied to property markers
+        public const float ContractMarkerSize = 8f;     // Width/height of contract markers (reduced from 15f)
+        public const float ContractMarkerScale = 0.4f;   // Scale applied to contract markers (reduced from 0.5f)
+        public const float PropertyMarkerSize = 5f;      // Width/height of property markers (reduced from 10f)
+        public const float PropertyMarkerScale = 0.4f;   // Scale applied to property markers (reduced from 0.5f)
         public const float RedMarkerSize = 5f;           // Width/height of red debug markers
         public const float PlayerMarkerSize = 10f;       // Width/height of player marker
         public const float DirectionIndicatorSize = 6f;  // Width/height of direction indicator
@@ -122,7 +122,7 @@
         public const float CompassBackgroundColorA = 0.3f; // Slight transparency
 
         // Compass Icon Sizes
-        public const float CompassDefaultIconSize = 20f; // Default size for vehicle/property/other compass icons
+        public const float CompassDefaultIconSize = 15f; // Default size for vehicle/property/other compass icons
         public const float CompassContractIconSize = 20f; // Contract marker size
     }
 }

@@ -64,19 +64,6 @@ namespace Small_Corner_Map
             }
         }
 
-        // [HarmonyPatch(typeof(Quest), "Start")]
-        // class Patch_QuestStart
-        // {
-        //     static void Postfix(Quest __instance)
-        //     {
-        //         MelonLogger.Msg("Other Quest name and tracked: " + __instance.name + " : " + __instance.IsTracked);
-        //         MelonLogger.Msg("Quest State: " + __instance.State);
-        //         if (__instance is Contract || !__instance.IsTracked) return;
-        //
-        //         Instance.minimapUI.OnQuestStarted(__instance);
-        //     }
-        // }
-
         [HarmonyPatch(typeof(Quest), "Start")]
         class Patch_QuestStart
         {
@@ -96,6 +83,7 @@ namespace Small_Corner_Map
             {
                 if (!QuestManager.InstanceExists) return;
                 if (__instance == null || !__instance.IsTracked) return;
+                if (__instance is Contract) return;
                 Instance.minimapUI?.OnQuestCompleted(__instance);
             }
         }
@@ -105,6 +93,7 @@ namespace Small_Corner_Map
         {
             static void Postfix(Contract __instance)
             {
+                MelonLogger.Msg(string.Format("Completed Contract: {0}", __instance));
                 var trackContracts = Instance.mapPreferences?.TrackContracts;
                 if (trackContracts == null || !trackContracts.Value) return;
                 if (__instance == null || !__instance.IsTracked) return;

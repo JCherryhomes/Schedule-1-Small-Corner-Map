@@ -11,14 +11,13 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies
 {
     internal static class QuestMarkerStrategyResolver
     {
-        public static IQuestMarkerStrategy GetStrategy(MinimapContent minimapContent, MapPreferences preferences, string key)
+        public static IQuestMarkerStrategy GetStrategy(MinimapContent minimapContent, MapPreferences preferences, string key, MarkerRegistry registry)
         {
             if (key == "Contract")
-                return new ContractMarkerStrategy(minimapContent, preferences);
+                return new ContractMarkerStrategy(minimapContent, preferences, registry);
             if (key == QuestMarkerStrategyBase.DeadDropQuestName)
-                return new DeadDropQuestMarkerStrategy(minimapContent, preferences);
-            return new RegularQuestMarkerStrategy(minimapContent, preferences);
+                return new DeadDropQuestMarkerStrategy(minimapContent, preferences, registry);
+            return new RegularQuestMarkerStrategy(minimapContent, preferences, registry);
         }
     }
 }
-

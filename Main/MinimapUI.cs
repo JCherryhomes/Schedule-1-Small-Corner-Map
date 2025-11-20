@@ -36,7 +36,6 @@ public class MinimapUI
 
     // --- UI GameObjects ---
     private GameObject minimapObject;
-    private GameObject minimapDisplayObject;
 
     // --- State ---
     private bool initialized;
@@ -45,6 +44,8 @@ public class MinimapUI
 
     private bool TimeBarEnabled => mapPreferences.ShowGameTime.Value;
     private bool MinimapEnabled => mapPreferences.MinimapEnabled.Value;
+
+    private MarkerRegistry markerRegistry;
 
 
     public MinimapUI(MapPreferences preferences)
@@ -67,6 +68,7 @@ public class MinimapUI
     public void Initialize()
     {
         if (!MinimapEnabled) return;
+        markerRegistry = new MarkerRegistry();
         CreateMinimapDisplay();
         StartSceneIntegration();    // Finds map sprite, player, and sets up markers
         StartMinimapUpdateLoop();   // Continuously updates minimap as player moves
@@ -129,7 +131,6 @@ public class MinimapUI
 
         // Mask (circular area for minimap)
         var (maskObject, maskImage) = MinimapUIFactory.CreateMask(frameObject, sizeManager.ScaledMinimapSize);
-        minimapDisplayObject = maskObject;
 
         // Map content (holds the map image, grid, and markers)
         minimapContent = new MinimapContent(sizeManager.ScaledMapContentSize, sizeManager.CurrentWorldScale);
@@ -140,12 +141,13 @@ public class MinimapUI
         playerMarkerManager.CreatePlayerMarker(maskObject);
         
         // Quest PoI markers
-        questMarkerManager = new QuestMarkerManager(minimapContent, mapPreferences);
+        questMarkerManager = new QuestMarkerManager(minimapContent, mapPreferences, markerRegistry);
         
         // Owned vehicles manager
         ownedVehiclesManager = new OwnedVehiclesManager(
             minimapContent,
-            mapPreferences);
+            mapPreferences,
+            markerRegistry);
 
         // Time display (shows in-game time)
         minimapTimeDisplay = new MinimapTimeDisplay();
@@ -155,6 +157,8 @@ public class MinimapUI
         var maskDiameterWithOffset = sizeManager.ScaledMinimapSize + Constants.MinimapMaskDiameterOffset;
         compassManager = new CompassManager(mapPreferences);
         compassManager.Create(frameObject, maskDiameterWithOffset);
+        compassManager.Initialize(markerRegistry);
+        compassManager.MinimapContent = minimapContent;
         compassManager.Subscribe();
         
         // Set UI references in size manager
@@ -162,10 +166,11 @@ public class MinimapUI
         sizeManager.SetCompassManager(compassManager);
         
         // Initialize scene integration helper
-        sceneIntegration = new MinimapSceneIntegration(minimapContent, playerMarkerManager, mapPreferences);
+        sceneIntegration = new MinimapSceneIntegration(minimapContent, playerMarkerManager, mapPreferences, markerRegistry);
         
         // Initialize marker coordinator
-        markerCoordinator = new MinimapMarkerCoordinator(questMarkerManager, mapPreferences, minimapContent, sizeManager);
+        markerCoordinator = new MinimapMarkerCoordinator(questMarkerManager, mapPreferences, minimapContent, sizeManager, markerRegistry);
+        markerCoordinator.SetCompassManager(compassManager);
     }
 
     private IEnumerator InitializeQuestManagerRoutine()
@@ -342,11 +347,19 @@ public class MinimapUI
                 heightVector,
                 Time.deltaTime * Constants.MapContentLerpSpeed);
             playerMarkerManager?.UpdateDirectionIndicator(trackTransform);
-            compassManager?.SetWorldScale(worldScale);
-            compassManager?.UpdateTargets(playerObject.PlayerBasePosition);
-            compassManager?.SyncFromPoIMarkers(playerObject.PlayerBasePosition, worldScale);
-        }
+            // Calculate minimap mask radius in world units
+            if (compassManager != null)
+            {
+                var minimapMaskSize = contentRect.sizeDelta.x + Constants.MinimapMaskDiameterOffset;
+                var minimapMaskRadiusUI = minimapMaskSize / 2f;
+                var minimapWorldRadius = minimapMaskRadiusUI / worldScale;
+                compassManager?.SetWorldScale(worldScale);
+                compassManager?.SetPlayerTransform(trackTransform);
 
+                compassManager.MinimapWorldRadius = minimapWorldRadius;
+                compassManager?.UpdateCompassMarkers();
+            }
+        }
         minimapTimeDisplay.UpdateMinimapTime();
     }
 }
