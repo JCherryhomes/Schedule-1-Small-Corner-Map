@@ -120,32 +120,32 @@ namespace Small_Corner_Map.Main
         
         public float MinimapWorldRadius { get; set; } // Set this from MinimapUI or coordinator
         public MinimapContent MinimapContent { get; set; } // Set this from coordinator or UI factory
-        
+
         public void UpdateCompassMarkers()
         {
             if (playerTransform == null || rootRect == null) return;
             playerPosition = playerTransform.position;
-            
+
             // Calculate the correct visible compass ring radius
             var maskRadius = maskDiameterUI / 2f;
             const float tickHalfHeightMajor = (Constants.CompassTickHeight * Constants.CompassTickMajorScale) / 2f;
             var ringThickness = tickHalfHeightMajor + Constants.CompassRingExtraThickness + Constants.CompassRingPadding;
-            
-            // Markers should clamp to the center of the compass ring, not the outer edge
-            var compassCenterRadius = maskRadius + (ringThickness / 2f);
-            
+
+            // Use the outer ring radius (maskRadius + ringThickness) so markers clamp to the visible edge
+            var ringRadius = maskRadius + ringThickness;
+
             var minimapScale = lastWorldScale > 0 ? lastWorldScale : 1f;
             var minimapMaskRadiusUI = maskDiameterUI / 2f;
-            
+
             // Get parent transform for markers (minimap content so they move with the map)
             var minimapParent = MinimapContent?.MapContentObject?.transform;
-            
-            if (minimapParent == null) 
+
+            if (minimapParent == null)
             {
                 MelonLogger.Warning($"[CompassManager] Missing minimap parent transform!");
                 return;
             }
-            
+
             // Use unified update method
             foreach (var kvp in compassMarkers)
             {
@@ -155,9 +155,10 @@ namespace Small_Corner_Map.Main
                 if (markerData == null) continue;
                 var markerRect = markerObj.GetComponent<RectTransform>();
                 if (markerRect == null) continue;
-                
+
+                // pass ringRadius (UI units) so UpdateMarkerPosition clamps to the visible ring edge
                 MarkerRegistry.UpdateMarkerPosition(
-                    markerData, markerRect, minimapScale, minimapMaskRadiusUI, compassCenterRadius, playerPosition, minimapParent);
+                    markerData, markerRect, minimapScale, minimapMaskRadiusUI, ringRadius, playerPosition, minimapParent);
             }
         }
     }
