@@ -13,20 +13,25 @@ namespace Small_Corner_Map.Helpers
     {
         private readonly Dictionary<CompassMarkerCategory, GameObject> prototypeCache = new();
         private readonly float unifiedSize;
+        private readonly MarkerRegistry markerRegistry;
 
-        internal CompassUIFactory(float unifiedSize)
+        internal CompassUIFactory(MarkerRegistry registry, float unifiedSize)
         {
             this.unifiedSize = unifiedSize;
+            markerRegistry = registry;
         }
 
-        internal enum CompassMarkerCategory { Vehicle, Contract, Property, White, Other }
+        internal enum CompassMarkerCategory { Contract, DeadDrop, Property, Quest, Vehicle, White, Other }
 
         internal CompassMarkerCategory DetermineCategory(string name)
         {
+            MelonLogger.Msg($"[CompassUIFactory] Determining category for '{name}'");
             if (string.IsNullOrEmpty(name)) return CompassMarkerCategory.Other;
             if (name.StartsWith("StaticMarker_White")) return CompassMarkerCategory.White;
             if (name.Contains("Vehicle")) return CompassMarkerCategory.Vehicle;
             if (name.Contains("Contract")) return CompassMarkerCategory.Contract;
+            if (name.Contains("Regular_Quest")) return CompassMarkerCategory.Quest;
+            if (name.Contains("DeadDrop")) return CompassMarkerCategory.DeadDrop;
             return name.Contains("Property") ? CompassMarkerCategory.Property : CompassMarkerCategory.Other;
         }
 
@@ -38,7 +43,8 @@ namespace Small_Corner_Map.Helpers
             {
                 img.raycastTarget = false;
                 img.preserveAspect = true;
-                var c = img.color; if (c.a < 0.9f) { c.a = 0.9f; img.color = c; }
+                var c = img.color; 
+                if (c.a < 0.9f) { c.a = 0.9f; img.color = c; }
             }
             var rect = clone.GetComponent<RectTransform>() ?? clone.AddComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -74,7 +80,8 @@ namespace Small_Corner_Map.Helpers
                 MelonLogger.Msg($"[CompassUIFactory] Using cached prototype for category {category} (marker '{markerName}')");
                 return cached;
             }
-            var live = MinimapPoIHelper.TryGetMarker(markerName);
+            var marker = markerRegistry.GetMarker(markerName);
+            var live = marker.IconPrefab;
             if (live == null && category == CompassMarkerCategory.Vehicle && OwnedVehiclesManager.VehicleIconPrototype != null)
                 live = OwnedVehiclesManager.VehicleIconPrototype;
             var proto = live != null ? CloneSourceMarker(live) : CreateFallback(category);
@@ -151,15 +158,14 @@ namespace Small_Corner_Map.Helpers
         internal void NormalizeOnce(GameObject iconRoot, CompassMarkerCategory category)
         {
             if (iconRoot == null) return;
-            var targetSize = category == CompassMarkerCategory.Contract ? Constants.CompassContractIconSize : unifiedSize;
             var info = ComputeDimensionInfo(iconRoot);
-            var effectiveDim = info.Dim <= 0.001f ? targetSize : info.Dim;
+            var effectiveDim = info.Dim <= 0.001f ? unifiedSize : info.Dim;
             var rootRect = iconRoot.GetComponent<RectTransform>() ?? iconRoot.AddComponent<RectTransform>();
-            var baseScaleFactor = targetSize / effectiveDim;
+            var baseScaleFactor = unifiedSize / effectiveDim;
             // Category-specific sprite boost factors (inner icon emphasis)
-            float spriteBoost = category switch
+            var spriteBoost = category switch
             {
-                CompassMarkerCategory.Vehicle => 1.20f,
+                CompassMarkerCategory.Vehicle => 1.21f,
                 CompassMarkerCategory.Property => 1.20f,
                 CompassMarkerCategory.Contract => 0.85f, // slightly smaller
                 _ => 1.00f
@@ -178,7 +184,7 @@ namespace Small_Corner_Map.Helpers
                     r.localScale = Vector3.one * baseScaleFactor;
                 }
             }
-            rootRect.sizeDelta = new Vector2(targetSize, targetSize);
+            rootRect.sizeDelta = new Vector2(unifiedSize, unifiedSize);
             foreach (var img in iconRoot.GetComponentsInChildren<Image>(true))
             {
                 img.preserveAspect = true; img.raycastTarget = false;

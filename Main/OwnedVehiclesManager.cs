@@ -26,11 +26,13 @@ public class OwnedVehiclesManager
     private readonly Dictionary<string, object> activeFades = new();
     private readonly Dictionary<int,string> vehicleInstanceToMarkerKey = new(); // instanceID -> current marker key
     private int tempCounter;
+    private readonly MarkerRegistry markerRegistry;
     
-    public OwnedVehiclesManager(MinimapContent minimapContent, MapPreferences mapPreferences)
+    public OwnedVehiclesManager(MinimapContent minimapContent, MapPreferences mapPreferences, MarkerRegistry registry)
     {
         MinimapContent = minimapContent;
         MapPreferences = mapPreferences;
+        markerRegistry = registry;
     }
     
     public void AddOwnedVehicleMarkers()
@@ -74,7 +76,14 @@ public class OwnedVehiclesManager
             if (realGuid != ZeroGuid)
             {
                 var newKey = BaseKey + "_" + realGuid;
-                if (!MinimapPoIHelper.RenameMarker(existingKey, newKey)) return;
+                // Rename: remove old marker, add new marker with updated key and data
+                var oldData = markerRegistry.GetMarker(existingKey);
+                if (oldData != null)
+                {
+                    markerRegistry.RemoveMarker(existingKey);
+                    oldData.Id = newKey;
+                    markerRegistry.AddOrUpdateMarker(oldData);
+                }
                 vehicleInstanceToMarkerKey[instanceId] = newKey;
                 return; // upgraded, no need to rebuild
             }
@@ -96,7 +105,7 @@ public class OwnedVehiclesManager
             key = BaseKey + "_" + realGuid;
         }
         // Avoid duplicate creation if a marker with intended key already exists (rare race)
-        if (MinimapPoIHelper.TryGetMarker(key) != null)
+        if (markerRegistry.GetMarker(key) != null)
         {
             vehicleInstanceToMarkerKey[instanceId] = key;
             RefreshVehicleMarkerPosition(vehicle, key);
@@ -111,16 +120,31 @@ public class OwnedVehiclesManager
         var worldPos = vehicle.transform.position;
         var scale = Constants.DefaultMapScale * MapPreferences.MinimapScaleFactor;
         var mappedPos = new Vector2(worldPos.x * scale - Constants.MarkerXOffset, worldPos.z * scale);
-        MinimapPoIHelper.RemoveAllByKey(key); // ensure clean
-        MinimapPoIHelper.AddMarkerToMap(IconContainer.gameObject, MinimapContent.MapContentObject, key, mappedPos, worldPos);
+        var markerData = new MarkerRegistry.MarkerData
+        {
+            Id = key,
+            WorldPos = worldPos,
+            IconPrefab = IconContainer.gameObject,
+            Type = MarkerType.Vehicle,
+            DisplayName = vehicle.name,
+            XOffset = -Constants.MarkerXOffset,
+            ZOffset = -Constants.MarkerZOffset,
+            IsTracked = true,
+            IsVisibleOnMinimap = true,
+            IsVisibleOnCompass = true
+        };
+        markerRegistry.AddOrUpdateMarker(markerData);
     }
     
     private void RefreshVehicleMarkerPosition(S1Vehicles.LandVehicle vehicle, string key)
     {
         var worldPos = vehicle.transform.position;
-        var scale = Constants.DefaultMapScale * MapPreferences.MinimapScaleFactor;
-        var mappedPos = new Vector2(worldPos.x * scale - Constants.MarkerXOffset, worldPos.z * scale);
-        MinimapPoIHelper.UpdateMarkerPosition(key, mappedPos);
+        var markerData = markerRegistry.GetMarker(key);
+        if (markerData != null)
+        {
+            markerData.WorldPos = worldPos;
+            markerRegistry.AddOrUpdateMarker(markerData);
+        }
     }
     
     private static IEnumerator FadeRoutine(GameObject marker, bool outFade, Action onComplete)
@@ -164,9 +188,10 @@ public class OwnedVehiclesManager
         if (vehicle == null) return;
         var currentKey = GetCurrentKey(vehicle);
         if (currentKey == null) return;
-        var marker = MinimapPoIHelper.TryGetMarker(currentKey);
+        // Fade logic can remain, but marker lookup should use registry
+        var marker = markerRegistry.GetMarker(currentKey);
         if (marker != null)
-            StartFade(currentKey, marker, true, null);
+            StartFade(currentKey, marker.IconPrefab, true, null);
     }
     
     public void ShowVehicleMarker(S1Vehicles.LandVehicle vehicle)
@@ -179,21 +204,21 @@ public class OwnedVehiclesManager
             key = vehicleInstanceToMarkerKey.GetValueOrDefault(instanceId);
             if (key == null) return;
         }
-        var marker = MinimapPoIHelper.TryGetMarker(key);
+        // Fade logic can remain, but marker lookup should use registry
+        var marker = markerRegistry.GetMarker(key);
         if (marker == null)
         {
             // Recreate if missing
             CreateVehicleMarker(vehicle, key);
-            marker = MinimapPoIHelper.TryGetMarker(key);
+            marker = markerRegistry.GetMarker(key);
             if (marker == null) return;
         }
         // Set alpha to 0 then fade in
-        foreach (var g in marker.GetComponentsInChildren<Graphic>(true))
+        foreach (var g in marker.IconPrefab.GetComponentsInChildren<Graphic>(true))
         {
             var c = g.color; c.a = 0f; g.color = c;
         }
-        
-        StartFade(key, marker, false, null);
+        StartFade(key, marker.IconPrefab, false, null);
     }
     
     private string GetCurrentKey(S1Vehicles.LandVehicle vehicle)
@@ -207,7 +232,7 @@ public class OwnedVehiclesManager
     {
         foreach (var kv in vehicleInstanceToMarkerKey)
         {
-            MinimapPoIHelper.RemoveAllByKey(kv.Value);
+            markerRegistry.RemoveMarker(kv.Value);
         }
         vehicleInstanceToMarkerKey.Clear();
     }
@@ -227,8 +252,14 @@ public class OwnedVehiclesManager
             MelonCoroutines.Stop(fadeHandle);
             activeFades.Remove(oldKey);
         }
-
-        if (!MinimapPoIHelper.RenameMarker(oldKey, newKey)) return;
+        // Rename: remove old marker, add new marker with updated key and data
+        var oldData = markerRegistry.GetMarker(oldKey);
+        if (oldData != null)
+        {
+            markerRegistry.RemoveMarker(oldKey);
+            oldData.Id = newKey;
+            markerRegistry.AddOrUpdateMarker(oldData);
+        }
         vehicleInstanceToMarkerKey[instanceId] = newKey;
     }
 }

@@ -13,8 +13,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
-    <AssemblyVersion>3.0.0.0</AssemblyVersion>
-    <FileVersion>3.0.0.0</FileVersion>
+    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <FileVersion>3.1.0.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
@@ -60,9 +60,6 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="S1API">
-      <HintPath>$(MonoGamePath)\Mods\S1API.Mono.MelonLoader.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -103,9 +100,6 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="S1API">
-      <HintPath>$(IL2CPPGamePath)\Mods\S1API.Il2Cpp.MelonLoader.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -123,21 +117,26 @@
     <Compile Include="Helpers\CompassUIFactory.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
-    <Compile Include="Helpers\MinimapPoIHelper.cs" />
     <Compile Include="Helpers\MinimapUIFactory.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Main\CompassManager.cs" />
-    <Compile Include="Main\ContractMarkerManager.cs" />
+    <Compile Include="Main\MarkerRegistry.cs" />
     <Compile Include="Main\MinimapContent.cs" />
     <Compile Include="Main\MinimapMarkerCoordinator.cs" />
     <Compile Include="Main\MinimapSceneIntegration.cs" />
     <Compile Include="Main\MinimapSizeManager.cs" />
     <Compile Include="Main\MinimapTimeDisplay.cs" />
     <Compile Include="Main\MinimapUI.cs" />
-    <Compile Include="Main\MultiplayerManager.cs" />
     <Compile Include="Main\OwnedVehiclesManager.cs" />
     <Compile Include="Main\PlayerMarkerManager.cs" />
     <Compile Include="Main\PropertyPoIManager.cs" />
+    <Compile Include="Main\QuestMarkerManager.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\ContractMarkerStrategy.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\DeadDropQuestMarkerStrategy.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\IQuestMarkerStrategy.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\QuestMarkerStrategyBase.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
+    <Compile Include="Main\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
   </ItemGroup>
 
 
@@ -148,6 +147,11 @@
 
   <ItemGroup>
     <Content Include=".github\CODEOWNERS" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include=".github\copilot-instructions.md" />
   </ItemGroup>
   
 
