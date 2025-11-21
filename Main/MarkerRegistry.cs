@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Small_Corner_Map.Helpers;
+using MelonLoader;
 
 namespace Small_Corner_Map.Main
 {
@@ -67,59 +68,45 @@ namespace Small_Corner_Map.Main
                     childImage.maskable = false;
                 }
             }
-            
+
             // Always apply size and scale to ensure consistency (handles property markers with pre-existing sizes)
             // For property markers with complex internal structures, use localScale to resize everything uniformly
-            markerRect.localScale = Vector3.one * .75f;
-            
-            // Calculate marker position relative to player (for distance check)
-            var relativeToPlayer = new Vector2(
-                (data.WorldPos.x + data.XOffset - playerPos.x) * minimapScale,
-                (data.WorldPos.z + data.ZOffset - playerPos.z) * minimapScale
-            );
-
-            bool isWest = relativeToPlayer.x < 0;
-            const float WEST_CLAMP_OFFSET = 25f; // Use ALL_CAPS for constants
-            float clampThreshold = compassRadius + (isWest ? WEST_CLAMP_OFFSET : -WEST_CLAMP_OFFSET);
-            var uiDistance = relativeToPlayer.magnitude;
-            
-            Vector2 finalPos;
-            if (uiDistance <= clampThreshold)
+            if (data.Id.Contains("Contract_Marker") || data.Id.Contains("Regular_Quest") || data.Id.Contains("DeadDrop_Marker"))
             {
-            
-                // Calculate absolute world position (minimap content at -playerPos * scale will offset this correctly)
-                var absoluteWorldPos = new Vector2(
-                    (data.WorldPos.x + data.XOffset) * minimapScale + 6f,
-                    (data.WorldPos.z + data.ZOffset) * minimapScale
-                );
-                // Within compass radius - use absolute world position
-                finalPos = absoluteWorldPos;
+                markerRect.localScale = Vector3.one * .33f;
             }
             else
             {
-                // Beyond compass radius - clamp to compass edge
-                // Maintain same coordinate system as non-clamped markers
-                // Clamp the relative position to compassRadius, then convert back to absolute world position
-                var clampedRelative = relativeToPlayer.normalized * compassRadius;
-
-                // Move the clamped position further to the left (west) by subtracting an offset from X
-                const float westClampOffset = 25f; // Adjust this value as needed for your UI
-                clampedRelative.x -= westClampOffset;
-
-                finalPos = new Vector2(
-                    (playerPos.x * minimapScale) + clampedRelative.x + 6f,
-                    (playerPos.z * minimapScale) + clampedRelative.y - 2f
-                );
+                markerRect.localScale = Vector3.one * .75f;
             }
-            
+
+            Vector2 playerMarkerUIPos = new Vector2(
+                (playerPos.x * minimapScale) + Constants.MinimapImageOffsetX,
+                (playerPos.z * minimapScale) + Constants.MinimapImageOffsetY
+            );
+
+            // 2. Vector from player marker to marker in minimap space
+            Vector2 playerToMarker = new Vector2(
+                ((data.WorldPos.x - playerPos.x) * minimapScale) - Constants.MarkerXOffset,
+                ((data.WorldPos.z - playerPos.z) * minimapScale) - Constants.MarkerZOffset
+            );
+
+            // 3. Clamp if needed (use the correct radius, e.g., compassCenterRadius)
+            float clampRadius = compassRadius + 3f; // This should be the same as compassCenterRadius from CompassManager
+
+
+            if (playerToMarker.magnitude >= compassRadius)
+            {
+                playerToMarker = playerToMarker.normalized * clampRadius;
+                playerToMarker.x -= Constants.MarkerXOffset * 1.8f;
+            }
+
+            // 4. Final position is player marker UI position + (possibly clamped) vector
+            Vector2 finalPos = playerMarkerUIPos + playerToMarker;
+
             markerRect.anchoredPosition = finalPos;
             markerRect.gameObject.SetActive(true);
-            
-            // Move marker to front (render above compass) when outside minimap radius
-            if (uiDistance > minimapRadius)
-            {
-                markerRect.SetAsLastSibling(); // Render on top
-            }
+            markerRect.SetAsLastSibling();
         }
     }
 

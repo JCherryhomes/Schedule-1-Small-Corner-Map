@@ -13,9 +13,12 @@
         public const float DefaultMapScale = 1.2487098f;
         
         // Marker Offsets
-        public const float MarkerXOffset = 12f;          // X offset for markers (inverted for properties: -12f)
-        public const float ContractMarkerZOffset = -3f;  // Z offset for contract markers
-        public const float PropertyMarkerZOffset = 0f;   // Z offset for property markers
+        public const float MarkerXOffset = 14f;          // X offset for markers (inverted for properties: -12f)
+        public const float MarkerZOffset = -3.5f;         // Z offset for markers
+
+        // Minimap Image Offset (for aligning map image and marker clamping)
+        public const float MinimapImageOffsetX = 4f; // Offset applied to both minimap image and marker clamping
+        public const float MinimapImageOffsetY = 1.5f;
         
         // Minimap UI Sizing
         public const float BaseMinimapSize = 150f;       // Base size of the minimap mask/frame

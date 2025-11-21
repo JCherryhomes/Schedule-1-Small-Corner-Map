@@ -71,7 +71,8 @@ namespace Small_Corner_Map
             {
                 if (!QuestManager.InstanceExists) return;
                 if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
-
+                if (__instance is Contract || __instance.name.StartsWith("Deal for")) return;
+                MelonLogger.Msg(string.Format("[Small Corner Map] Started Quest: {0} - {1}", __instance.GUID, __instance.name));
                 Instance.minimapUI?.OnQuestStarted(__instance);
             }
         }
@@ -83,17 +84,33 @@ namespace Small_Corner_Map
             {
                 if (!QuestManager.InstanceExists) return;
                 if (__instance == null || !__instance.IsTracked) return;
+                if (__instance is Contract || __instance.name.StartsWith("Deal for")) return;
+                MelonLogger.Msg(string.Format("[Small Corner Map] End Quest: {0} - {1}", __instance.GUID, __instance.name));
                 if (__instance is Contract) return;
                 Instance.minimapUI?.OnQuestCompleted(__instance);
             }
         }
-        
-        [HarmonyPatch(typeof(Contract), "Complete")]
+
+
+
+        [HarmonyPatch(typeof(Contract), "Start")]
+        class Patch_ContractStart
+        {
+            static void Postfix(Contract __instance)
+            {
+                var trackContracts = Instance.mapPreferences?.TrackContracts;
+                if (trackContracts == null || !trackContracts.Value) return;
+                if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
+
+                Instance.minimapUI?.OnContractAccepted(__instance);
+            }
+        }
+
+        [HarmonyPatch(typeof(Contract), "End")]
         class Patch_ContractEnd
         {
             static void Postfix(Contract __instance)
             {
-                MelonLogger.Msg(string.Format("Completed Contract: {0}", __instance));
                 var trackContracts = Instance.mapPreferences?.TrackContracts;
                 if (trackContracts == null || !trackContracts.Value) return;
                 if (__instance == null || !__instance.IsTracked) return;

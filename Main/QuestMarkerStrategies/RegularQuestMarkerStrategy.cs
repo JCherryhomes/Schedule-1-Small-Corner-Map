@@ -33,7 +33,7 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies
                 Type = MarkerType.RegularQuest,
                 DisplayName = quest.name,
                 XOffset = -Constants.MarkerXOffset,
-                ZOffset = 0f,
+                ZOffset = -Constants.MarkerZOffset,
                 IsTracked = quest.IsTracked,
                 IsVisibleOnMinimap = true,
                 IsVisibleOnCompass = true

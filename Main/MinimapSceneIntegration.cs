@@ -99,18 +99,19 @@ internal class MinimapSceneIntegration
             MelonLogger.Error("MinimapUI: Error accessing map content: " + ex.Message);
         }
     }
+
     private void ApplySpriteToMinimap(Image sourceImage)
     {
         MelonLogger.Msg("MinimapUI: Found content image with sprite: " + sourceImage.sprite.name);
-        var minimapImage = minimapContent.MapContentObject.GetComponent<Image>();
-        if (minimapImage == null) minimapImage = minimapContent.MapContentObject.AddComponent<Image>();
+        var minimapImage = minimapContent.MapImageObject.GetComponent<Image>();
+        if (minimapImage == null) minimapImage = minimapContent.MapImageObject.AddComponent<Image>();
         minimapImage.sprite = sourceImage.sprite;
         minimapImage.type = Image.Type.Simple;
         minimapImage.preserveAspect = true;
         minimapImage.enabled = true;
         MelonLogger.Msg("MinimapUI: Successfully applied map sprite to minimap!");
-        if (minimapContent.GridContainer != null) minimapContent.GridContainer.gameObject.SetActive(false);
     }
+
     private void TryApplySpriteFromChildren(Transform contentTransform)
     {
         for (var i = 0; i < contentTransform.childCount; i++)

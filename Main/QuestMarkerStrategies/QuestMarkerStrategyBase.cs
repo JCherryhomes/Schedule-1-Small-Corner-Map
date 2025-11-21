@@ -12,6 +12,7 @@ namespace Small_Corner_Map.Main.QuestMarkerStrategies;
 public abstract class QuestMarkerStrategyBase
 {
     internal static readonly string DeadDropQuestName = "Collect Dead Drop";
+    internal static readonly string ContractQuestName = "Deal for";
     internal string MarkerKeyPrefix { get; set; }
     internal GameObject IconPrefab { get; set; }
     internal MinimapContent MinimapContent { get; }

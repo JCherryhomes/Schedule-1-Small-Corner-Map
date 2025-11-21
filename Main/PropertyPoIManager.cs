@@ -72,7 +72,7 @@ public static class PropertyPoIManager
             Type = MarkerType.Property,
             DisplayName = propertyName,
             XOffset = -Constants.MarkerXOffset,
-            ZOffset = Constants.PropertyMarkerZOffset,
+            ZOffset = -Constants.MarkerZOffset,
             IsTracked = true,
             IsVisibleOnMinimap = true,
             IsVisibleOnCompass = true

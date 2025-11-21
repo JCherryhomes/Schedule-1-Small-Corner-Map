@@ -128,7 +128,7 @@ public class OwnedVehiclesManager
             Type = MarkerType.Vehicle,
             DisplayName = vehicle.name,
             XOffset = -Constants.MarkerXOffset,
-            ZOffset = 0f,
+            ZOffset = -Constants.MarkerZOffset,
             IsTracked = true,
             IsVisibleOnMinimap = true,
             IsVisibleOnCompass = true

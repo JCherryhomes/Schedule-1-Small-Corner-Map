@@ -53,6 +53,7 @@ public class QuestMarkerManager
     internal void AddQuestPoIMarkerWorld(Quest quest)
     {
         var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, GetStrategyKey(quest), markerRegistry);
+        MelonLogger.Msg("Using strategy: " + GetStrategyKey(quest));
         strategy.AddMarker(quest);
     }
     
@@ -103,7 +104,7 @@ public class QuestMarkerManager
 
     private string GetStrategyKey(Quest quest)
     {
-        return quest is Contract ? 
+        return quest is Contract || quest.name.StartsWith(QuestMarkerStrategyBase.ContractQuestName) ? 
             "Contract" : quest.name == QuestMarkerStrategyBase.DeadDropQuestName ? 
                 "DeadDrop" : "Regular";
     }

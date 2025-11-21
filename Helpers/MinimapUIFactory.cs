@@ -244,7 +244,7 @@ namespace Small_Corner_Map.Helpers
             rootRect.anchorMin = new Vector2(0.5f, 0.5f);
             rootRect.anchorMax = new Vector2(0.5f, 0.5f);
             rootRect.pivot = new Vector2(0.5f, 0.5f);
-            rootRect.anchoredPosition = Vector2.zero;
+            rootRect.anchoredPosition = Vector2.zero; // new Vector2(7f, 7f); ;
             
             // Determine ring radius (outer) based on minimap diameter
             var letterColor = new Color(
@@ -301,7 +301,6 @@ namespace Small_Corner_Map.Helpers
             bgImg.raycastTarget = false;
             bgObj.transform.SetAsFirstSibling();
             
-            // Create letters
             var letters = new RectTransform[4];
             string[] letterTexts = ["N", "E", "S", "W"];
             float[] letterAnglesDeg = [0f, 90f, 180f, 270f]; // Up = North (0°)
