@@ -13,8 +13,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
-    <AssemblyVersion>3.0.0.0</AssemblyVersion>
-    <FileVersion>3.0.0.0</FileVersion>
+    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <FileVersion>3.1.0.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
