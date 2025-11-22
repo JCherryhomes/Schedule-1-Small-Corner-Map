@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using Small_Corner_Map.Main;
+using Small_Corner_Map.PoIManagers;
 
 namespace Small_Corner_Map.Helpers
 {
@@ -82,8 +83,8 @@ namespace Small_Corner_Map.Helpers
             }
             var marker = markerRegistry.GetMarker(markerName);
             var live = marker.IconPrefab;
-            if (live == null && category == CompassMarkerCategory.Vehicle && OwnedVehiclesManager.VehicleIconPrototype != null)
-                live = OwnedVehiclesManager.VehicleIconPrototype;
+            if (live == null && category == CompassMarkerCategory.Vehicle && OwnedVehiclesManager.IconPrefab != null)
+                live = OwnedVehiclesManager.IconPrefab;
             var proto = live != null ? CloneSourceMarker(live) : CreateFallback(category);
             prototypeCache[category] = proto;
             return proto;

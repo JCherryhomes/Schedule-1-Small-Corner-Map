@@ -127,16 +127,16 @@
     <Compile Include="Main\MinimapSizeManager.cs" />
     <Compile Include="Main\MinimapTimeDisplay.cs" />
     <Compile Include="Main\MinimapUI.cs" />
-    <Compile Include="Main\OwnedVehiclesManager.cs" />
-    <Compile Include="Main\PlayerMarkerManager.cs" />
-    <Compile Include="Main\PropertyPoIManager.cs" />
-    <Compile Include="Main\QuestMarkerManager.cs" />
-    <Compile Include="Main\QuestMarkerStrategies\ContractMarkerStrategy.cs" />
-    <Compile Include="Main\QuestMarkerStrategies\DeadDropQuestMarkerStrategy.cs" />
-    <Compile Include="Main\QuestMarkerStrategies\IQuestMarkerStrategy.cs" />
-    <Compile Include="Main\QuestMarkerStrategies\QuestMarkerStrategyBase.cs" />
-    <Compile Include="Main\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
-    <Compile Include="Main\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
+    <Compile Include="PoIManagers\IPoIManager.cs" />
+    <Compile Include="PoIManagers\OwnedVehiclesManager.cs" />
+    <Compile Include="PoIManagers\PlayerMarkerManager.cs" />
+    <Compile Include="PoIManagers\PropertyPoIManager.cs" />
+    <Compile Include="PoIManagers\QuestMarkerManager.cs" />
+    <Compile Include="PoIManagers\QuestMarkerStrategies\ContractMarkerStrategy.cs" />
+    <Compile Include="PoIManagers\QuestMarkerStrategies\DeadDropQuestMarkerStrategy.cs" />
+    <Compile Include="PoIManagers\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
+    <Compile Include="PoIManagers\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
+    <Compile Include="PoIManagers\PoIManagerBase.cs" />
   </ItemGroup>
 
 
