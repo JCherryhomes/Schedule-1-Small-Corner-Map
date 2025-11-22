@@ -1,8 +1,13 @@
 using MelonLoader;
-using S1API.GameTime;
 using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
+
+#if IL2CPP
+using Il2CppScheduleOne.GameTime;
+#else
+using ScheduleOne.GameTime;
+#endif
 
 namespace Small_Corner_Map.Main;
     
@@ -71,11 +76,11 @@ public class MinimapTimeDisplay
     {
         try
         {
-            var currentTime = TimeManager.GetFormatted12HourTime();
-            var currentDay = TimeManager.CurrentDay;
+            var currentTime = TimeManager.Instance.CurrentTime;
+            var currentDay = TimeManager.Instance.CurrentDay;
             if (minimapTimeText != null)
             {
-                minimapTimeText.text = currentDay.ToString() + "\n" + currentTime;
+                minimapTimeText.text = currentDay + "\n" + TimeManager.Get12HourTime(currentTime);
             }
         }
         catch (Exception ex)

@@ -1,5 +1,12 @@
 ﻿# Changelog
 
+## 3.1.0 - 2025-11-18 
+### Improvements & Fixes
+
+- Added quest and drop box tracking to the minimap.
+
+Enjoy the update — report any remaining visual edge cases and they’ll be prioritized for the next patch.
+
 ## 3.0.0 - 2025-11-16
 ### Added
 - **Compass Ring**: A new directional compass surrounding the minimap shows cardinal directions (N, E, S, W) and tick marks to help with navigation

@@ -14,12 +14,12 @@ namespace Small_Corner_Map.Main;
 public static class PropertyPoIManager
 {
     private const string PropertyPoIKey = "PropertyPoI_Marker";
-    private static Transform IconContainer = null;
+    private static Transform _iconContainer;
     
-    public static void Initialize(MinimapContent minimapContent, GameObject cachedMapContent)
+    public static void Initialize(MinimapContent minimapContent, GameObject cachedMapContent, MarkerRegistry markerRegistry)
     {
         CacheIconContainer(cachedMapContent);
-        if (IconContainer == null) {
+        if (_iconContainer == null) {
             MelonLogger.Msg("PropertyPoIManager: IconContainer not found, cannot add property markers.");
             return;
         }
@@ -30,14 +30,18 @@ public static class PropertyPoIManager
         {
             if (!property.IsOwned) continue;
             var worldPos = property.gameObject.transform.position;
-            // Pass through new scale-aware add
-            AddPropertyMarker(minimapContent, worldPos, scale);
+            AddPropertyMarker(markerRegistry, worldPos, scale, property.name);
         }
     }
 
-    public static void DisableAllMarkers()
+    public static void DisableAllMarkers(MarkerRegistry markerRegistry)
     {
-        MinimapPoIHelper.RemoveAllByKey(PropertyPoIKey);
+        var properties = S1Property.PropertyManager.Instance?.GetComponentsInChildren<S1Property.Property>();
+        if (!(properties?.Length > 0)) return;
+        foreach (var property in properties)
+        {
+            markerRegistry.RemoveMarker(PropertyPoIKey + "_" + property.name);
+        }
     }
     
     public static void CacheIconContainerIfNeeded(GameObject cachedMapContent)
@@ -47,40 +51,46 @@ public static class PropertyPoIManager
     
     private static void CacheIconContainer(GameObject cachedMapContent)
     {
-        if (IconContainer != null) return;
-        
+        if (_iconContainer != null) return;
+
         var propertyPoI = cachedMapContent.transform.Find("PropertyPoI(Clone)");
         if (propertyPoI == null) return;
-            
+
         var iconContainer = propertyPoI.Find("IconContainer");
         if (iconContainer == null) return;
 
-        IconContainer = iconContainer;
+        _iconContainer = iconContainer;
     }
 
-    private static void AddPropertyMarker(MinimapContent minimapContent, Vector3 worldPos, float mapScale)
+    private static void AddPropertyMarker(MarkerRegistry markerRegistry, Vector3 worldPos, float mapScale, string propertyName)
     {
-        MinimapPoIHelper.AddWhitePoIMarker(
-            minimapContent,
-            worldPos,
-            IconContainer.gameObject,
-            PropertyPoIKey);
+        var markerData = new MarkerRegistry.MarkerData
+        {
+            Id = PropertyPoIKey + "_" + propertyName,
+            WorldPos = worldPos,
+            IconPrefab = _iconContainer.gameObject,
+            Type = MarkerType.Property,
+            DisplayName = propertyName,
+            XOffset = -Constants.MarkerXOffset,
+            ZOffset = -Constants.MarkerZOffset,
+            IsTracked = true,
+            IsVisibleOnMinimap = true,
+            IsVisibleOnCompass = true
+        };
+        markerRegistry.AddOrUpdateMarker(markerData);
     }
 
-    public static void RefreshAll(MinimapContent minimapContent, GameObject cachedMapContent)
+    public static void RefreshAll(MinimapContent minimapContent, GameObject cachedMapContent, MarkerRegistry markerRegistry)
     {
-        // Ensure IconContainer is cached before trying to refresh
         CacheIconContainer(cachedMapContent);
-        
-        if (IconContainer == null)
+        if (_iconContainer == null)
         {
             MelonLogger.Warning("PropertyPoIManager: Cannot refresh markers, IconContainer is still null after caching attempt");
             return;
         }
-        
-        DisableAllMarkers();
-        Initialize(minimapContent, cachedMapContent);
+        DisableAllMarkers(markerRegistry);
+        Initialize(minimapContent, cachedMapContent, markerRegistry);
     }
 
-    public static GameObject PropertyIconPrototype => IconContainer != null ? IconContainer.gameObject : null;
+    public static GameObject PropertyIconPrototype => _iconContainer != null ? _iconContainer.gameObject : null;
 }

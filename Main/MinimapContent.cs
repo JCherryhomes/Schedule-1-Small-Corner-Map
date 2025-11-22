@@ -8,6 +8,7 @@ namespace Small_Corner_Map.Main
     public class MinimapContent
     {
         public GameObject MapContentObject { get; private set; }
+        public GameObject MapImageObject { get; private set; }
         public RectTransform GridContainer { get; private set; }
         public float CurrentMapScale { get; private set; }
 
@@ -28,17 +29,17 @@ namespace Small_Corner_Map.Main
             mapContentRect.anchorMin = new Vector2(0.5f, 0.5f);
             mapContentRect.anchorMax = new Vector2(0.5f, 0.5f);
             mapContentRect.pivot = new Vector2(0.5f, 0.5f);
-            mapContentRect.anchoredPosition = Vector2.zero;
+            mapContentRect.anchoredPosition = new Vector2(20f, 20f);
 
-            // Create grid container
-            var gridObject = new GameObject("GridContainer");
-            gridObject.transform.SetParent(MapContentObject.transform, false);
-            GridContainer = gridObject.AddComponent<RectTransform>();
-            GridContainer.sizeDelta = new Vector2(mapContentSize, mapContentSize);
-            GridContainer.anchorMin = new Vector2(0.5f, 0.5f);
-            GridContainer.anchorMax = new Vector2(0.5f, 0.5f);
-            GridContainer.pivot = new Vector2(0.5f, 0.5f);
-            GridContainer.anchoredPosition = Vector2.zero;
+            // Create the image as a child
+            MapImageObject = new GameObject("MapImage");
+            MapImageObject.transform.SetParent(MapContentObject.transform, false);
+            var imageRect = MapImageObject.AddComponent<RectTransform>();
+            imageRect.anchorMin = new Vector2(0.5f, 0.5f);
+            imageRect.anchorMax = new Vector2(0.5f, 0.5f);
+            imageRect.pivot = new Vector2(0.5f, 0.5f);
+            imageRect.sizeDelta = mapContentRect.sizeDelta;
+            imageRect.anchoredPosition = new Vector2(4f, 1.5f);
         }
 
         public GameObject AddWhiteStaticMarker(Vector3 worldPos, GameObject iconPrefab)
@@ -61,25 +62,6 @@ namespace Small_Corner_Map.Main
             markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
             markerObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             return markerObject; // ensure a return even if markerRect was null
-        }
-
-        public void AddRedStaticMarker(Vector3 worldPos)
-        {
-            if (MapContentObject == null)
-            {
-                MelonLogger.Warning("MinimapContent: Cannot add marker, missing map content.");
-                return;
-            }
-
-            var markerObject = new GameObject("StaticMarker_Red");
-            markerObject.transform.SetParent(MapContentObject.transform, false);
-            var markerRect = markerObject.AddComponent<RectTransform>();
-            markerRect.sizeDelta = new Vector2(Constants.RedMarkerSize, Constants.RedMarkerSize);
-            var mappedX = worldPos.x * CurrentMapScale;
-            var mappedZ = worldPos.z * CurrentMapScale;
-            markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
-            var markerImage = markerObject.AddComponent<Image>();
-            markerImage.color = Color.red;
         }
 
         public void UpdateMapScale(float newScale)

@@ -9,28 +9,29 @@ namespace Small_Corner_Map.Main
     {
         private GameObject root;
         private RectTransform rootRect;
-        private MapPreferences mapPreferences;
-        private readonly Dictionary<string, CompassTarget> targets = new();
+        private readonly MapPreferences mapPreferences;
         private const float HideDistanceThreshold = 0.01f;
         private bool subscribed;
         private float maskDiameterUI;
         private float lastWorldScale;
-        private CompassUIFactory uiFactory = new(Constants.CompassDefaultIconSize);
-        
-        private class CompassTarget
-        {
-            public string Id;
-            public Func<Vector3> WorldPositionProvider;
-            public GameObject MarkerGo;
-            public RectTransform Rect;
-            public Sprite Sprite;
-            public bool Normalized;
-        }
-        
-        private CompassUIFactory.CompassMarkerCategory DetermineCategory(string name) => uiFactory.DetermineCategory(name);
-        
+        private CompassUIFactory uiFactory;
+        private static MarkerRegistry _markerRegistry;
+        private readonly Dictionary<string, GameObject> compassMarkers = new();
+        private Transform playerTransform;
+        private Vector3 playerPosition;
+
         public CompassManager(MapPreferences prefs) => mapPreferences = prefs;
-        
+
+        public void Initialize(MarkerRegistry registry)
+        {
+            _markerRegistry = registry;
+            uiFactory = new CompassUIFactory(_markerRegistry, Constants.CompassDefaultIconSize);
+            _markerRegistry.MarkerAdded += OnMarkerAdded;
+            _markerRegistry.MarkerRemoved += OnMarkerRemoved;
+            foreach (var marker in _markerRegistry.GetAllMarkers())
+                OnMarkerAdded(marker);
+        }
+
         public void Create(GameObject frameObject, float maskDiameter)
         {
             maskDiameterUI = maskDiameter;
@@ -38,9 +39,9 @@ namespace Small_Corner_Map.Main
             root = r; rootRect = rRect;
             ApplyVisibility();
         }
-        
+
         public void SetWorldScale(float worldScale) => lastWorldScale = worldScale;
-        
+
         public void UpdateLayout(float newMaskDiameter)
         {
             if (root == null) return;
@@ -49,101 +50,56 @@ namespace Small_Corner_Map.Main
             UnityEngine.Object.Destroy(root);
             var (r, rRect, _, _) = MinimapUIFactory.CreateCompass(parent, newMaskDiameter);
             root = r; rootRect = rRect;
-            foreach (var kv in targets)
+            foreach (var marker in compassMarkers.Values)
             {
-                var target = kv.Value;
-                RecreateTargetVisual(target);
+                if (marker != null) UnityEngine.Object.Destroy(marker);
+            }
+            compassMarkers.Clear();
+            foreach (var marker in _markerRegistry.GetAllMarkers())
+                OnMarkerAdded(marker);
+        }
+
+        private void OnMarkerAdded(MarkerRegistry.MarkerData data)
+        {
+            if (!data.IsVisibleOnCompass) return;
+            if (compassMarkers.ContainsKey(data.Id) || root == null) return;
+            var iconPrefab = data.IconPrefab;
+            if (iconPrefab == null) {
+                MelonLogger.Warning($"[CompassManager] IconPrefab is null for marker {data.Id}");
+                return;
+            }
+            var markerObject = UnityEngine.Object.Instantiate(iconPrefab, root.transform, false);
+            markerObject.name = data.Id;
+            var rect = markerObject.GetComponent<RectTransform>();
+
+            // Set color if specified
+            var image = markerObject.GetComponentInChildren<Image>();
+            if (image != null && data.Color.HasValue)
+                image.color = data.Color.Value;
+            compassMarkers[data.Id] = markerObject;
+        }
+
+        private void OnMarkerRemoved(string id)
+        {
+            if (compassMarkers.TryGetValue(id, out var marker))
+            {
+                UnityEngine.Object.Destroy(marker);
+                compassMarkers.Remove(id);
             }
         }
-        
-        private void RecreateTargetVisual(CompassTarget target)
+
+        public void Dispose()
         {
-            if (target == null) return;
-            var category = DetermineCategory(target.Id);
-            var proto = uiFactory.AcquirePrototype(category, target.Id);
-            var clone = UnityEngine.Object.Instantiate(proto, root.transform, false);
-            if (target.MarkerGo != null) UnityEngine.Object.Destroy(target.MarkerGo);
-            target.MarkerGo = clone;
-            target.Rect = clone.GetComponent<RectTransform>() ?? clone.AddComponent<RectTransform>();
-            target.Sprite = clone.GetComponentInChildren<Image>()?.sprite;
-            target.Normalized = false;
-            uiFactory.NormalizeOnce(target.MarkerGo, category);
-            target.Normalized = true;
-        }
-        
-        private void TryUpgradeTarget(CompassTarget target)
-        {
-            if (target == null || target.MarkerGo == null || target.Sprite != null) return;
-            var category = DetermineCategory(target.Id);
-            var live = MinimapPoIHelper.TryGetMarker(target.Id);
-            if (live == null && category == CompassUIFactory.CompassMarkerCategory.Vehicle && OwnedVehiclesManager.VehicleIconPrototype != null)
-                live = OwnedVehiclesManager.VehicleIconPrototype;
-            if (live == null) return;
-            var upgraded = uiFactory.CloneSourceMarker(live);
-            upgraded.transform.SetParent(root.transform, false);
-            UnityEngine.Object.Destroy(target.MarkerGo);
-            target.MarkerGo = upgraded;
-            target.Rect = upgraded.GetComponent<RectTransform>() ?? upgraded.AddComponent<RectTransform>();
-            target.Sprite = upgraded.GetComponentInChildren<Image>()?.sprite;
-            target.Normalized = false;
-            uiFactory.NormalizeOnce(target.MarkerGo, category);
-            target.Normalized = true;
-        }
-        
-        public void RegisterTarget(string id, Func<Vector3> worldPositionProvider, GameObject iconPrefab = null, RectTransform iconContainer = null, float? sizeOverride = null)
-        {
-            if (targets.ContainsKey(id) || root == null) return;
-            var category = DetermineCategory(id);
-            GameObject prototype = iconPrefab != null ? uiFactory.CloneSourceMarker(iconPrefab) : iconContainer != null ? uiFactory.CloneSourceMarker(iconContainer.gameObject) : uiFactory.AcquirePrototype(category, id);
-            var clone = UnityEngine.Object.Instantiate(prototype, root.transform, false);
-            var rect = clone.GetComponent<RectTransform>() ?? clone.AddComponent<RectTransform>();
-            var target = new CompassTarget
+            if (_markerRegistry != null)
             {
-                Id = id,
-                WorldPositionProvider = worldPositionProvider,
-                MarkerGo = clone,
-                Rect = rect,
-                Sprite = clone.GetComponentInChildren<Image>()?.sprite,
-                Normalized = false
-            };
-            targets[id] = target;
-            uiFactory.NormalizeOnce(target.MarkerGo, category);
-            target.Normalized = true;
-        }
-        
-        public void UnregisterTarget(string id)
-        {
-            if (!targets.TryGetValue(id, out var t)) return;
-            if (t.MarkerGo != null) UnityEngine.Object.Destroy(t.MarkerGo);
-            targets.Remove(id);
-        }
-        
-        public void UpdateTargets(Vector3 playerPos)
-        {
-            if (rootRect == null || lastWorldScale <= 0f) return;
-            var maskRadiusUI = maskDiameterUI / 2f;
-            var hideRadiusUI = maskDiameterUI / 2f + Constants.CompassVisibilityBuffer;
-            foreach (var t in targets.Values)
-            {
-                if (t.MarkerGo == null) continue;
-                TryUpgradeTarget(t);
-                var worldPos = t.WorldPositionProvider?.Invoke() ?? Vector3.zero;
-                var dir = worldPos - playerPos;
-                var planarDistWorld = new Vector2(dir.x, dir.z).magnitude;
-                var distUI = planarDistWorld * lastWorldScale;
-                if (distUI < hideRadiusUI || planarDistWorld < HideDistanceThreshold)
-                {
-                    t.MarkerGo.SetActive(false);
-                    continue;
-                }
-                t.MarkerGo.SetActive(true);
-                var angleRad = Mathf.Atan2(dir.x, dir.z);
-                var uiAngleRad = Mathf.Deg2Rad * (90f - angleRad * Mathf.Rad2Deg);
-                var ringRadiusUI = maskDiameterUI / 2f + Constants.CompassRingPadding;
-                t.Rect.anchoredPosition = new Vector2(ringRadiusUI * Mathf.Cos(uiAngleRad), ringRadiusUI * Mathf.Sin(uiAngleRad));
+                _markerRegistry.MarkerAdded -= OnMarkerAdded;
+                _markerRegistry.MarkerRemoved -= OnMarkerRemoved;
             }
+            foreach (var marker in compassMarkers.Values)
+                UnityEngine.Object.Destroy(marker);
+            compassMarkers.Clear();
         }
-        
+
         public void SetVisible(bool visible)
         {
             if (root != null) root.SetActive(visible);
@@ -156,43 +112,54 @@ namespace Small_Corner_Map.Main
             subscribed = true;
         }
         private void OnShowCompassChanged(bool oldVal, bool newVal) => ApplyVisibility();
-        public void Dispose()
+
+        public void SetPlayerTransform(Transform player)
         {
-            foreach (var t in targets.Values)
-                if (t.MarkerGo != null) UnityEngine.Object.Destroy(t.MarkerGo);
-            targets.Clear();
-            if (subscribed)
-            {
-                mapPreferences.ShowCompass.OnEntryValueChanged.Unsubscribe(OnShowCompassChanged);
-                subscribed = false;
-            }
-            if (root != null) UnityEngine.Object.Destroy(root);
-            root = null; rootRect = null;
+            playerTransform = player;
         }
-        public bool HasTarget(string id) => targets.ContainsKey(id);
         
-        public void SyncFromPoIMarkers(Vector3 playerPos, float worldScale)
+        public float MinimapWorldRadius { get; set; } // Set this from MinimapUI or coordinator
+        public MinimapContent MinimapContent { get; set; } // Set this from coordinator or UI factory
+
+        public void UpdateCompassMarkers()
         {
-            if (worldScale <= 0f) return;
-            lastWorldScale = worldScale;
-            var maskRadiusUI = maskDiameterUI / 2f;
-            var hideRadiusUI = maskRadiusUI + Constants.CompassVisibilityBuffer;
-            var activeNames = new HashSet<string>();
-            foreach (var (name, worldPos, _, _) in MinimapPoIHelper.EnumerateWorldPositionsWithOffsets())
+            if (playerTransform == null || rootRect == null) return;
+            playerPosition = playerTransform.position;
+
+            // Calculate the correct visible compass ring radius
+            var maskRadius = maskDiameterUI / 2f;
+            const float tickHalfHeightMajor = (Constants.CompassTickHeight * Constants.CompassTickMajorScale) / 2f;
+            var ringThickness = tickHalfHeightMajor + Constants.CompassRingExtraThickness + Constants.CompassRingPadding;
+
+            // Use the outer ring radius (maskRadius + ringThickness) so markers clamp to the visible edge
+            var ringRadius = maskRadius + ringThickness;
+
+            var minimapScale = lastWorldScale > 0 ? lastWorldScale : 1f;
+            var minimapMaskRadiusUI = maskDiameterUI / 2f;
+
+            // Get parent transform for markers (minimap content so they move with the map)
+            var minimapParent = MinimapContent?.MapContentObject?.transform;
+
+            if (minimapParent == null)
             {
-                var planarDistWorld = new Vector2(worldPos.x - playerPos.x, worldPos.z - playerPos.z).magnitude;
-                var distUI = planarDistWorld * worldScale;
-                if (distUI <= hideRadiusUI)
-                {
-                    if (HasTarget(name)) UnregisterTarget(name);
-                    continue;
-                }
-                activeNames.Add(name);
-                
-                if (!HasTarget(name)) RegisterTarget(name, () => worldPos);
+                MelonLogger.Warning($"[CompassManager] Missing minimap parent transform!");
+                return;
             }
-            var toRemove = targets.Keys.Where(k => !activeNames.Contains(k)).ToList();
-            foreach (var rem in toRemove) UnregisterTarget(rem);
+
+            // Use unified update method
+            foreach (var kvp in compassMarkers)
+            {
+                var markerId = kvp.Key;
+                var markerObj = kvp.Value;
+                var markerData = _markerRegistry.GetMarker(markerId);
+                if (markerData == null) continue;
+                var markerRect = markerObj.GetComponent<RectTransform>();
+                if (markerRect == null) continue;
+
+                // pass ringRadius (UI units) so UpdateMarkerPosition clamps to the visible ring edge
+                MarkerRegistry.UpdateMarkerPosition(
+                    markerData, markerRect, minimapScale, minimapMaskRadiusUI, ringRadius, playerPosition, minimapParent);
+            }
         }
     }
 }

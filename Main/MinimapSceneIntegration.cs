@@ -1,9 +1,15 @@
 ﻿using System.Collections;
 using MelonLoader;
-using S1API.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
+
+#if IL2CPP
+using Il2CppScheduleOne.PlayerScripts;
+#else
+using ScheduleOne.PlayerScripts;
+#endif
+
 namespace Small_Corner_Map.Main;
 /// <summary>
 /// Handles scene integration: finding game objects, setting up markers, and applying sprites.
@@ -13,16 +19,19 @@ internal class MinimapSceneIntegration
     private readonly MinimapContent minimapContent;
     private readonly PlayerMarkerManager playerMarkerManager;
     private readonly MapPreferences mapPreferences;
+    private readonly MarkerRegistry markerRegistry;
     public Player PlayerObject { get; private set; }
     public GameObject CachedMapContent { get; private set; }
     public MinimapSceneIntegration(
         MinimapContent content,
         PlayerMarkerManager playerMarker,
-        MapPreferences preferences)
+        MapPreferences preferences,
+        MarkerRegistry registry)
     {
         minimapContent = content;
         playerMarkerManager = playerMarker;
         mapPreferences = preferences;
+        markerRegistry = registry;
     }
     public IEnumerator IntegrateWithScene()
     {
@@ -31,10 +40,10 @@ internal class MinimapSceneIntegration
         GameObject mapAppObject = null;
         GameObject viewportObject = null;
         var attempts = 0;
+        PlayerObject ??= Player.Local;
         while ((mapAppObject == null || PlayerObject == null) && attempts < 30)
         {
             attempts++;
-            PlayerObject ??= Player.Local;
             if (mapAppObject == null) mapAppObject = FindMapApp();
             if (mapAppObject != null && viewportObject == null) viewportObject = FindViewport(mapAppObject);
             if (mapAppObject == null || PlayerObject == null)
@@ -90,18 +99,19 @@ internal class MinimapSceneIntegration
             MelonLogger.Error("MinimapUI: Error accessing map content: " + ex.Message);
         }
     }
+
     private void ApplySpriteToMinimap(Image sourceImage)
     {
         MelonLogger.Msg("MinimapUI: Found content image with sprite: " + sourceImage.sprite.name);
-        var minimapImage = minimapContent.MapContentObject.GetComponent<Image>();
-        if (minimapImage == null) minimapImage = minimapContent.MapContentObject.AddComponent<Image>();
+        var minimapImage = minimapContent.MapImageObject.GetComponent<Image>();
+        if (minimapImage == null) minimapImage = minimapContent.MapImageObject.AddComponent<Image>();
         minimapImage.sprite = sourceImage.sprite;
         minimapImage.type = Image.Type.Simple;
         minimapImage.preserveAspect = true;
         minimapImage.enabled = true;
         MelonLogger.Msg("MinimapUI: Successfully applied map sprite to minimap!");
-        if (minimapContent.GridContainer != null) minimapContent.GridContainer.gameObject.SetActive(false);
     }
+
     private void TryApplySpriteFromChildren(Transform contentTransform)
     {
         for (var i = 0; i < contentTransform.childCount; i++)
@@ -130,6 +140,6 @@ internal class MinimapSceneIntegration
     {
         PropertyPoIManager.CacheIconContainerIfNeeded(CachedMapContent);
         if (mapPreferences.TrackProperties.Value)
-            PropertyPoIManager.Initialize(minimapContent, CachedMapContent);
+            PropertyPoIManager.Initialize(minimapContent, CachedMapContent, markerRegistry);
     }
 }
