@@ -1,8 +1,6 @@
 ﻿using MelonLoader;
 using Small_Corner_Map.Helpers;
-using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
+using Small_Corner_Map.Main;
 
 #if IL2CPP
 using S1Vehicles = Il2CppScheduleOne.Vehicles;
@@ -10,52 +8,56 @@ using S1Vehicles = Il2CppScheduleOne.Vehicles;
 using S1Vehicles = ScheduleOne.Vehicles;
 #endif
 
-namespace Small_Corner_Map.Main;
+namespace Small_Corner_Map.PoIManagers;
 
-public class OwnedVehiclesManager
+public class OwnedVehiclesManager : PoIManagerBase<S1Vehicles.LandVehicle>, IPoIManager<S1Vehicles.LandVehicle>
 {
-    private const string BaseKey = "OwnedVehicle_Marker";
-    private const string ZeroGuid = "00000000-0000-0000-0000-000000000000";
-    
-    private MinimapContent MinimapContent { get; }
-    private MapPreferences MapPreferences { get; }
-    
-    internal static RectTransform IconContainer { get; private set; }
-    internal static GameObject VehicleIconPrototype => IconContainer != null ? IconContainer.gameObject : null;
-    
-    private readonly Dictionary<string, object> activeFades = new();
-    private readonly Dictionary<int,string> vehicleInstanceToMarkerKey = new(); // instanceID -> current marker key
-    private int tempCounter;
-    private readonly MarkerRegistry markerRegistry;
-    
     public OwnedVehiclesManager(MinimapContent minimapContent, MapPreferences mapPreferences, MarkerRegistry registry)
+        : base(minimapContent, mapPreferences, registry)
     {
-        MinimapContent = minimapContent;
-        MapPreferences = mapPreferences;
-        markerRegistry = registry;
+        MarkerKeyPrefix = "OwnedVehicle_Marker";
     }
-    
-    public void AddOwnedVehicleMarkers()
+
+    public void AddAllMarkers()
     {
         var ownedVehicles = S1Vehicles.VehicleManager.Instance.PlayerOwnedVehicles;
         if (ownedVehicles == null || ownedVehicles.Count == 0) return;
         foreach (var vehicle in ownedVehicles)
         {
-            AddOrUpgradeVehicleMarker(vehicle);
+            AddMarker(vehicle);
         }
     }
-    
-    /// <summary>
-    /// Adds a new vehicle marker or upgrades an existing temporary one to a real one.
-    /// Temporary markers are used for vehicles with a zero GUID until they are assigned a real GUID.
-    /// </summary>
-    /// <param name="vehicle"></param>
+
+    public void AddMarker(S1Vehicles.LandVehicle vehicle)
+    {
+        AddOrUpgradeVehicleMarker(vehicle);
+    }
+
+    public void RemoveAllMarkers()
+    {
+        Registry.RemoveMarkersByKeyPrefix(MarkerKeyPrefix);
+    }
+
+    public void RemoveMarker(S1Vehicles.LandVehicle vehicle)
+    {
+        if (vehicle == null) return;
+        var key = GetMarkerName(vehicle);
+        if (key == null) return;
+        Registry.RemoveMarker(key);
+    }
+
+    internal override void CachePoIIcon(S1Vehicles.LandVehicle vehicle)
+    {
+        if (IconPrefab == null)
+            IconPrefab = vehicle?.POI?.IconContainer.gameObject;
+    }
+
     private void AddOrUpgradeVehicleMarker(S1Vehicles.LandVehicle vehicle)
     {
-        if (IconContainer == null)
-            IconContainer = vehicle?.POI?.IconContainer;
-        
-        if (IconContainer == null)
+        if (IconPrefab == null)
+            IconPrefab = vehicle?.POI?.IconContainer.gameObject;
+
+        if (IconPrefab == null)
         {
             MelonLogger.Warning("OwnedVehiclesManager: Cannot add vehicle marker, IconContainer is null!");
             return;
@@ -66,65 +68,23 @@ public class OwnedVehiclesManager
             MelonLogger.Warning("OwnedVehiclesManager: Cannot add vehicle marker, vehicle is null!");
             return;
         }
-
-        var instanceId = vehicle.gameObject.GetInstanceID();
-        var realGuid = vehicle.GUID.ToString();
-        var hasMapping = vehicleInstanceToMarkerKey.TryGetValue(instanceId, out var existingKey);
-        // If we already have a marker and GUID is now real & key is temp, rename.
-        if (hasMapping && existingKey != null && existingKey.Contains("_TEMP_"))
-        {
-            if (realGuid != ZeroGuid)
-            {
-                var newKey = BaseKey + "_" + realGuid;
-                // Rename: remove old marker, add new marker with updated key and data
-                var oldData = markerRegistry.GetMarker(existingKey);
-                if (oldData != null)
-                {
-                    markerRegistry.RemoveMarker(existingKey);
-                    oldData.Id = newKey;
-                    markerRegistry.AddOrUpdateMarker(oldData);
-                }
-                vehicleInstanceToMarkerKey[instanceId] = newKey;
-                return; // upgraded, no need to rebuild
-            }
-        }
-        // If we already have a non-temp mapping, nothing to do unless we want to refresh position
-        if (hasMapping && existingKey != null && !existingKey.Contains("_TEMP_"))
-        {
-            RefreshVehicleMarkerPosition(vehicle, existingKey);
-            return;
-        }
-        // Need to create marker
-        string key;
-        if (realGuid == ZeroGuid)
-        {
-            key = BaseKey + "_TEMP_" + tempCounter++;
-        }
-        else
-        {
-            key = BaseKey + "_" + realGuid;
-        }
-        // Avoid duplicate creation if a marker with intended key already exists (rare race)
-        if (markerRegistry.GetMarker(key) != null)
-        {
-            vehicleInstanceToMarkerKey[instanceId] = key;
-            RefreshVehicleMarkerPosition(vehicle, key);
-            return;
-        }
-        CreateVehicleMarker(vehicle, key);
-        vehicleInstanceToMarkerKey[instanceId] = key;
+        
+        Registry.AddOrUpdateMarker(GetMarkerData(vehicle));
     }
-    
-    private void CreateVehicleMarker(S1Vehicles.LandVehicle vehicle, string key)
+
+    protected override string GetMarkerName(S1Vehicles.LandVehicle vehicle)
+    {
+        return MarkerKeyPrefix + "_" + vehicle.GetInstanceID();
+    }
+
+    internal override MarkerRegistry.MarkerData GetMarkerData(S1Vehicles.LandVehicle vehicle)
     {
         var worldPos = vehicle.transform.position;
-        var scale = Constants.DefaultMapScale * MapPreferences.MinimapScaleFactor;
-        var mappedPos = new Vector2(worldPos.x * scale - Constants.MarkerXOffset, worldPos.z * scale);
-        var markerData = new MarkerRegistry.MarkerData
+        return new MarkerRegistry.MarkerData
         {
-            Id = key,
+            Id = GetMarkerName(vehicle),
             WorldPos = worldPos,
-            IconPrefab = IconContainer.gameObject,
+            IconPrefab = IconPrefab,
             Type = MarkerType.Vehicle,
             DisplayName = vehicle.name,
             XOffset = -Constants.MarkerXOffset,
@@ -133,133 +93,5 @@ public class OwnedVehiclesManager
             IsVisibleOnMinimap = true,
             IsVisibleOnCompass = true
         };
-        markerRegistry.AddOrUpdateMarker(markerData);
-    }
-    
-    private void RefreshVehicleMarkerPosition(S1Vehicles.LandVehicle vehicle, string key)
-    {
-        var worldPos = vehicle.transform.position;
-        var markerData = markerRegistry.GetMarker(key);
-        if (markerData != null)
-        {
-            markerData.WorldPos = worldPos;
-            markerRegistry.AddOrUpdateMarker(markerData);
-        }
-    }
-    
-    private static IEnumerator FadeRoutine(GameObject marker, bool outFade, Action onComplete)
-    {
-        if (marker == null) { onComplete?.Invoke(); yield break; }
-        var gfx = marker.GetComponentsInChildren<Graphic>(true);
-        if (gfx.Length == 0) { onComplete?.Invoke(); yield break; }
-        var start = gfx.Select(g => g.color.a).ToArray();
-        var target = outFade ? 0f : 1f;
-        var t = 0f;
-        while (t < Constants.VehicleMarkerFadeDuration)
-        {
-            if (marker == null) { onComplete?.Invoke(); yield break; }
-            t += Time.deltaTime;
-            var lerpT = Mathf.Clamp01(t / Constants.VehicleMarkerFadeDuration);
-            for (var i = 0; i < gfx.Length; i++)
-            {
-                var g = gfx[i]; if (g == null) continue;
-                var c = g.color; c.a = Mathf.Lerp(start[i], target, lerpT); g.color = c;
-            }
-            yield return null;
-        }
-        if (outFade && marker != null)
-            UnityEngine.Object.Destroy(marker);
-        onComplete?.Invoke();
-    }
-    
-    private void StartFade(string key, GameObject marker, bool outFade, Action after)
-    {
-        if (activeFades.TryGetValue(key, out var running) && running != null)
-        {
-            MelonCoroutines.Stop(running);
-            activeFades.Remove(key);
-        }
-        var handle = MelonCoroutines.Start(FadeRoutine(marker, outFade, () => { activeFades.Remove(key); after?.Invoke(); }));
-        activeFades[key] = handle;
-    }
-    
-    public void HideVehicleMarker(S1Vehicles.LandVehicle vehicle)
-    {
-        if (vehicle == null) return;
-        var currentKey = GetCurrentKey(vehicle);
-        if (currentKey == null) return;
-        // Fade logic can remain, but marker lookup should use registry
-        var marker = markerRegistry.GetMarker(currentKey);
-        if (marker != null)
-            StartFade(currentKey, marker.IconPrefab, true, null);
-    }
-    
-    public void ShowVehicleMarker(S1Vehicles.LandVehicle vehicle)
-    {
-        if (vehicle == null) return;
-        var instanceId = vehicle.gameObject.GetInstanceID();
-        if (!vehicleInstanceToMarkerKey.TryGetValue(instanceId, out var key) || key == null)
-        {
-            AddOrUpgradeVehicleMarker(vehicle);
-            key = vehicleInstanceToMarkerKey.GetValueOrDefault(instanceId);
-            if (key == null) return;
-        }
-        // Fade logic can remain, but marker lookup should use registry
-        var marker = markerRegistry.GetMarker(key);
-        if (marker == null)
-        {
-            // Recreate if missing
-            CreateVehicleMarker(vehicle, key);
-            marker = markerRegistry.GetMarker(key);
-            if (marker == null) return;
-        }
-        // Set alpha to 0 then fade in
-        foreach (var g in marker.IconPrefab.GetComponentsInChildren<Graphic>(true))
-        {
-            var c = g.color; c.a = 0f; g.color = c;
-        }
-        StartFade(key, marker.IconPrefab, false, null);
-    }
-    
-    private string GetCurrentKey(S1Vehicles.LandVehicle vehicle)
-    {
-        if (vehicle == null) return null;
-        var instanceId = vehicle.gameObject.GetInstanceID();
-        return vehicleInstanceToMarkerKey.GetValueOrDefault(instanceId);
-    }
-    
-    public void RemoveOwnedVehicleMarkers()
-    {
-        foreach (var kv in vehicleInstanceToMarkerKey)
-        {
-            markerRegistry.RemoveMarker(kv.Value);
-        }
-        vehicleInstanceToMarkerKey.Clear();
-    }
-    
-    public void UpgradeVehicleMarker(S1Vehicles.LandVehicle vehicle)
-    {
-        if (vehicle == null) return;
-        var instanceId = vehicle.gameObject.GetInstanceID();
-        if (!vehicleInstanceToMarkerKey.TryGetValue(instanceId, out var oldKey)) return;
-        if (oldKey == null || !oldKey.Contains("_TEMP_")) return; // already upgraded
-        var realGuid = vehicle.GUID.ToString();
-        if (realGuid == ZeroGuid) return; // still zero
-        var newKey = BaseKey + "_" + realGuid;
-        // Stop fade if active
-        if (activeFades.TryGetValue(oldKey, out var fadeHandle) && fadeHandle != null)
-        {
-            MelonCoroutines.Stop(fadeHandle);
-            activeFades.Remove(oldKey);
-        }
-        // Rename: remove old marker, add new marker with updated key and data
-        var oldData = markerRegistry.GetMarker(oldKey);
-        if (oldData != null)
-        {
-            markerRegistry.RemoveMarker(oldKey);
-            oldData.Id = newKey;
-            markerRegistry.AddOrUpdateMarker(oldData);
-        }
-        vehicleInstanceToMarkerKey[instanceId] = newKey;
     }
 }

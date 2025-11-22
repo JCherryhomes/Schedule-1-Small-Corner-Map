@@ -45,8 +45,19 @@ namespace Small_Corner_Map.Main
             if (markers.Remove(id))
                 MarkerRemoved?.Invoke(id);
         }
+        
+        public void RemoveMarkersByKeyPrefix(string prefix)
+        {
+            var keysToRemove = markers.Where(kvp => kvp.Key.StartsWith(prefix)).Select(kvp => kvp.Key).ToList();
+
+            foreach (var key in keysToRemove)
+            {
+                RemoveMarker(key);
+            }
+        }
 
         public IEnumerable<MarkerData> GetAllMarkers() => markers.Values;
+        
         public MarkerData GetMarker(string id) => markers.TryGetValue(id, out var data) ? data : null;
 
         public static void UpdateMarkerPosition(MarkerData data, RectTransform markerRect, float minimapScale, float minimapRadius, float compassRadius, Vector3 playerPos, Transform minimapParent)

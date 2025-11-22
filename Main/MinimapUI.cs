@@ -102,7 +102,7 @@ public class MinimapUI
     
     internal void OnOwnedVehiclesAdded()
     {
-        ownedVehiclesManager.AddOwnedVehicleMarkers();
+        ownedVehiclesManager.AddAllMarkers();
     }
 
     internal void OnQuestCompleted(S1Quests.Quest quest)
@@ -247,11 +247,11 @@ public class MinimapUI
     {
         if (current)
         {
-            ownedVehiclesManager.AddOwnedVehicleMarkers();
+            ownedVehiclesManager.AddAllMarkers();
         }
         else
         {
-            ownedVehiclesManager.RemoveOwnedVehicleMarkers();
+            ownedVehiclesManager.RemoveAllMarkers();
         }
     }
     
@@ -300,30 +300,26 @@ public class MinimapUI
             if (isInVehicle)
             {
                 // Replace player icon with vehicle icon if available, otherwise keep player icon
-                if (OwnedVehiclesManager.IconContainer != null)
+                if (OwnedVehiclesManager.IconPrefab != null)
                 {
-                    playerMarkerManager.ReplaceWithVehicleIcon(OwnedVehiclesManager.IconContainer.gameObject);
+                    playerMarkerManager.ReplaceWithVehicleIcon(OwnedVehiclesManager.IconPrefab);
                 }
 
                 // Hide the vehicle's original marker on the map (only if vehicle tracking is enabled)
                 if (mapPreferences.TrackVehicles.Value)
                 {
-                    ownedVehiclesManager?.HideVehicleMarker(currentVehicle);
+                    ownedVehiclesManager?.RemoveMarker(currentVehicle);
                     previousVehicle = currentVehicle;
                 }
             }
             else
             {
-                // Only restore if we actually changed to a vehicle icon
-                if (OwnedVehiclesManager.IconContainer != null)
-                {
-                    playerMarkerManager.RestoreOriginalPlayerIcon();
-                }
+                playerMarkerManager.RestoreOriginalPlayerIcon();
 
                 // Show the vehicle marker again on the map (only if vehicle tracking is enabled)
                 if (mapPreferences.TrackVehicles.Value && previousVehicle != null)
                 {
-                    ownedVehiclesManager?.ShowVehicleMarker(previousVehicle);
+                    ownedVehiclesManager?.AddAllMarkers();
                 }
                 previousVehicle = null;
             }
