@@ -1,15 +1,10 @@
-﻿using MelonLoader;
+﻿using Il2CppScheduleOne.Quests;
+using MelonLoader;
 using Small_Corner_Map.Helpers;
-using Small_Corner_Map.Main.QuestMarkerStrategies;
-using UnityEngine;
+using Small_Corner_Map.Main;
+using Small_Corner_Map.PoIManagers.QuestMarkerStrategies;
 
-#if IL2CPP
-using Il2CppScheduleOne.Quests;
-#else
-using ScheduleOne.Quests;
-#endif
-
-namespace Small_Corner_Map.Main;
+namespace Small_Corner_Map.PoIManagers;
 
 public class QuestMarkerManager
 {
@@ -50,7 +45,7 @@ public class QuestMarkerManager
         isInitialized = true;
     }
 
-    internal void AddQuestPoIMarkerWorld(Quest quest)
+    internal void AddMarker(Quest quest)
     {
         var strategy = QuestMarkerStrategyResolver.GetStrategy(minimapContent, mapPreferences, GetStrategyKey(quest), markerRegistry);
         MelonLogger.Msg("Using strategy: " + GetStrategyKey(quest));
@@ -75,7 +70,7 @@ public class QuestMarkerManager
         strategy.AddAllMarkers();
     }
 
-    internal void RemoveQuestPoIMarker(Quest quest)
+    internal void RemoveMarker(Quest quest)
     {
         var strategyKey = GetStrategyKey(quest);
         MelonLogger.Msg("Removing quest poi Marker: " + quest.name);
@@ -104,8 +99,8 @@ public class QuestMarkerManager
 
     private string GetStrategyKey(Quest quest)
     {
-        return quest is Contract || quest.name.StartsWith(QuestMarkerStrategyBase.ContractQuestName) ? 
-            "Contract" : quest.name == QuestMarkerStrategyBase.DeadDropQuestName ? 
+        return quest is Contract || quest.name.StartsWith(Constants.ContractQuestName) ? 
+            "Contract" : quest.name == Constants.DeadDropQuestName ? 
                 "DeadDrop" : "Regular";
     }
 }

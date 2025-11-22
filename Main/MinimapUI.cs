@@ -12,6 +12,7 @@ using MelonLoader;
 using UnityEngine;
 using System.Collections;
 using Small_Corner_Map.Helpers;
+using Small_Corner_Map.PoIManagers;
 
 namespace Small_Corner_Map.Main;
 
@@ -32,6 +33,7 @@ public class MinimapUI
     private MinimapTimeDisplay minimapTimeDisplay;
     private QuestMarkerManager questMarkerManager;
     private OwnedVehiclesManager ownedVehiclesManager;
+    private PropertyPoIManager propertyPoIManager;
     private CompassManager compassManager;
 
     // --- UI GameObjects ---
@@ -100,7 +102,7 @@ public class MinimapUI
     
     internal void OnOwnedVehiclesAdded()
     {
-        ownedVehiclesManager.AddOwnedVehicleMarkers();
+        ownedVehiclesManager.AddAllMarkers();
     }
 
     internal void OnQuestCompleted(S1Quests.Quest quest)
@@ -148,6 +150,12 @@ public class MinimapUI
             minimapContent,
             mapPreferences,
             markerRegistry);
+        
+        // Property PoI markers
+        propertyPoIManager = new PropertyPoIManager(
+            minimapContent,
+            mapPreferences,
+            markerRegistry);
 
         // Time display (shows in-game time)
         minimapTimeDisplay = new MinimapTimeDisplay();
@@ -166,10 +174,12 @@ public class MinimapUI
         sizeManager.SetCompassManager(compassManager);
         
         // Initialize scene integration helper
-        sceneIntegration = new MinimapSceneIntegration(minimapContent, playerMarkerManager, mapPreferences, markerRegistry);
+        sceneIntegration = new MinimapSceneIntegration(
+            minimapContent, playerMarkerManager, mapPreferences, markerRegistry, propertyPoIManager);
         
         // Initialize marker coordinator
-        markerCoordinator = new MinimapMarkerCoordinator(questMarkerManager, mapPreferences, minimapContent, sizeManager, markerRegistry);
+        markerCoordinator = new MinimapMarkerCoordinator(
+            questMarkerManager, mapPreferences, minimapContent, sizeManager, markerRegistry, propertyPoIManager);
         markerCoordinator.SetCompassManager(compassManager);
     }
 
@@ -237,11 +247,11 @@ public class MinimapUI
     {
         if (current)
         {
-            ownedVehiclesManager.AddOwnedVehicleMarkers();
+            ownedVehiclesManager.AddAllMarkers();
         }
         else
         {
-            ownedVehiclesManager.RemoveOwnedVehicleMarkers();
+            ownedVehiclesManager.RemoveAllMarkers();
         }
     }
     
@@ -290,30 +300,26 @@ public class MinimapUI
             if (isInVehicle)
             {
                 // Replace player icon with vehicle icon if available, otherwise keep player icon
-                if (OwnedVehiclesManager.IconContainer != null)
+                if (OwnedVehiclesManager.IconPrefab != null)
                 {
-                    playerMarkerManager.ReplaceWithVehicleIcon(OwnedVehiclesManager.IconContainer.gameObject);
+                    playerMarkerManager.ReplaceWithVehicleIcon(OwnedVehiclesManager.IconPrefab);
                 }
 
                 // Hide the vehicle's original marker on the map (only if vehicle tracking is enabled)
                 if (mapPreferences.TrackVehicles.Value)
                 {
-                    ownedVehiclesManager?.HideVehicleMarker(currentVehicle);
+                    ownedVehiclesManager?.RemoveMarker(currentVehicle);
                     previousVehicle = currentVehicle;
                 }
             }
             else
             {
-                // Only restore if we actually changed to a vehicle icon
-                if (OwnedVehiclesManager.IconContainer != null)
-                {
-                    playerMarkerManager.RestoreOriginalPlayerIcon();
-                }
+                playerMarkerManager.RestoreOriginalPlayerIcon();
 
                 // Show the vehicle marker again on the map (only if vehicle tracking is enabled)
                 if (mapPreferences.TrackVehicles.Value && previousVehicle != null)
                 {
-                    ownedVehiclesManager?.ShowVehicleMarker(previousVehicle);
+                    ownedVehiclesManager?.AddAllMarkers();
                 }
                 previousVehicle = null;
             }

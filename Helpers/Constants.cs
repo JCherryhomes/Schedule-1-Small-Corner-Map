@@ -86,6 +86,9 @@
         public const string GameplayMenuPath = "GameplayMenu";
         public const string MapAppPath = "GameplayMenu/Phone/phone/AppsCanvas/MapApp/Container/Scroll View/Viewport/Content";
         
+        public static readonly string DeadDropQuestName = "Collect Dead Drop";
+        public static readonly string ContractQuestName = "Deal for";
+        
         // Vehicle Marker Settings
         public const float VehicleMarkerFadeDuration = 0.15f; // Seconds to fade vehicle markers in/out
         

@@ -52,7 +52,7 @@ namespace Small_Corner_Map
             }
         }
 
-        [HarmonyPatch(typeof(VehicleManager), "SpawnAndReturnVehicle")]
+        [HarmonyPatch(typeof(VehicleManager), "SpawnAndLoadVehicle")]
         class Patch_VehicleManagerSpawnAndReturnVehicle
         {
             static void Postfix(VehicleManager __instance, LandVehicle __result)

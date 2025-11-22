@@ -5,6 +5,8 @@ using S1Quests = ScheduleOne.Quests;
 #endif
 using UnityEngine;
 using Small_Corner_Map.Helpers;
+using Small_Corner_Map.PoIManagers;
+
 namespace Small_Corner_Map.Main;
 /// <summary>
 /// Coordinates all marker managers (contracts, properties) and handles tracking preferences.
@@ -15,6 +17,7 @@ internal class MinimapMarkerCoordinator
     private readonly MapPreferences mapPreferences;
     private readonly MinimapContent minimapContent;
     private readonly MinimapSizeManager sizeManager;
+    private readonly PropertyPoIManager propertyPoIManager;
     private GameObject cachedMapContent;
     private readonly MarkerRegistry markerRegistry;
     private CompassManager compassManager;
@@ -24,13 +27,15 @@ internal class MinimapMarkerCoordinator
         MapPreferences preferences,
         MinimapContent content,
         MinimapSizeManager sizeMgr,
-        MarkerRegistry registry)
+        MarkerRegistry registry,
+        PropertyPoIManager propertyManager)
     {
         questMarkerManager = questManager;
         mapPreferences = preferences;
         minimapContent = content;
         sizeManager = sizeMgr;
         markerRegistry = registry;
+        propertyPoIManager = propertyManager;
     }
     
     public void SetCompassManager(CompassManager manager)
@@ -45,12 +50,12 @@ internal class MinimapMarkerCoordinator
     
     public void OnQuestStarted(S1Quests.Quest quest)
     {
-        questMarkerManager.AddQuestPoIMarkerWorld(quest);
+        questMarkerManager.AddMarker(quest);
     }
     
     public void OnQuestCompleted(S1Quests.Quest quest)
     {
-        questMarkerManager.RemoveQuestPoIMarker(quest);
+        questMarkerManager.RemoveMarker(quest);
     }
     
     public void OnContractTrackingChanged(bool previous, bool current)
@@ -72,12 +77,12 @@ internal class MinimapMarkerCoordinator
         {
             if (cachedMapContent != null)
             {
-                PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent, markerRegistry);
+                propertyPoIManager.AddAllMarkers();
             }
         }
         else
         {
-            PropertyPoIManager.DisableAllMarkers(markerRegistry);
+            propertyPoIManager.RemoveAllMarkers();
         }
     }
     
@@ -86,16 +91,16 @@ internal class MinimapMarkerCoordinator
         minimapContent?.UpdateMapScale(sizeManager.CurrentWorldScale);
         // No need to update marker positions directly; registry-based system will handle updates.
         if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
-            PropertyPoIManager.RefreshAll(minimapContent, cachedMapContent, markerRegistry);
+            propertyPoIManager.RefreshAll();
     }
 
     public void OnContractAccepted(S1Quests.Contract contract)
     {
-        questMarkerManager.AddQuestPoIMarkerWorld(contract);
+        questMarkerManager.AddMarker(contract);
     }
 
     public void OnContractCompleted(S1Quests.Contract contract)
     {
-        questMarkerManager.RemoveQuestPoIMarker(contract);
+        questMarkerManager.RemoveMarker(contract);
     }
 }
