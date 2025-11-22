@@ -125,8 +125,6 @@ namespace Small_Corner_Map
         {
             static void Postfix(SupplierLocation __instance)
             {
-                MelonLogger.Msg("Supplier SetActiveSupplier called. Supplier: " + (__instance != null ? __instance.name : "null"));
-                MelonLogger.Msg("Supplier Status: " + (__instance != null ? __instance.ActiveSupplier.Status.ToString() : "N/A"));
                 if (__instance == null || __instance.ActiveSupplier.Status == Supplier.ESupplierStatus.PreppingDeadDrop) return;
                 
                 if (__instance.ActiveSupplier.Status == Supplier.ESupplierStatus.Meeting)
