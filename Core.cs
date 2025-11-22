@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 
 #if Mono
+using ScheduleOne.Economy;
 using ScheduleOne.Quests;
 using ScheduleOne.Vehicles;
 #elif IL2CPP
+using Il2CppScheduleOne.Economy;
 using Il2CppScheduleOne.Quests;
 using Il2CppScheduleOne.Vehicles;
 #endif
@@ -115,6 +117,26 @@ namespace Small_Corner_Map
                 if (trackContracts == null || !trackContracts.Value) return;
                 if (__instance == null || !__instance.IsTracked) return;
                 Instance.minimapUI?.OnContractCompleted(__instance);
+            }
+        }
+
+        [HarmonyPatch(typeof(SupplierLocation), "SetActiveSupplier")]
+        class Patch_SupplierLocationSetActiveSupplier
+        {
+            static void Postfix(SupplierLocation __instance)
+            {
+                MelonLogger.Msg("Supplier SetActiveSupplier called. Supplier: " + (__instance != null ? __instance.name : "null"));
+                MelonLogger.Msg("Supplier Status: " + (__instance != null ? __instance.ActiveSupplier.Status.ToString() : "N/A"));
+                if (__instance == null || __instance.ActiveSupplier.Status == Supplier.ESupplierStatus.PreppingDeadDrop) return;
+                
+                if (__instance.ActiveSupplier.Status == Supplier.ESupplierStatus.Meeting)
+                {
+                    Instance.minimapUI.OnMeetingStarted(__instance);
+                }
+                else
+                {
+                    Instance.minimapUI.OnMeetingEnded(__instance);
+                }
             }
         }
     }

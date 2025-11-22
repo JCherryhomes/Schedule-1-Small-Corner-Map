@@ -8,7 +8,7 @@ namespace Small_Corner_Map.PoIManagers;
 
 internal interface IPoIManager<T>
 {
-    void AddMarker(T marker);
+    void AddMarker(T supplierLocation);
     void AddAllMarkers();
     void RemoveMarker(T marker);
     void RemoveAllMarkers();

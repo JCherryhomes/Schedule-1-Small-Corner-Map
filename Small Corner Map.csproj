@@ -137,6 +137,7 @@
     <Compile Include="PoIManagers\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
     <Compile Include="PoIManagers\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
     <Compile Include="PoIManagers\PoIManagerBase.cs" />
+    <Compile Include="PoIManagers\SuppliersPoIManager.cs" />
   </ItemGroup>
 
 

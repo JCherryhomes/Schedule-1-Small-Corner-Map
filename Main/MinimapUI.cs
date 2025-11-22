@@ -1,8 +1,10 @@
 #if IL2CPP
+using Il2CppScheduleOne.Economy;
 using S1Player = Il2CppScheduleOne.PlayerScripts;
 using S1Quests = Il2CppScheduleOne.Quests;
 using S1Vehicles = Il2CppScheduleOne.Vehicles;
 #else
+using ScheduleOne.Economy;
 using S1Player = ScheduleOne.PlayerScripts;
 using S1Quests = ScheduleOne.Quests;
 using S1Vehicles = ScheduleOne.Vehicles;
@@ -34,6 +36,7 @@ public class MinimapUI
     private QuestMarkerManager questMarkerManager;
     private OwnedVehiclesManager ownedVehiclesManager;
     private PropertyPoIManager propertyPoIManager;
+    private SuppliersPoIManager suppliersPoIManager;
     private CompassManager compassManager;
 
     // --- UI GameObjects ---
@@ -153,6 +156,12 @@ public class MinimapUI
         
         // Property PoI markers
         propertyPoIManager = new PropertyPoIManager(
+            minimapContent,
+            mapPreferences,
+            markerRegistry);
+        
+        // Supplier PoI markers
+        suppliersPoIManager = new SuppliersPoIManager(
             minimapContent,
             mapPreferences,
             markerRegistry);
@@ -367,5 +376,15 @@ public class MinimapUI
             }
         }
         minimapTimeDisplay.UpdateMinimapTime();
+    }
+
+    public void OnMeetingStarted(SupplierLocation supplier)
+    {
+        suppliersPoIManager.AddMarker(supplier);
+    }
+    
+    public void OnMeetingEnded(SupplierLocation supplier)
+    {
+        suppliersPoIManager.RemoveMarker(supplier);
     }
 }
