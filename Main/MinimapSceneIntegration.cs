@@ -3,6 +3,7 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
+using Small_Corner_Map.PoIManagers;
 
 #if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
@@ -20,18 +21,22 @@ internal class MinimapSceneIntegration
     private readonly PlayerMarkerManager playerMarkerManager;
     private readonly MapPreferences mapPreferences;
     private readonly MarkerRegistry markerRegistry;
+    private readonly PropertyPoIManager propertyPoIManager;
+    
     public Player PlayerObject { get; private set; }
     public GameObject CachedMapContent { get; private set; }
     public MinimapSceneIntegration(
         MinimapContent content,
         PlayerMarkerManager playerMarker,
         MapPreferences preferences,
-        MarkerRegistry registry)
+        MarkerRegistry registry,
+        PropertyPoIManager propertyManager)
     {
         minimapContent = content;
         playerMarkerManager = playerMarker;
         mapPreferences = preferences;
         markerRegistry = registry;
+        propertyPoIManager = propertyManager;
     }
     public IEnumerator IntegrateWithScene()
     {
@@ -138,8 +143,8 @@ internal class MinimapSceneIntegration
     }
     private void SetupPropertyMarkers()
     {
-        PropertyPoIManager.CacheIconContainerIfNeeded(CachedMapContent);
+        propertyPoIManager.CacheIconContainerIfNeeded();
         if (mapPreferences.TrackProperties.Value)
-            PropertyPoIManager.Initialize(minimapContent, CachedMapContent, markerRegistry);
+            propertyPoIManager.Initialize();
     }
 }

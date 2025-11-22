@@ -31,8 +31,13 @@ namespace Small_Corner_Map.Main
 
         public void AddOrUpdateMarker(MarkerData data)
         {
+            var isUpdate = markers.ContainsKey(data.Id);
             markers[data.Id] = data;
-            MarkerAdded?.Invoke(data);
+
+            if (isUpdate)
+                MarkerUpdated?.Invoke(data);
+            else
+                MarkerAdded?.Invoke(data);
         }
 
         public void RemoveMarker(string id)
