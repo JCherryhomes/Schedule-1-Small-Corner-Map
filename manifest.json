@@ -1,10 +1,9 @@
 ﻿{
     "name":  "SmallCornerMap",
     "description":  "Adds a compact corner minimap with contract/property markers, player tracking, and time display for Schedule I.",
-    "version_number":  "3.1.0",
+    "version_number":  "3.2.0",
     "dependencies":  [
-                         "LavaGang-MelonLoader-0.7.0",
-                         "ifBars-S1API_Forked-2.6.1"
+                         "LavaGang-MelonLoader-0.7.0"
                      ],
     "website_url":  "https://github.com/JCherryhomes/Schedule-1-Small-Corner-Map",
     "author":  "winzaar"
