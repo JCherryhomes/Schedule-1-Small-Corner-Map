@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 3.2.0 - 2025-11-20
+### Improvements & Fixes
+- **Supplier Meetings**: Added support for supplier meeting locations on the minimap.
+
 ## 3.1.0 - 2025-11-18 
 ### Improvements & Fixes
 
