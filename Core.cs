@@ -125,9 +125,10 @@ namespace Small_Corner_Map
         {
             static void Postfix(SupplierLocation __instance)
             {
-                if (__instance == null || __instance.ActiveSupplier.Status == Supplier.ESupplierStatus.PreppingDeadDrop) return;
+                if (__instance?.ActiveSupplier == null || 
+                    __instance.ActiveSupplier?.Status == Supplier.ESupplierStatus.PreppingDeadDrop) return;
                 
-                if (__instance.ActiveSupplier.Status == Supplier.ESupplierStatus.Meeting)
+                if (__instance?.ActiveSupplier?.Status == Supplier.ESupplierStatus.Meeting)
                 {
                     Instance.minimapUI.OnMeetingStarted(__instance);
                 }
