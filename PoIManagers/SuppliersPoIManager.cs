@@ -13,6 +13,7 @@ public class SuppliersPoIManager : PoIManagerBase<SupplierLocation>, IPoIManager
 {
     public SuppliersPoIManager(MinimapContent mapContent, MapPreferences preferences, MarkerRegistry registry) : base(mapContent, preferences, registry)
     {
+        MarkerKeyPrefix = "SupplierPoI_Marker";
     }
 
     public void AddMarker(SupplierLocation supplierLocation)
