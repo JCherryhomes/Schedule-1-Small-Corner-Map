@@ -76,7 +76,7 @@ namespace Small_Corner_Map.Helpers
             var scale = WorldToUIScale;
             
             // Invert coordinates to move map opposite of player
-            var mappedX = -playerWorldPos.x * scale;
+            var mappedX = -playerWorldPos.x * scale + -8.5f;
             var mappedZ = -playerWorldPos.z * scale;
             
             // Visual centering offset - accounts for UI element pivot and positioning quirks
