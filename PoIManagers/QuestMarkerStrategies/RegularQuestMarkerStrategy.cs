@@ -1,8 +1,7 @@
-﻿using Il2CppScheduleOne.Quests;
-using Small_Corner_Map.Helpers;
+﻿using Small_Corner_Map.Helpers;
 using Small_Corner_Map.Main;
 #if IL2CPP
-
+using Il2CppScheduleOne.Quests;
 #else
 using ScheduleOne.Quests;
 #endif
