@@ -13,11 +13,21 @@ namespace Small_Corner_Map.Main
         public float CurrentMapScale { get; private set; }
 
         private readonly float mapContentSize;
+        private MinimapCoordinateSystem coordinateSystem;
 
         public MinimapContent(float mapContentSize = 500f, float mapScale = 1.2487098f)
         {
             this.mapContentSize = mapContentSize;
             this.CurrentMapScale = mapScale;
+        }
+
+        /// <summary>
+        /// Sets the coordinate system to use for marker positioning.
+        /// This should be called after construction but before adding markers.
+        /// </summary>
+        public void SetCoordinateSystem(MinimapCoordinateSystem system)
+        {
+            coordinateSystem = system;
         }
 
         public void Create(GameObject parent)
@@ -57,9 +67,20 @@ namespace Small_Corner_Map.Main
             if (markerRect == null) return markerObject; // ensure a return even if markerRect was null
             
             markerRect.sizeDelta = new Vector2(10f, 10f);
-            var mappedX = worldPos.x * CurrentMapScale;
-            var mappedZ = worldPos.z * CurrentMapScale;
-            markerRect.anchoredPosition = new Vector2(mappedX, mappedZ);
+            
+            // Use coordinate system if available, otherwise fall back to legacy calculation
+            Vector2 markerPosition;
+            if (coordinateSystem != null)
+            {
+                markerPosition = coordinateSystem.WorldToMarkerPosition(worldPos);
+            }
+            else
+            {
+                // Legacy fallback
+                markerPosition = new Vector2(worldPos.x * CurrentMapScale, worldPos.z * CurrentMapScale);
+            }
+            
+            markerRect.anchoredPosition = markerPosition;
             markerObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             return markerObject; // ensure a return even if markerRect was null
         }

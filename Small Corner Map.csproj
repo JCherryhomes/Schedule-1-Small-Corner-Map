@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Import local developer settings if they exist (not committed to source control) -->
   <Import Project="Local.props" Condition="Exists('Local.props')" />
@@ -13,8 +13,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
-    <AssemblyVersion>3.2.0.0</AssemblyVersion>
-    <FileVersion>3.2.0.0</FileVersion>
+    <AssemblyVersion>3.2.1.0</AssemblyVersion>
+    <FileVersion>3.2.1.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
@@ -117,14 +117,15 @@
     <Compile Include="Helpers\CompassUIFactory.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
+    <Compile Include="Helpers\MinimapCoordinateSystem.cs" />
     <Compile Include="Helpers\MinimapUIFactory.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Main\CompassManager.cs" />
     <Compile Include="Main\MarkerRegistry.cs" />
     <Compile Include="Main\MinimapContent.cs" />
     <Compile Include="Main\MinimapMarkerCoordinator.cs" />
+    <Compile Include="Main\MinimapResizer.cs" />
     <Compile Include="Main\MinimapSceneIntegration.cs" />
-    <Compile Include="Main\MinimapSizeManager.cs" />
     <Compile Include="Main\MinimapTimeDisplay.cs" />
     <Compile Include="Main\MinimapUI.cs" />
     <Compile Include="PoIManagers\IPoIManager.cs" />
@@ -169,7 +170,9 @@
   </PropertyGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Message Text="[PostBuild] Starting copy to mods directory..." Importance="high" />
     <Exec Condition="$(Configuration) == 'Mono'" Command="COPY &quot;$(TargetPath)&quot; &quot;$(MonoGamePath)\Mods&quot;" />
     <Exec Condition="$(Configuration) == 'IL2CPP'" Command="COPY &quot;$(TargetPath)&quot; &quot;$(IL2CPPGamePath)\Mods&quot;" />
+    <Message Text="[PostBuild] Finished copying to mods directory." Importance="high" />
   </Target>
 </Project>

@@ -1,4 +1,8 @@
-﻿# Changelog
+# Changelog
+
+## 3.2.1 - 2025-11-23
+### Fix Resizing
+- **Resizing**: The markers on the minimap should now retain their positions when resizing.
 
 ## 3.2.0 - 2025-11-20
 ### Improvements & Fixes

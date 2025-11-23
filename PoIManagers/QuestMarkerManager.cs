@@ -1,4 +1,4 @@
-﻿using MelonLoader;
+using MelonLoader;
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.Main;
 using Small_Corner_Map.PoIManagers.QuestMarkerStrategies;
