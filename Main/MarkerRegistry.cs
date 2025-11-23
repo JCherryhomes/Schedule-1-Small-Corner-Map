@@ -144,10 +144,11 @@ namespace Small_Corner_Map.Main
 
     public enum MarkerType
     {
-        RegularQuest,
-        DeadDrop,
         Contract,
+        DeadDrop,
         Property,
+        RegularQuest,
+        Supplier,
         Vehicle
     }
 }

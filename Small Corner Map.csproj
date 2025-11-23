@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Import local developer settings if they exist (not committed to source control) -->
   <Import Project="Local.props" Condition="Exists('Local.props')" />
@@ -138,6 +138,7 @@
     <Compile Include="PoIManagers\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
     <Compile Include="PoIManagers\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
     <Compile Include="PoIManagers\PoIManagerBase.cs" />
+    <Compile Include="PoIManagers\SuppliersPoIManager.cs" />
   </ItemGroup>
 
 

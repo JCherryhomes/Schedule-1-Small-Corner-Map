@@ -1,4 +1,4 @@
-﻿namespace Small_Corner_Map.Helpers
+namespace Small_Corner_Map.Helpers
 {
     internal static class Constants
     {
