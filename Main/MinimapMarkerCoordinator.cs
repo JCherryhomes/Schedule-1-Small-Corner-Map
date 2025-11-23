@@ -16,7 +16,6 @@ internal class MinimapMarkerCoordinator
     private readonly QuestMarkerManager questMarkerManager;
     private readonly MapPreferences mapPreferences;
     private readonly MinimapContent minimapContent;
-    private readonly MinimapSizeManager sizeManager;
     private readonly PropertyPoIManager propertyPoIManager;
     private GameObject cachedMapContent;
     private readonly MarkerRegistry markerRegistry;
@@ -26,14 +25,12 @@ internal class MinimapMarkerCoordinator
         QuestMarkerManager questManager,
         MapPreferences preferences,
         MinimapContent content,
-        MinimapSizeManager sizeMgr,
         MarkerRegistry registry,
         PropertyPoIManager propertyManager)
     {
         questMarkerManager = questManager;
         mapPreferences = preferences;
         minimapContent = content;
-        sizeManager = sizeMgr;
         markerRegistry = registry;
         propertyPoIManager = propertyManager;
     }
@@ -86,13 +83,6 @@ internal class MinimapMarkerCoordinator
         }
     }
     
-    public void OnSizeChanged()
-    {
-        minimapContent?.UpdateMapScale(sizeManager.CurrentWorldScale);
-        // No need to update marker positions directly; registry-based system will handle updates.
-        if (mapPreferences.TrackProperties.Value && cachedMapContent != null)
-            propertyPoIManager.RefreshAll();
-    }
 
     public void OnContractAccepted(S1Quests.Contract contract)
     {

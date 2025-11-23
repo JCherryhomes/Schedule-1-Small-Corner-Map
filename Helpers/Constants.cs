@@ -10,20 +10,34 @@
         public const string GameDeveloper = "TVGS";
         
         // Map Scaling
+        /// <summary>
+        /// Base world-to-UI scale factor. This constant defines the fundamental ratio
+        /// between world units and UI pixels. Empirically determined to match the game's map image.
+        /// </summary>
         public const float DefaultMapScale = 1.2487098f;
         
         // Marker Offsets
         public const float MarkerXOffset = 14f;          // X offset for markers (inverted for properties: -12f)
         public const float MarkerZOffset = -3.5f;         // Z offset for markers
 
-        // Minimap Image Offset (for aligning map image and marker clamping)
-        public const float MinimapImageOffsetX = 4f; // Offset applied to both minimap image and marker clamping
+        // Minimap Image Offset
+        /// <summary>
+        /// X offset applied to the MapImageObject within its MapContentObject parent.
+        /// This accounts for the hierarchical positioning of UI elements.
+        /// </summary>
+        public const float MinimapImageOffsetX = 4f;
+        
+        /// <summary>
+        /// Y offset applied to the MapImageObject within its MapContentObject parent.
+        /// This accounts for the hierarchical positioning of UI elements.
+        /// </summary>
         public const float MinimapImageOffsetY = 1.5f;
         
         // Minimap UI Sizing
         public const float BaseMinimapSize = 150f;       // Base size of the minimap mask/frame
         public const float BaseMapContentSize = 500f;    // Base size of the map content
         public const float MinimapCornerOffset = -20f;   // Distance from screen corner
+        public const float MinimapSizeMultiplier = 1.5f; // Multiplier when minimap is increased
         
         // Marker Sizing
         public const float ContractMarkerSize = 8f;     // Width/height of contract markers (reduced from 15f)
@@ -55,9 +69,24 @@
         public const float CanvasReferenceHeight = 1080f; // Reference resolution height
         
         // Update & Animation
-        public const float MapContentLerpSpeed = 10f;    // Smoothing speed for map panning
-        public const float PlayerMarkerOffsetX = 11.2f;  // Player marker horizontal centering offset
-        public const float PlayerMarkerOffsetZ = -2.7f;  // Player marker vertical centering offset
+        /// <summary>
+        /// Lerp speed for smooth map panning. Higher values make the map follow the player more quickly.
+        /// </summary>
+        public const float MapContentLerpSpeed = 10f;
+        
+        /// <summary>
+        /// Horizontal centering offset for the player marker in UI space.
+        /// This empirically determined value accounts for the minimap's UI hierarchy and pivot points.
+        /// Scaled by MinimapScaleFactor when the minimap size changes.
+        /// </summary>
+        public const float PlayerMarkerOffsetX = 11.2f;
+        
+        /// <summary>
+        /// Vertical centering offset for the player marker in UI space.
+        /// This empirically determined value accounts for the minimap's UI hierarchy and pivot points.
+        /// Scaled by MinimapScaleFactor when the minimap size changes.
+        /// </summary>
+        public const float PlayerMarkerOffsetZ = -2.7f;
         
         // Time Display
         public const float TimeDisplayWidth = 100f;      // Width of time display container
