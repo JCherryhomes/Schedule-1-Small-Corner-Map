@@ -1,9 +1,5 @@
-using MelonLoader;
-using Small_Corner_Map.Helpers;
-using Small_Corner_Map.UI;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
+using Small_Corner_Map.Helpers;
 
 namespace Small_Corner_Map.Main
 {
@@ -16,30 +12,13 @@ namespace Small_Corner_Map.Main
         private GameObject originalPlayerIconPrefab;
         private bool showingVehicleIcon;
 
-        public GameObject CreatePlayerMarker(GameObject parent)
+        public void CreatePlayerMarker(GameObject parent)
         {
-            Marker = new GameObject("PlayerMarker");
-            Marker.transform.SetParent(parent.transform, false);
-            
-            var rect = Marker.AddComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(Constants.PlayerMarkerSize, Constants.PlayerMarkerSize);
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
-            
-            var image = Marker.AddComponent<Image>();
-            image.color = markerColor;
-
-            // Ensure player marker is drawn on top
-            Marker.transform.SetAsLastSibling();
-
-            return Marker;
+            Marker = MinimapUIFactory.CreatePlayerMarker(parent, markerColor);
         }
 
         public void ReplaceWithRealPlayerIcon(GameObject realIconPrefab)
         {
-            MelonLogger.Msg("PlayerMarkerManager: Replacing player marker with real icon: " + realIconPrefab?.name ?? "null");
             if (realIconPrefab == null) return;
             originalPlayerIconPrefab = realIconPrefab; // cache for restore
             ReplaceWithIcon(realIconPrefab, Constants.PlayerIconReplacementScale, isVehicle:false);
@@ -104,7 +83,7 @@ namespace Small_Corner_Map.Main
                 }
                 else
                 {
-                    directionIndicator = CreateDirectionIndicator(Marker, Color.white);
+                    directionIndicator = MinimapUIFactory.CreateDirectionIndicator(Marker, Color.white);
                 }
             }
 
@@ -119,41 +98,6 @@ namespace Small_Corner_Map.Main
                 indicatorDistance * Mathf.Sin(angleRad)
             );
             directionIndicator.anchoredPosition = newPosition;
-        }
-
-        public IEnumerator InitializePlayerMarkerIcon(GameObject mapObject)
-        {
-            if (mapObject == null) yield return new WaitForSeconds(2.0f);
-
-            var playerPoI = mapObject.transform.Find("PlayerPoI(Clone)");
-            var realIcon = playerPoI?.Find("IconContainer");
-            if (realIcon != null)
-            {
-                ReplaceWithRealPlayerIcon(realIcon.gameObject);
-                MelonLogger.Msg("MinimapUI: Replaced fallback player marker with real player icon.");
-            }
-        }
-
-        /// <summary>
-        /// Creates the direction indicator for the player marker.
-        /// </summary>
-        /// <param name="parent">Parent GameObject (player marker) to attach the indicator to.</param>
-        /// <param name="indicatorColor">Color for the indicator.</param>
-        /// <param name="size">Size of the indicator.</param>
-        /// <returns>The created direction indicator RectTransform.</returns>
-        public RectTransform CreateDirectionIndicator(GameObject parent, Color indicatorColor, float size = Constants.DirectionIndicatorSize)
-        {
-            var indicatorObject = new GameObject("DirectionIndicator");
-            indicatorObject.transform.SetParent(parent.transform, false);
-            
-            var directionIndicator = indicatorObject.AddComponent<RectTransform>();
-            directionIndicator.sizeDelta = new Vector2(size, size);
-            directionIndicator.pivot = new Vector2(0.5f, 0.5f);
-            
-            var image = indicatorObject.AddComponent<Image>();
-            image.color = indicatorColor;
-
-            return directionIndicator;
         }
     }
 }
