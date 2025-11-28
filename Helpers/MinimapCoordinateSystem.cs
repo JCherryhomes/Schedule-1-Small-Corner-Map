@@ -21,7 +21,7 @@ namespace Small_Corner_Map.Helpers
         /// The world-to-UI scale factor (constant - doesn't change with minimap size).
         /// This defines the ratio between world units and UI pixels.
         /// </summary>
-        private const float WorldScale = Constants.DefaultMapScale * Constants.InitialMapImageScale;
+        private const float WorldScale = Constants.DefaultMapScale;
         
         /// <summary>
         /// Current size multiplier for UI elements (1.0 = default, 1.5 = increased).

@@ -15,20 +15,29 @@ internal class MinimapMarkerCoordinator
 {
     private readonly QuestMarkerManager questMarkerManager;
     private readonly MapPreferences mapPreferences;
+    private readonly MinimapContent minimapContent;
     private readonly PropertyPoIManager propertyPoIManager;
     private GameObject cachedMapContent;
     private readonly MarkerRegistry markerRegistry;
+    private CompassManager compassManager;
     
     public MinimapMarkerCoordinator(
         QuestMarkerManager questManager,
         MapPreferences preferences,
+        MinimapContent content,
         MarkerRegistry registry,
         PropertyPoIManager propertyManager)
     {
         questMarkerManager = questManager;
         mapPreferences = preferences;
+        minimapContent = content;
         markerRegistry = registry;
         propertyPoIManager = propertyManager;
+    }
+    
+    public void SetCompassManager(CompassManager manager)
+    {
+        compassManager = manager;
     }
     
     public void SetCachedMapContent(GameObject mapContent)
