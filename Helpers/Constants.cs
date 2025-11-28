@@ -19,7 +19,7 @@ namespace Small_Corner_Map.Helpers
         /// <summary>
         /// Initial scaling factor for the map image to reduce its size.
         /// </summary>
-        public const float InitialMapImageScale = 0.5f;
+        public const float InitialMapImageScale = 0.25f;
 
         // Marker Offsets
         public const float MarkerXOffset = 14f;          // X offset for markers (inverted for properties: -12f)
