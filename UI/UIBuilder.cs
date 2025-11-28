@@ -279,10 +279,6 @@ namespace Small_Corner_Map.UI
             _internalMapImage.sprite = sourceImage.sprite;
             _internalMapImage.SetNativeSize(); // Set original size
 
-            // Scale down the map image
-            var rectTransform = _internalMapImage.GetComponent<RectTransform>();
-            rectTransform.sizeDelta *= Constants.InitialMapImageScale;
-
             MelonLogger.Msg("UIBuilder: Successfully applied map sprite to minimap.");
         }
 
