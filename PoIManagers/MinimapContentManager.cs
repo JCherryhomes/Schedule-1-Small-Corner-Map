@@ -13,16 +13,16 @@ namespace Small_Corner_Map.PoIManagers
         private Transform _playerTransform;
         private MinimapCoordinateSystem _coordinateSystem;
 
-        public IEnumerator Initialize(RectTransform mapContent, Transform playerTransform)
+        public IEnumerator Initialize(RectTransform mapContent, Transform playerTransform, MinimapCoordinateSystem coordinateSystem)
         {
-            if (mapContent == null || playerTransform == null)
+            if (mapContent == null || playerTransform == null || coordinateSystem == null)
             {
                 yield return new WaitForSeconds(1.0f);
             }
             
             _mapContent = mapContent;
             _playerTransform = playerTransform;
-            _coordinateSystem = new MinimapCoordinateSystem();
+            _coordinateSystem = coordinateSystem;
         }
         
         void Start()
