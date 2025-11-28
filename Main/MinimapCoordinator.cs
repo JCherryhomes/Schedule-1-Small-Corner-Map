@@ -41,14 +41,12 @@ namespace Small_Corner_Map.Main
             var minimapSize = Constants.BaseMinimapSize * mapPreferences.MinimapScaleFactor;
             var (frameObject, _) = MinimapUIFactory.CreateFrame(minimapCanvas, minimapSize);
 
-            var builder = minimapContainer.AddComponent<UIBuilder>();
-            builder.SetParentContainer(frameObject);
-            builder.InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value);
+            var builder = new UIBuilder();
+            builder
+                .SetParentContainer(frameObject)
+                .InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value);
 
             MelonLogger.Msg("MinimapUI: UIBuilder initialized");
-
-            // Create the player marker, centering it within the minimap's root (mask)
-            _playerMarkerManager.CreatePlayerMarker(builder.MinimapRoot);
 
             MelonCoroutines.Start(builder.IntegrateWithScene());
             MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon());
