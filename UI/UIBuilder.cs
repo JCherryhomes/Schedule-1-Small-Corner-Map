@@ -158,7 +158,7 @@ namespace Small_Corner_Map.UI
             }
 
             // Initialize the content manager
-            if (_contentManager != null && PlayerObject != null)
+            if (_contentManager != null && PlayerObject != null && _contentGO != null)
             {
                 _contentManager.Initialize(_contentGO.GetComponent<RectTransform>(), PlayerObject.transform);
             }
