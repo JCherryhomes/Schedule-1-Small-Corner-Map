@@ -18,33 +18,47 @@ namespace Small_Corner_Map.Helpers
     public class MinimapCoordinateSystem
     {
         /// <summary>
-        /// The world-to-UI scale factor (constant - doesn't change with minimap size).
-        /// This defines the ratio between world units and UI pixels.
+        /// The base world-to-UI scale factor.
         /// </summary>
-        private const float WorldScale = Constants.DefaultMapScale * Constants.InitialMapImageScale;
+        private readonly float _worldScaleFactor;
         
         /// <summary>
-        /// Current size multiplier for UI elements (1.0 = default, 1.5 = increased).
-        /// This affects the visual size of the minimap but NOT the world scale.
+        /// Current zoom level applied to the minimap.
         /// </summary>
-        private float sizeMultiplier = 1.0f;
-        
+        private float _currentZoomLevel = 1.0f;
+
+        public MinimapCoordinateSystem()
+        {
+            _worldScaleFactor = Constants.DefaultMapScale * Constants.InitialMapImageScale;
+        }
+
         /// <summary>
-        /// World-to-UI scale (constant - doesn't change with minimap size).
+        /// Updates the current zoom level of the minimap.
         /// </summary>
-        public float WorldToUIScale => WorldScale;
+        /// <param name="zoom">The new zoom level (e.g., 1.0 for normal, 0.5 for zoomed out).</param>
+        public void SetCurrentZoomLevel(float zoom)
+        {
+            _currentZoomLevel = zoom;
+        }
+
+        /// <summary>
+        /// The effective world-to-UI scale, incorporating the base world scale factor and current zoom level.
+        /// </summary>
+        public float WorldToUIScale => _worldScaleFactor * _currentZoomLevel;
         
         /// <summary>
         /// Current UI size multiplier.
         /// </summary>
-        public float SizeMultiplier => sizeMultiplier;
+        public float SizeMultiplier => _currentZoomLevel;
         
         /// <summary>
         /// Updates the size multiplier. Call this when the minimap size changes.
         /// </summary>
         public void SetSizeMultiplier(float multiplier)
         {
-            sizeMultiplier = multiplier;
+            // Note: In this revised system, SizeMultiplier and CurrentZoomLevel are effectively the same.
+            // Keeping both for now for backward compatibility if needed, but consider unifying.
+            _currentZoomLevel = multiplier;
         }
 
         /// <summary>
