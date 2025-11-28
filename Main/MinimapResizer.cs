@@ -18,7 +18,6 @@ namespace Small_Corner_Map.Main
         private RectTransform contentRect;
         private Image maskImage;
         private Image borderImage;
-        private CompassManager compassManager;
 
         public MinimapResizer(MinimapCoordinateSystem coordSystem)
         {
@@ -35,8 +34,7 @@ namespace Small_Corner_Map.Main
             RectTransform border,
             RectTransform content,
             Image maskImg,
-            Image borderImg,
-            CompassManager compass)
+            Image borderImg)
         {
             frameRect = frame;
             maskRect = mask;
@@ -44,7 +42,6 @@ namespace Small_Corner_Map.Main
             contentRect = content;
             maskImage = maskImg;
             borderImage = borderImg;
-            compassManager = compass;
         }
 
         /// <summary>
@@ -112,13 +109,6 @@ namespace Small_Corner_Map.Main
             if (contentRect != null)
             {
                 contentRect.sizeDelta = new Vector2(contentSize, contentSize);
-            }
-            
-            // Update compass layout
-            if (compassManager != null)
-            {
-                var maskDiameterWithOffset = minimapSize + Constants.MinimapMaskDiameterOffset;
-                compassManager.UpdateLayout(maskDiameterWithOffset);
             }
         }
     }
