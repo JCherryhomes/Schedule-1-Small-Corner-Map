@@ -40,21 +40,26 @@ namespace Small_Corner_Map.UI
         internal Player PlayerObject { get; private set; }
         private PlayerMarkerManager _playerMarkerManager;
         
-        public GameObject MinimapRoot => _minimapRootGO;
-        public GameObject MinimapContent => _contentGO;
-        public MinimapContentManager ContentManager => _contentManager;
-
-        public GameObject CachedMapContent => _cachedMapContent;
-
-        public void SetPlayerMarkerManager(PlayerMarkerManager playerMarkerManager)
-        {
-            _playerMarkerManager = playerMarkerManager;
-        }
-
-        // --- Core Setup Function ---
-        public void InitializeMinimapUI(bool useSquare, float minimapSize)
-        {
-            // Create Canvas
+                public GameObject MinimapRoot => _minimapRootGO;
+                public GameObject MinimapContent => _contentGO;
+                public MinimapContentManager ContentManager => _contentManager;
+                private MinimapCoordinateSystem _sharedCoordinateSystem;
+        
+                public GameObject CachedMapContent => _cachedMapContent;
+        
+                public void SetPlayerMarkerManager(PlayerMarkerManager playerMarkerManager)
+                {
+                    _playerMarkerManager = playerMarkerManager;
+                }
+        
+                public void SetMinimapCoordinateSystem(MinimapCoordinateSystem system)
+                {
+                    _sharedCoordinateSystem = system;
+                }
+                
+                // --- Core Setup Function ---
+                public void InitializeMinimapUI(bool useSquare, float minimapSize)
+                {            // Create Canvas
             _canvasGO = new GameObject("Minimap_Root_Canvas");
             _canvasGO.transform.SetParent(transform, false);
             var canvas = _canvasGO.AddComponent<Canvas>();
@@ -177,12 +182,12 @@ namespace Small_Corner_Map.UI
             }
 
             // Initialize the content manager now that we have the player object
-            if (_contentManager != null && PlayerObject != null && MinimapContent != null)
+            if (ContentManager != null && PlayerObject != null && MinimapContent != null && _sharedCoordinateSystem != null)
             {
-                MelonCoroutines.Start(_contentManager.Initialize(MinimapContent.GetComponent<RectTransform>(), PlayerObject.transform));
+                MelonCoroutines.Start(ContentManager.Initialize(MinimapContent.GetComponent<RectTransform>(), PlayerObject.transform, _sharedCoordinateSystem));
             }
 
-            AdjustZoom(1f);
+            AdjustZoom(1f); // Initial zoom
             yield break;
         }
 
@@ -191,13 +196,14 @@ namespace Small_Corner_Map.UI
         /// </summary>
         public void AdjustZoom(float zoomMultiplier)
         {
-            if (_internalMapImageGO == null) return;
+            if (_internalMapImageGO == null || _sharedCoordinateSystem == null || _internalMapImage.sprite == null) return;
+
+            _sharedCoordinateSystem.SetCurrentZoomLevel(zoomMultiplier);
 
             var imageRT = _internalMapImageGO.GetComponent<RectTransform>();
 
-            // Get the current size and apply the multiplier
-            Vector2 currentSize = imageRT.sizeDelta;
-            Vector2 newSize = currentSize * zoomMultiplier;
+            // Calculate new size based on sprite's native size and the current world-to-UI scale
+            Vector2 newSize = _internalMapImage.sprite.rect.size * _sharedCoordinateSystem.WorldToUIScale;
 
             imageRT.sizeDelta = newSize;
         }
