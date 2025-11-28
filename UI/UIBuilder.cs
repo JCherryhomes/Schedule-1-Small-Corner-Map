@@ -2,6 +2,7 @@
 using Il2CppSystem.IO;
 using Il2CppInterop.Runtime.Injection;
 using Il2CppScheduleOne.PlayerScripts;
+using Small_Corner_Map.PoIManagers;
 #else
 using ScheduleOne.PlayerScripts;
 #endif
@@ -25,7 +26,6 @@ namespace Small_Corner_Map.UI
         // UI Hierarchy References
         private GameObject _uiContainerParent; // The main parent
         private GameObject _minimapRootGO;     // The main ScrollView GameObject
-        private GameObject _canvasGO;          // The Canvas GameObject
         private GameObject _contentGO;         // The Content GameObject inside the ScrollRect
         private GameObject _internalMapImageGO;
         private ScrollRect _scrollRect;        // The core logic component
@@ -33,6 +33,9 @@ namespace Small_Corner_Map.UI
         private Image _internalMapImage;
         private float _currentZoomLevel = 1.0f;
         
+        public GameObject MinimapRoot => _minimapRootGO;
+        private MinimapContentManager _contentManager;
+
         public static GameObject CachedMapContent;
 
         // Sprites needed for switching styles
@@ -44,17 +47,6 @@ namespace Small_Corner_Map.UI
         public UIBuilder SetParentContainer(GameObject parent)
         {
             _uiContainerParent = parent;
-            _canvasGO = new GameObject("Minimap_Root_Canvas");
-            _canvasGO.transform.SetParent(_uiContainerParent.transform, false);
-            var canvas = _canvasGO.AddComponent<Canvas>();
-
-            // 3. Configure the Canvas settings (e.g., Screen Space Overlay is common for HUDs)
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-            // 4. Add required helper components for layout and interaction
-            _canvasGO.AddComponent<CanvasScaler>();
-            _canvasGO.AddComponent<GraphicRaycaster>();
-
             return this;
         }
 
@@ -70,8 +62,16 @@ namespace Small_Corner_Map.UI
             // 1. Create the root GameObject ("Minimap_ScrollView")
             _minimapRootGO = new GameObject("Minimap_ScrollView_Root");
             var rootRT = _minimapRootGO.AddComponent<RectTransform>();
-            rootRT.SetParent(_canvasGO.transform, false);
-            rootRT.sizeDelta = new Vector2(256, 256); // Default size
+            rootRT.SetParent(_uiContainerParent.transform, false);
+            rootRT.anchorMin = Vector2.zero;
+            rootRT.anchorMax = Vector2.one;
+            rootRT.pivot = new Vector2(0.5f, 0.5f);
+            rootRT.sizeDelta = Vector2.zero;
+            rootRT.anchoredPosition = Vector2.zero;
+
+
+            // Add the content manager
+            _contentManager = _minimapRootGO.AddComponent<MinimapContentManager>();
 
             // 2. Add the Visual Components (Image and Mask)
             // This is the component we will swap the sprite on.
@@ -155,6 +155,12 @@ namespace Small_Corner_Map.UI
             else
             {
                 MelonLogger.Warning("UIBuilder: Cached map content not found.");
+            }
+
+            // Initialize the content manager
+            if (_contentManager != null && PlayerObject != null)
+            {
+                _contentManager.Initialize(_contentGO.GetComponent<RectTransform>(), PlayerObject.transform);
             }
 
             AdjustZoom(1f);
