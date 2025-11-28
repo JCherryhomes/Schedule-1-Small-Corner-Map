@@ -122,9 +122,9 @@
     <Compile Include="Core.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
-    <Compile Include="Helpers\MinimapCoordinateSystem.cs" />
+    <Compile Include="Helpers\MinimapShapeStrategies.cs" />
+    <Compile Include="Helpers\MinimapUIFactory.cs" />
     <Compile Include="PoIManagers\PlayerMarkerManager.cs" />
-    <Compile Include="PoIManagers\MinimapContentManager.cs" />
     <Compile Include="UI\UIBuilder.cs" />
     <Compile Include="Main\MinimapCoordinator.cs" />
   </ItemGroup>
