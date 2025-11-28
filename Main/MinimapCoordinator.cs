@@ -8,11 +8,15 @@ using UnityEngine;
 
 #if IL2CPP
 using Il2CppInterop.Runtime.Injection;
+using Il2CppScheduleOne.PlayerScripts;
+#else
+using ScheduleOne.PlayerScripts;
 #endif
 
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.UI;
 using System.Collections;
+using Small_Corner_Map.PoIManagers;
 
 namespace Small_Corner_Map.Main
 {
@@ -35,32 +39,29 @@ namespace Small_Corner_Map.Main
             }
 
             var minimapContainer = new GameObject("MinimapContainer");
-            // The UIBuilder will now create its own canvas and frame.
-            // MinimapContainer will be the parent of the UIBuilder's internally created canvas.
-
-            // Correctly instantiate UIBuilder as a MonoBehaviour
-            var uiBuilderGameObject = new GameObject("MinimapUIBuilder"); // GameObject for the UIBuilder component
-            uiBuilderGameObject.transform.SetParent(minimapContainer.transform); // Parent it to the main container
-            var builder = uiBuilderGameObject.AddComponent<UIBuilder>();
             
-            // Set minimapContainer as the parent for UIBuilder's internal canvas
-            builder.SetParentContainer(minimapContainer);
+            var builder = minimapContainer.AddComponent<UIBuilder>();
+            
+            var minimapSize = Constants.BaseMinimapSize * mapPreferences.MinimapScaleFactor;
+            builder.InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value, minimapSize);
 
-            builder.InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value);
-
+            var contentManager = builder.ContentManager;
+            if (contentManager != null)
+            {
+                MelonCoroutines.Start(contentManager.Initialize(builder.MinimapContent.GetComponent<RectTransform>(), Player.Local.transform));
+            }
+            
             MelonLogger.Msg("MinimapUI: UIBuilder initialized");
 
             // Create the player marker, centering it within the minimap's root (mask)
             _playerMarkerManager.CreatePlayerMarker(builder.MinimapRoot);
+            
+            MelonLogger.Msg("MinimapCoordinator: Player marker created.");
 
             MelonCoroutines.Start(builder.IntegrateWithScene());
-            MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon());
-        }
-
-        void Dispose()
-        {
-            var minimapObject = GameObject.Find("MinimapContainer");
-            minimapObject = null;
+            MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon(builder.CachedMapContent));
+            
+            MelonLogger.Msg("MinimapCoordinator: Coroutines started.");
         }
     }
 }

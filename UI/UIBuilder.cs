@@ -25,52 +25,53 @@ namespace Small_Corner_Map.UI
         private GameObject _canvasGO;          // The Canvas GameObject
         private GameObject _contentGO;         // The Content GameObject inside the ScrollRect
         private GameObject _internalMapImageGO;
+        private GameObject _cachedMapContent;  // Cached reference to the game's original map content
         private ScrollRect _scrollRect;        // The core logic component
         private Image _mapImage;               // The Image component used for background/masking
         private Image _internalMapImage;
         private float _currentZoomLevel = 1.0f;
-        
-        public GameObject MinimapRoot => _minimapRootGO;
-        private MinimapContentManager _contentManager;
-
-        public static GameObject CachedMapContent;
 
         // Sprites needed for switching styles
         private Sprite _rectangleSprite; // A simple white square sprite (default Unity UI sprite)
         private Sprite _circleSprite;    // A dynamically generated circular sprite
+        private MinimapContentManager _contentManager;
 
         internal Player PlayerObject { get; private set; }
+        
+        public GameObject MinimapRoot => _minimapRootGO;
+        public GameObject MinimapContent => _contentGO;
+        public MinimapContentManager ContentManager => _contentManager;
 
-        public UIBuilder SetParentContainer(GameObject parent)
-        {
-            _uiContainerParent = parent;
-            _canvasGO = new GameObject("Minimap_Root_Canvas");
-            _canvasGO.transform.SetParent(_uiContainerParent.transform, false);
-            var canvas = _canvasGO.AddComponent<Canvas>();
-
-            // 3. Configure the Canvas settings (e.g., Screen Space Overlay is common for HUDs)
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-            // 4. Add required helper components for layout and interaction
-            _canvasGO.AddComponent<CanvasScaler>();
-            _canvasGO.AddComponent<GraphicRaycaster>();
-
-            return this;
-        }
+        public GameObject CachedMapContent => _cachedMapContent;
 
         // --- Core Setup Function ---
-        public void InitializeMinimapUI(bool useSquare)
+        public void InitializeMinimapUI(bool useSquare, float minimapSize)
         {
-            if (_uiContainerParent == null)
-            {
-                MelonLogger.Error("UIBuilder: Parent container not set!");
-                return;
-            }
+            // Create Canvas
+            _canvasGO = new GameObject("Minimap_Root_Canvas");
+            _canvasGO.transform.SetParent(transform, false);
+            var canvas = _canvasGO.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 9999;
+            var canvasScaler = _canvasGO.AddComponent<CanvasScaler>();
+            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvasScaler.referenceResolution = new Vector2(1920f, 1080f);
+            _canvasGO.AddComponent<GraphicRaycaster>();
+            
+            // Create Frame
+            var frameObject = new GameObject("MinimapFrame");
+            frameObject.transform.SetParent(_canvasGO.transform, false);
+            var frameRT = frameObject.AddComponent<RectTransform>();
+            frameRT.anchorMin = new Vector2(1f, 1f);
+            frameRT.anchorMax = new Vector2(1f, 1f);
+            frameRT.pivot = new Vector2(1f, 1f);
+            frameRT.anchoredPosition = new Vector2(-20f, -20f);
+            frameRT.sizeDelta = new Vector2(minimapSize, minimapSize);
 
             // 1. Create the root GameObject ("Minimap_ScrollView")
             _minimapRootGO = new GameObject("Minimap_ScrollView_Root");
             var rootRT = _minimapRootGO.AddComponent<RectTransform>();
-            rootRT.SetParent(_canvasGO.transform, false);
+            rootRT.SetParent(frameObject.transform, false);
             rootRT.anchorMin = Vector2.zero;
             rootRT.anchorMax = Vector2.one;
             rootRT.pivot = new Vector2(0.5f, 0.5f);
@@ -153,8 +154,8 @@ namespace Small_Corner_Map.UI
             }
             LogIntegrationResults(mapAppObject, viewportObject);
             if (viewportObject != null) ApplyMapSprite(viewportObject);
-            CachedMapContent = GameObject.Find(Constants.MapAppPath);
-            if (CachedMapContent != null)
+            _cachedMapContent = GameObject.Find(Constants.MapAppPath);
+            if (_cachedMapContent != null)
             {
                 // Load Player Icon Here
                 MelonLogger.Msg("UIBuilder: Cached map content found.");
@@ -162,12 +163,6 @@ namespace Small_Corner_Map.UI
             else
             {
                 MelonLogger.Warning("UIBuilder: Cached map content not found.");
-            }
-
-            // Initialize the content manager
-            if (_contentManager != null && PlayerObject != null && _contentGO != null)
-            {
-                _contentManager.Initialize(_contentGO.GetComponent<RectTransform>(), PlayerObject.transform);
             }
 
             AdjustZoom(1f);
