@@ -8,15 +8,11 @@ using UnityEngine;
 
 #if IL2CPP
 using Il2CppInterop.Runtime.Injection;
-using Il2CppScheduleOne.PlayerScripts;
-#else
-using ScheduleOne.PlayerScripts;
 #endif
 
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.UI;
 using System.Collections;
-using Small_Corner_Map.PoIManagers;
 
 namespace Small_Corner_Map.Main
 {
@@ -44,12 +40,6 @@ namespace Small_Corner_Map.Main
             
             var minimapSize = Constants.BaseMinimapSize * mapPreferences.MinimapScaleFactor;
             builder.InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value, minimapSize);
-
-            var contentManager = builder.ContentManager;
-            if (contentManager != null)
-            {
-                MelonCoroutines.Start(contentManager.Initialize(builder.MinimapContent.GetComponent<RectTransform>(), Player.Local.transform));
-            }
             
             MelonLogger.Msg("MinimapUI: UIBuilder initialized");
 

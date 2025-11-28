@@ -144,12 +144,12 @@ namespace Small_Corner_Map.UI
             GameObject viewportObject = null;
             var attempts = 0;
             PlayerObject ??= Player.Local;
-            while ((mapAppObject == null || PlayerObject == null) && attempts < 30)
+            while ((mapAppObject == null || viewportObject == null || PlayerObject == null) && attempts < 30)
             {
                 attempts++;
                 if (mapAppObject == null) mapAppObject = FindMapApp();
                 if (mapAppObject != null && viewportObject == null) viewportObject = FindViewport(mapAppObject);
-                if (mapAppObject == null || PlayerObject == null)
+                if (mapAppObject == null || viewportObject == null || PlayerObject == null)
                     yield return new WaitForSeconds(Constants.SceneIntegrationRetryDelay);
             }
             LogIntegrationResults(mapAppObject, viewportObject);
@@ -163,6 +163,12 @@ namespace Small_Corner_Map.UI
             else
             {
                 MelonLogger.Warning("UIBuilder: Cached map content not found.");
+            }
+
+            // Initialize the content manager now that we have the player object
+            if (_contentManager != null && PlayerObject != null && MinimapContent != null)
+            {
+                MelonCoroutines.Start(_contentManager.Initialize(MinimapContent.GetComponent<RectTransform>(), PlayerObject.transform));
             }
 
             AdjustZoom(1f);
