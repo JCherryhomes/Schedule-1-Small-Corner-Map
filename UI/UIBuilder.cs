@@ -253,7 +253,8 @@ namespace Small_Corner_Map.UI
         {
             MelonLogger.Msg("UIBuilder: Applying sprite to minimap.");
             GameObject mapImageInContentGO = new GameObject("InternalMapDisplayObject");
-            mapImageInContentGO.transform.SetParent(_contentGO.transform, false);
+            _internalMapImageGO = mapImageInContentGO; // Assign the GameObject
+            _internalMapImageGO.transform.SetParent(_contentGO.transform, false);
 
             // Get the component and store it in our NEW field
             _internalMapImage = mapImageInContentGO.AddComponent<Image>();
