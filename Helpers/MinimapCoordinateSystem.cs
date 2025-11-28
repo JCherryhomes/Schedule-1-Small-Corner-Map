@@ -90,28 +90,10 @@ namespace Small_Corner_Map.Helpers
             var scale = WorldToUIScale;
             
             // Invert coordinates to move map opposite of player
-            var mappedX = -playerWorldPos.x * scale + -8.5f;
+            var mappedX = -playerWorldPos.x * scale;
             var mappedZ = -playerWorldPos.z * scale;
             
-            // Visual centering offset - accounts for UI element pivot and positioning quirks
-            // These values were empirically determined to center the player marker correctly
-            var centeringOffset = GetCenteringOffset();
-            
-            return new Vector2(mappedX, mappedZ) + centeringOffset;
-        }
-
-        /// <summary>
-        /// Gets the visual centering offset for the player marker.
-        /// Scaled by the size multiplier to maintain proper centering at different sizes.
-        /// 
-        /// NOTE: These constants (PlayerMarkerOffsetX/Z) represent empirical corrections
-        /// that account for the specific layout of UI elements (mask, content, image hierarchy).
-        /// </summary>
-        private Vector2 GetCenteringOffset()
-        {
-            return new Vector2(
-                Constants.PlayerMarkerOffsetX * sizeMultiplier,
-                Constants.PlayerMarkerOffsetZ * sizeMultiplier);
+            return new Vector2(mappedX, mappedZ);
         }
 
         /// <summary>
