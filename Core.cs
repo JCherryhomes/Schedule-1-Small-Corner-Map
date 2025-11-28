@@ -4,6 +4,8 @@ using MelonLoader;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+
 
 #if Mono
 using ScheduleOne.Economy;
@@ -22,16 +24,11 @@ namespace Small_Corner_Map
 {
     public class Core : MelonMod
     {
-        private MinimapUI minimapUI;
-        private MapPreferences mapPreferences;
-
         private static Core Instance { get; set; }
 
         public override void OnInitializeMelon()
         {
             base.OnInitializeMelon();
-            mapPreferences = new MapPreferences();
-            mapPreferences.LoadPreferences();
             Instance = this;
         }
 
@@ -44,99 +41,105 @@ namespace Small_Corner_Map
             if (sceneName == "Main")
             {
                 MelonLogger.Msg("GameplayScene loaded, initializing Small Corner Map...");
-                minimapUI = new MinimapUI(mapPreferences);
-                minimapUI.Initialize();
+                var baseGameObject = new GameObject("SmallCornerMap_Main");
+                baseGameObject.AddComponent<MinimapCoordinator>();
             }
             else
             {
-                minimapUI?.Dispose();
-                minimapUI = null;
+                // Dispose of the minimap when leaving the main scene
+                var baseGameObject = GameObject.Find("SmallCornerMap_Main");
+
+                if (baseGameObject != null)
+                {
+                    UnityEngine.Object.Destroy(baseGameObject);
+                    MelonLogger.Msg("Small Corner Map disposed.");
+                }
             }
         }
 
-        [HarmonyPatch(typeof(VehicleManager), "SpawnAndLoadVehicle")]
-        class Patch_VehicleManagerSpawnAndReturnVehicle
-        {
-            static void Postfix(VehicleManager __instance, LandVehicle __result)
-            {
-                var vehicle = __instance.GetVehiclePrefab(__result.VehicleCode);
-                var trackVehicles = Instance.mapPreferences?.TrackVehicles;
-                if (trackVehicles == null || !trackVehicles.Value) return;
-                Instance.minimapUI?.OnOwnedVehiclesAdded();
-            }
-        }
+        //[HarmonyPatch(typeof(VehicleManager), "SpawnAndLoadVehicle")]
+        //class Patch_VehicleManagerSpawnAndReturnVehicle
+        //{
+        //    static void Postfix(VehicleManager __instance, LandVehicle __result)
+        //    {
+        //        var vehicle = __instance.GetVehiclePrefab(__result.VehicleCode);
+        //        var trackVehicles = Instance.mapPreferences?.TrackVehicles;
+        //        if (trackVehicles == null || !trackVehicles.Value) return;
+        //        Instance.minimapUI?.OnOwnedVehiclesAdded();
+        //    }
+        //}
 
-        [HarmonyPatch(typeof(Quest), "Start")]
-        class Patch_QuestStart
-        {
-            static void Postfix(Quest __instance)
-            {
-                if (!QuestManager.InstanceExists) return;
-                if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
-                if (__instance is Contract || __instance.name.StartsWith("Deal for")) return;
-                MelonLogger.Msg(string.Format("[Small Corner Map] Started Quest: {0} - {1}", __instance.GUID, __instance.name));
-                Instance.minimapUI?.OnQuestStarted(__instance);
-            }
-        }
+        //[HarmonyPatch(typeof(Quest), "Start")]
+        //class Patch_QuestStart
+        //{
+        //    static void Postfix(Quest __instance)
+        //    {
+        //        if (!QuestManager.InstanceExists) return;
+        //        if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
+        //        if (__instance is Contract || __instance.name.StartsWith("Deal for")) return;
+        //        MelonLogger.Msg(string.Format("[Small Corner Map] Started Quest: {0} - {1}", __instance.GUID, __instance.name));
+        //        Instance.minimapUI?.OnQuestStarted(__instance);
+        //    }
+        //}
 
-        [HarmonyPatch(typeof(Quest), "End")]
-        class Patch_QuestEnd
-        {
-            static void Postfix(Quest __instance)
-            {
-                if (!QuestManager.InstanceExists) return;
-                if (__instance == null || !__instance.IsTracked) return;
-                if (__instance is Contract || __instance.name.StartsWith("Deal for")) return;
-                MelonLogger.Msg(string.Format("[Small Corner Map] End Quest: {0} - {1}", __instance.GUID, __instance.name));
-                if (__instance is Contract) return;
-                Instance.minimapUI?.OnQuestCompleted(__instance);
-            }
-        }
+        //[HarmonyPatch(typeof(Quest), "End")]
+        //class Patch_QuestEnd
+        //{
+        //    static void Postfix(Quest __instance)
+        //    {
+        //        if (!QuestManager.InstanceExists) return;
+        //        if (__instance == null || !__instance.IsTracked) return;
+        //        if (__instance is Contract || __instance.name.StartsWith("Deal for")) return;
+        //        MelonLogger.Msg(string.Format("[Small Corner Map] End Quest: {0} - {1}", __instance.GUID, __instance.name));
+        //        if (__instance is Contract) return;
+        //        Instance.minimapUI?.OnQuestCompleted(__instance);
+        //    }
+        //}
 
 
 
-        [HarmonyPatch(typeof(Contract), "Start")]
-        class Patch_ContractStart
-        {
-            static void Postfix(Contract __instance)
-            {
-                var trackContracts = Instance.mapPreferences?.TrackContracts;
-                if (trackContracts == null || !trackContracts.Value) return;
-                if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
+        //[HarmonyPatch(typeof(Contract), "Start")]
+        //class Patch_ContractStart
+        //{
+        //    static void Postfix(Contract __instance)
+        //    {
+        //        var trackContracts = Instance.mapPreferences?.TrackContracts;
+        //        if (trackContracts == null || !trackContracts.Value) return;
+        //        if (__instance == null || __instance.State != EQuestState.Active || !__instance.IsTracked) return;
 
-                Instance.minimapUI?.OnContractAccepted(__instance);
-            }
-        }
+        //        Instance.minimapUI?.OnContractAccepted(__instance);
+        //    }
+        //}
 
-        [HarmonyPatch(typeof(Contract), "End")]
-        class Patch_ContractEnd
-        {
-            static void Postfix(Contract __instance)
-            {
-                var trackContracts = Instance.mapPreferences?.TrackContracts;
-                if (trackContracts == null || !trackContracts.Value) return;
-                if (__instance == null || !__instance.IsTracked) return;
-                Instance.minimapUI?.OnContractCompleted(__instance);
-            }
-        }
+        //[HarmonyPatch(typeof(Contract), "End")]
+        //class Patch_ContractEnd
+        //{
+        //    static void Postfix(Contract __instance)
+        //    {
+        //        var trackContracts = Instance.mapPreferences?.TrackContracts;
+        //        if (trackContracts == null || !trackContracts.Value) return;
+        //        if (__instance == null || !__instance.IsTracked) return;
+        //        Instance.minimapUI?.OnContractCompleted(__instance);
+        //    }
+        //}
 
-        [HarmonyPatch(typeof(SupplierLocation), "SetActiveSupplier")]
-        class Patch_SupplierLocationSetActiveSupplier
-        {
-            static void Postfix(SupplierLocation __instance)
-            {
-                if (__instance?.ActiveSupplier == null || 
-                    __instance.ActiveSupplier?.Status == Supplier.ESupplierStatus.PreppingDeadDrop) return;
+        //[HarmonyPatch(typeof(SupplierLocation), "SetActiveSupplier")]
+        //class Patch_SupplierLocationSetActiveSupplier
+        //{
+        //    static void Postfix(SupplierLocation __instance)
+        //    {
+        //        if (__instance?.ActiveSupplier == null || 
+        //            __instance.ActiveSupplier?.Status == Supplier.ESupplierStatus.PreppingDeadDrop) return;
                 
-                if (__instance?.ActiveSupplier?.Status == Supplier.ESupplierStatus.Meeting)
-                {
-                    Instance.minimapUI.OnMeetingStarted(__instance);
-                }
-                else
-                {
-                    Instance.minimapUI.OnMeetingEnded(__instance);
-                }
-            }
-        }
+        //        if (__instance?.ActiveSupplier?.Status == Supplier.ESupplierStatus.Meeting)
+        //        {
+        //            Instance.minimapUI.OnMeetingStarted(__instance);
+        //        }
+        //        else
+        //        {
+        //            Instance.minimapUI.OnMeetingEnded(__instance);
+        //        }
+        //    }
+        //}
     }
 }

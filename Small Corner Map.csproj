@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Import local developer settings if they exist (not committed to source control) -->
   <Import Project="Local.props" Condition="Exists('Local.props')" />
@@ -6,7 +6,7 @@
   <PropertyGroup>
     <!-- Game installation paths - must be configured in Local.props -->
     <!-- MonoGamePath and IL2CPPGamePath should contain full paths to game folders -->
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net60</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <RootNamespace>Small_Corner_Map</RootNamespace>
@@ -63,6 +63,9 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 
@@ -103,6 +106,9 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 
@@ -114,31 +120,13 @@
 
   <ItemGroup>
     <Compile Include="Core.cs" />
-    <Compile Include="Helpers\CompassUIFactory.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
-    <Compile Include="Helpers\MinimapCoordinateSystem.cs" />
+    <Compile Include="Helpers\MinimapShapeStrategies.cs" />
     <Compile Include="Helpers\MinimapUIFactory.cs" />
-    <Compile Include="Helpers\Utils.cs" />
-    <Compile Include="Main\CompassManager.cs" />
-    <Compile Include="Main\MarkerRegistry.cs" />
-    <Compile Include="Main\MinimapContent.cs" />
-    <Compile Include="Main\MinimapMarkerCoordinator.cs" />
-    <Compile Include="Main\MinimapResizer.cs" />
-    <Compile Include="Main\MinimapSceneIntegration.cs" />
-    <Compile Include="Main\MinimapTimeDisplay.cs" />
-    <Compile Include="Main\MinimapUI.cs" />
-    <Compile Include="PoIManagers\IPoIManager.cs" />
-    <Compile Include="PoIManagers\OwnedVehiclesManager.cs" />
     <Compile Include="PoIManagers\PlayerMarkerManager.cs" />
-    <Compile Include="PoIManagers\PropertyPoIManager.cs" />
-    <Compile Include="PoIManagers\QuestMarkerManager.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\ContractMarkerStrategy.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\DeadDropQuestMarkerStrategy.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
-    <Compile Include="PoIManagers\PoIManagerBase.cs" />
-    <Compile Include="PoIManagers\SuppliersPoIManager.cs" />
+    <Compile Include="UI\UIBuilder.cs" />
+    <Compile Include="Main\MinimapCoordinator.cs" />
   </ItemGroup>
 
 
@@ -158,7 +146,7 @@
   
 
   <PropertyGroup Condition="'$(Configuration)' == 'IL2CPP'">
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net60</TargetFramework>
     <DefineConstants>$(DefineConstants);IL2CPP</DefineConstants>
     <TargetName>Small_Corner_Map.Il2cpp</TargetName>
   </PropertyGroup>

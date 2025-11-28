@@ -1,4 +1,5 @@
 ﻿using MelonLoader;
+using UnityEngine;
 
 namespace Small_Corner_Map.Helpers  
 {
@@ -46,6 +47,7 @@ namespace Small_Corner_Map.Helpers
         public MelonPreferences_Entry<bool> TrackProperties { get; private set; }
         public MelonPreferences_Entry<bool> TrackVehicles { get; private set; }
         public MelonPreferences_Entry<bool> ShowCompass { get; private set; }
+        public MelonPreferences_Entry<bool> ShowSquareMinimap { get; private set; }
         
         private readonly float defaultScaleFactor = 1.0f;
         private readonly float increasedScaleFactor = 1.5f;
@@ -68,6 +70,7 @@ namespace Small_Corner_Map.Helpers
                 TrackProperties = MelonPreferences.GetEntry<bool>(CategoryIdentifier, PropertyTrackingKey);
                 TrackVehicles = MelonPreferences.GetEntry<bool>(CategoryIdentifier, VehicleTrackingKey);
                 ShowCompass = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ShowCompassKey);
+                ShowSquareMinimap = MelonPreferences.GetEntry<bool>(CategoryIdentifier, "ShowSquareMinimap");
             }
         }
 
@@ -109,6 +112,11 @@ namespace Small_Corner_Map.Helpers
                 ShowCompassKey,
                 ShowCompassDefault,
                 ShowCompassDisplayName);
+
+            ShowSquareMinimap = SettingsCategory.CreateEntry(
+                "ShowSquareMinimap",
+                false,
+                "Enable Square Minimap");
         }
     }
 }
