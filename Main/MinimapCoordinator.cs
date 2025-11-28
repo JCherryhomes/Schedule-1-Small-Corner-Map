@@ -20,7 +20,6 @@ namespace Small_Corner_Map.Main
     public class MinimapCoordinator : MonoBehaviour
     {
         private PlayerMarkerManager _playerMarkerManager;
-        private MinimapCoordinateSystem _coordinateSystem;
 
         void Start()
         {
@@ -39,8 +38,6 @@ namespace Small_Corner_Map.Main
             
             var builder = minimapContainer.AddComponent<UIBuilder>();
             builder.SetPlayerMarkerManager(_playerMarkerManager);
-            _coordinateSystem = new MinimapCoordinateSystem();
-            builder.SetMinimapCoordinateSystem(_coordinateSystem);
             
             var minimapSize = Constants.BaseMinimapSize * mapPreferences.MinimapScaleFactor;
             builder.InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value, minimapSize);
