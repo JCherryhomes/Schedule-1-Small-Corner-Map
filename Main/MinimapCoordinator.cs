@@ -35,18 +35,23 @@ namespace Small_Corner_Map.Main
             }
 
             var minimapContainer = new GameObject("MinimapContainer");
+            // The UIBuilder will now create its own canvas and frame.
+            // MinimapContainer will be the parent of the UIBuilder's internally created canvas.
 
+            // Correctly instantiate UIBuilder as a MonoBehaviour
+            var uiBuilderGameObject = new GameObject("MinimapUIBuilder"); // GameObject for the UIBuilder component
+            uiBuilderGameObject.transform.SetParent(minimapContainer.transform); // Parent it to the main container
+            var builder = uiBuilderGameObject.AddComponent<UIBuilder>();
+            
+            // Set minimapContainer as the parent for UIBuilder's internal canvas
+            builder.SetParentContainer(minimapContainer);
 
-            var minimapCanvas = MinimapUIFactory.CreateCanvas(minimapContainer);
-            var minimapSize = Constants.BaseMinimapSize * mapPreferences.MinimapScaleFactor;
-            var (frameObject, _) = MinimapUIFactory.CreateFrame(minimapCanvas, minimapSize);
-
-            var builder = new UIBuilder();
-            builder
-                .SetParentContainer(frameObject)
-                .InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value);
+            builder.InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value);
 
             MelonLogger.Msg("MinimapUI: UIBuilder initialized");
+
+            // Create the player marker, centering it within the minimap's root (mask)
+            _playerMarkerManager.CreatePlayerMarker(builder.MinimapRoot);
 
             MelonCoroutines.Start(builder.IntegrateWithScene());
             MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon());

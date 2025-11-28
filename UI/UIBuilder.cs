@@ -1,18 +1,15 @@
 #if IL2CPP
-using Il2CppSystem.IO;
-using Il2CppInterop.Runtime.Injection;
 using Il2CppScheduleOne.PlayerScripts;
 #else
 using ScheduleOne.PlayerScripts;
 #endif
 
-using UnityEngine;
 using MelonLoader;
-using UnityEngine.SceneManagement;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using Small_Corner_Map.Helpers;
-using UnityEngine.EventSystems;
+using Small_Corner_Map.PoIManagers;
 
 namespace Small_Corner_Map.UI
 {
@@ -33,6 +30,9 @@ namespace Small_Corner_Map.UI
         private Image _internalMapImage;
         private float _currentZoomLevel = 1.0f;
         
+        public GameObject MinimapRoot => _minimapRootGO;
+        private MinimapContentManager _contentManager;
+
         public static GameObject CachedMapContent;
 
         // Sprites needed for switching styles
@@ -71,7 +71,14 @@ namespace Small_Corner_Map.UI
             _minimapRootGO = new GameObject("Minimap_ScrollView_Root");
             var rootRT = _minimapRootGO.AddComponent<RectTransform>();
             rootRT.SetParent(_canvasGO.transform, false);
-            rootRT.sizeDelta = new Vector2(256, 256); // Default size
+            rootRT.anchorMin = Vector2.zero;
+            rootRT.anchorMax = Vector2.one;
+            rootRT.pivot = new Vector2(0.5f, 0.5f);
+            rootRT.sizeDelta = Vector2.zero;
+            rootRT.anchoredPosition = Vector2.zero;
+
+            // Add the content manager
+            _contentManager = _minimapRootGO.AddComponent<MinimapContentManager>();
 
             // 2. Add the Visual Components (Image and Mask)
             // This is the component we will swap the sprite on.
@@ -155,6 +162,12 @@ namespace Small_Corner_Map.UI
             else
             {
                 MelonLogger.Warning("UIBuilder: Cached map content not found.");
+            }
+
+            // Initialize the content manager
+            if (_contentManager != null && PlayerObject != null && _contentGO != null)
+            {
+                _contentManager.Initialize(_contentGO.GetComponent<RectTransform>(), PlayerObject.transform);
             }
 
             AdjustZoom(1f);
