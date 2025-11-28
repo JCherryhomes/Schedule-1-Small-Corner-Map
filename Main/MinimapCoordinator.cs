@@ -37,6 +37,7 @@ namespace Small_Corner_Map.Main
             var minimapContainer = new GameObject("MinimapContainer");
             
             var builder = minimapContainer.AddComponent<UIBuilder>();
+            builder.SetPlayerMarkerManager(_playerMarkerManager);
             
             var minimapSize = Constants.BaseMinimapSize * mapPreferences.MinimapScaleFactor;
             builder.InitializeMinimapUI(mapPreferences.ShowSquareMinimap.Value, minimapSize);
@@ -49,7 +50,6 @@ namespace Small_Corner_Map.Main
             MelonLogger.Msg("MinimapCoordinator: Player marker created.");
 
             MelonCoroutines.Start(builder.IntegrateWithScene());
-            MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon(builder.CachedMapContent));
             
             MelonLogger.Msg("MinimapCoordinator: Coroutines started.");
         }

@@ -37,12 +37,18 @@ namespace Small_Corner_Map.UI
         private MinimapContentManager _contentManager;
 
         internal Player PlayerObject { get; private set; }
+        private PlayerMarkerManager _playerMarkerManager;
         
         public GameObject MinimapRoot => _minimapRootGO;
         public GameObject MinimapContent => _contentGO;
         public MinimapContentManager ContentManager => _contentManager;
 
         public GameObject CachedMapContent => _cachedMapContent;
+
+        public void SetPlayerMarkerManager(PlayerMarkerManager playerMarkerManager)
+        {
+            _playerMarkerManager = playerMarkerManager;
+        }
 
         // --- Core Setup Function ---
         public void InitializeMinimapUI(bool useSquare, float minimapSize)
@@ -159,6 +165,10 @@ namespace Small_Corner_Map.UI
             {
                 // Load Player Icon Here
                 MelonLogger.Msg("UIBuilder: Cached map content found.");
+                if (_playerMarkerManager != null)
+                {
+                    MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon(_cachedMapContent));
+                }
             }
             else
             {
