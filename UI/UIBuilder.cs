@@ -10,7 +10,6 @@ using UnityEngine.UI;
 using System.Collections;
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.PoIManagers;
-using Small_Corner_Map.Main;
 
 namespace Small_Corner_Map.UI
 {
@@ -272,10 +271,6 @@ namespace Small_Corner_Map.UI
             _internalMapImage = mapImageInContentGO.AddComponent<Image>();
             _internalMapImage.sprite = sourceImage.sprite;
             _internalMapImage.SetNativeSize(); // Set original size
-
-            // Scale down the map image
-            var rectTransform = _internalMapImage.GetComponent<RectTransform>();
-            rectTransform.sizeDelta *= Constants.InitialMapImageScale;
 
             MelonLogger.Msg("UIBuilder: Successfully applied map sprite to minimap.");
         }
