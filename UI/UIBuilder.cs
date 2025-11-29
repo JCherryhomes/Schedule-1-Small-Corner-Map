@@ -99,7 +99,7 @@ namespace Small_Corner_Map.UI
             // This is the component we will swap the sprite on.
             _mapImage = _minimapRootGO.AddComponent<Image>();
             // Add a Mask component to clip content to the shape of the Image sprite
-            _minimapRootGO.AddComponent<Mask>().showMaskGraphic = true; // Use the image's shape
+            // _minimapRootGO.AddComponent<Mask>().showMaskGraphic = true; // Use the image's shape (TEMPORARILY DISABLED)
 
             // 4. Create the Content GameObject (Child of root)
             _contentGO = new GameObject("Minimap_Content");
