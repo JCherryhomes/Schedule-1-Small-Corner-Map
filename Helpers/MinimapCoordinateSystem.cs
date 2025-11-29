@@ -90,8 +90,9 @@ namespace Small_Corner_Map.Helpers
             var scale = WorldToUIScale;
             
             // Invert coordinates to move map opposite of player
-            var mappedX = -playerWorldPos.x * scale;
-            var mappedZ = -playerWorldPos.z * scale;
+            // Apply configurable centering offsets
+            var mappedX = -playerWorldPos.x * scale + Constants.MinimapPlayerCenterXOffset;
+            var mappedZ = -playerWorldPos.z * scale + Constants.MinimapPlayerCenterYOffset;
             
             return new Vector2(mappedX, mappedZ);
         }

@@ -93,6 +93,19 @@ namespace Small_Corner_Map.Helpers
         /// </summary>
         public const float PlayerMarkerOffsetZ = -2.7f;
         
+        // New configurable offsets for player marker centering
+        /// <summary>
+        /// X offset to apply to the map content position to correctly center the player marker in the minimap viewport.
+        /// This is a configurable value to be adjusted based on the new UI rendering.
+        /// </summary>
+        public const float MinimapPlayerCenterXOffset = 0f;
+        
+        /// <summary>
+        /// Y offset to apply to the map content position to correctly center the player marker in the minimap viewport.
+        /// This is a configurable value to be adjusted based on the new UI rendering.
+        /// </summary>
+        public const float MinimapPlayerCenterYOffset = 0f;
+        
         // Time Display
         public const float TimeDisplayWidth = 100f;      // Width of time display container
         public const float TimeDisplayHeight = 50f;      // Height of time display container
