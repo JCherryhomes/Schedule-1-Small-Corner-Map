@@ -106,7 +106,7 @@ namespace Small_Corner_Map.UI
             contentRT.anchorMin = new Vector2(0f, 1f);
             contentRT.anchorMax = new Vector2(1f, 1f);
             contentRT.pivot = new Vector2(0f, 1f);
-            contentRT.sizeDelta = new Vector2(0, 0); // Size dynamically based on content
+            contentRT.sizeDelta = new Vector2(Constants.BaseMapContentSize, Constants.BaseMapContentSize); // Set defined size
 
             // Initialize default sprites
             // You need a default Unity sprite for the rectangle shape
