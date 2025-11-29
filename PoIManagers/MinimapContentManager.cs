@@ -44,15 +44,7 @@ namespace Small_Corner_Map.PoIManagers
             var playerPosition = _playerTransform.position;
             var newPosition = _coordinateSystem.GetMapContentPosition(playerPosition);
 
-            // Log current values before applying
-            MelonLogger.Msg($"MinimapContentManager Update: PlayerPos: {playerPosition}, Calculated NewPos: {newPosition}");
-            MelonLogger.Msg($"MinimapContentManager Update: Applying NewPos to _mapContent.anchoredPosition (Old: {_mapContent.anchoredPosition})");
-
             _mapContent.anchoredPosition = newPosition;
-            
-            // Log after applying
-            MelonLogger.Msg($"MinimapContentManager Update: _mapContent.anchoredPosition after update: {_mapContent.anchoredPosition}");
-            
             _playerMarkerManager.UpdateDirectionIndicator(_playerTransform); // Call UpdateDirectionIndicator
         }
     }

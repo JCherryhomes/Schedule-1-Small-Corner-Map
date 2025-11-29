@@ -194,8 +194,8 @@ namespace Small_Corner_Map.UI
 
             var imageRT = _internalMapImageGO.GetComponent<RectTransform>();
 
-            // Calculate new size based on sprite's native size and the current world-to-UI scale
-            Vector2 newSize = _internalMapImage.sprite.rect.size * _sharedCoordinateSystem.WorldToUIScale * Constants.InitialMapImageScale;
+            // Calculate new size based on sprite's native size and the initial scaling factor and current zoom level
+            Vector2 newSize = _internalMapImage.sprite.rect.size * Constants.InitialMapImageScale * zoomMultiplier;
 
             imageRT.sizeDelta = newSize;
         }

@@ -14,12 +14,12 @@ namespace Small_Corner_Map.Helpers
         /// Base world-to-UI scale factor. This constant defines the fundamental ratio
         /// between world units and UI pixels. Empirically determined to match the game's map image.
         /// </summary>
-        public const float DefaultMapScale = 1.2487098f;
+        public const float DefaultMapScale = 50f;
         
         /// <summary>
         /// Initial scaling factor for the map image to reduce its size.
         /// </summary>
-        public const float InitialMapImageScale = 0.125f;
+        public const float InitialMapImageScale = 0.0825f;
 
         // Marker Offsets
         public const float MarkerXOffset = 14f;          // X offset for markers (inverted for properties: -12f)
