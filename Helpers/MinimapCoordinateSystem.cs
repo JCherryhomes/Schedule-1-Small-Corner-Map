@@ -29,7 +29,7 @@ namespace Small_Corner_Map.Helpers
 
         public MinimapCoordinateSystem()
         {
-            _worldScaleFactor = Constants.DefaultMapScale * Constants.InitialMapImageScale;
+            _worldScaleFactor = Constants.DefaultMapScale;
         }
 
         /// <summary>

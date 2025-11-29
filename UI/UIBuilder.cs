@@ -110,8 +110,8 @@ namespace Small_Corner_Map.UI
 
             // Initialize default sprites
             // You need a default Unity sprite for the rectangle shape
-            _rectangleSprite = CreateSquareSprite(512, Color.white);
-            _circleSprite = CreateCircleSprite(512, Color.white);
+            _rectangleSprite = CreateSquareSprite(512, Color.gray);
+            _circleSprite = CreateCircleSprite(512, Color.gray);
 
             // Set initial style based on user preference (e.g., preference "UseCircleMap")
             SetStyle(useSquare ? "Rectangle" : "Circle");
@@ -195,7 +195,7 @@ namespace Small_Corner_Map.UI
             var imageRT = _internalMapImageGO.GetComponent<RectTransform>();
 
             // Calculate new size based on sprite's native size and the current world-to-UI scale
-            Vector2 newSize = _internalMapImage.sprite.rect.size * _sharedCoordinateSystem.WorldToUIScale;
+            Vector2 newSize = _internalMapImage.sprite.rect.size * _sharedCoordinateSystem.WorldToUIScale * Constants.InitialMapImageScale;
 
             imageRT.sizeDelta = newSize;
         }
