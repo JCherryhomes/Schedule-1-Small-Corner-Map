@@ -147,11 +147,31 @@ namespace Small_Corner_Map.UI
 
             LoadStaticMapSprite(); // Call new method to load the static PNG
 
+            // Wait for PlayerObject to be available
+            var attempts = 0;
+            PlayerObject ??= Player.Local; // Try to assign PlayerObject
+            while (PlayerObject == null && attempts < Constants.SceneIntegrationMaxAttempts)
+            {
+                attempts++;
+                MelonLogger.Msg($"UIBuilder: Waiting for PlayerObject (attempt {attempts}/{Constants.SceneIntegrationMaxAttempts})");
+                yield return new WaitForSeconds(Constants.SceneIntegrationRetryDelay);
+                PlayerObject ??= Player.Local; // Try again
+            }
+
+            if (PlayerObject == null)
+            {
+                MelonLogger.Error("UIBuilder: Failed to find PlayerObject after multiple attempts. Minimap initialization aborted.");
+                yield break;
+            }
+
             // Initialize the content manager now that we have the player object
-            if (ContentManager != null && PlayerObject != null && MinimapContent != null && _sharedCoordinateSystem != null && _playerMarkerManager != null)
+            if (ContentManager != null && MinimapContent != null && _sharedCoordinateSystem != null && _playerMarkerManager != null)
             {
                 MelonCoroutines.Start(ContentManager.Initialize(MinimapContent.GetComponent<RectTransform>(), PlayerObject.transform, _sharedCoordinateSystem, _playerMarkerManager));
+            } else {
+                MelonLogger.Error($"UIBuilder: ContentManager init skipped. ContentManager: {ContentManager}, MinimapContent: {MinimapContent}, _sharedCoordinateSystem: {_sharedCoordinateSystem}, _playerMarkerManager: {_playerMarkerManager}");
             }
+
 
             AdjustZoom(1f); // Initial zoom
             yield break;
