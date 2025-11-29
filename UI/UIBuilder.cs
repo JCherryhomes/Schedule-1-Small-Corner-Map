@@ -99,11 +99,6 @@ namespace Small_Corner_Map.UI
             // Add a Mask component to clip content to the shape of the Image sprite
             _minimapRootGO.AddComponent<Mask>().showMaskGraphic = true; // Use the image's shape
 
-            // 3. Add the ScrollRect logic component
-            _scrollRect = _minimapRootGO.AddComponent<ScrollRect>();
-            _scrollRect.viewport = rootRT; // Viewport is the root object itself
-            _scrollRect.movementType = ScrollRect.MovementType.Clamped; // Example setting
-
             // 4. Create the Content GameObject (Child of root)
             _contentGO = new GameObject("Minimap_Content");
             var contentRT = _contentGO.AddComponent<RectTransform>();
@@ -112,11 +107,6 @@ namespace Small_Corner_Map.UI
             contentRT.anchorMax = new Vector2(1f, 1f);
             contentRT.pivot = new Vector2(0f, 1f);
             contentRT.sizeDelta = new Vector2(0, 0); // Size dynamically based on content
-
-            // Link Content to ScrollRect
-            _scrollRect.content = contentRT;
-            _scrollRect.vertical = false;   // Disable vertical scrolling
-            _scrollRect.horizontal = false; // Disable horizontal scrolling
 
             // Initialize default sprites
             // You need a default Unity sprite for the rectangle shape
