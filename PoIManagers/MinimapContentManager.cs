@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 
 using Small_Corner_Map.Helpers;
+using Small_Corner_Map.Main;
 
 namespace Small_Corner_Map.PoIManagers
 {
@@ -41,6 +42,10 @@ namespace Small_Corner_Map.PoIManagers
             var playerPosition = _playerTransform.position;
             var newPosition = _coordinateSystem.GetMapContentPosition(playerPosition);
             _mapContent.anchoredPosition = newPosition;
+            
+            // Rotate the map content inverse to the player's Y-rotation
+            // This makes the map appear to rotate beneath the player, keeping north up relative to the player's view
+            _mapContent.rotation = Quaternion.Euler(0, 0, -_playerTransform.eulerAngles.y);
             
             _playerMarkerManager.UpdateDirectionIndicator(_playerTransform); // Call UpdateDirectionIndicator
         }
