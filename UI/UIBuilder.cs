@@ -115,6 +115,7 @@ namespace Small_Corner_Map.UI
 
             // Link Content to ScrollRect
             _scrollRect.content = contentRT;
+            _scrollRect.enabled = false; // Temporarily disable ScrollRect to allow manual positioning
 
             // Initialize default sprites
             // You need a default Unity sprite for the rectangle shape
