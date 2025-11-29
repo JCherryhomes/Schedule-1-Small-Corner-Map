@@ -32,8 +32,6 @@ namespace Small_Corner_Map.PoIManagers
         {
             if (_mapContent == null || _playerTransform == null || _playerMarkerManager == null)
             {
-                // Add logging here to see if Update is called when these are null
-                MelonLogger.Msg($"MinimapContentManager Update: Skipped due to nulls. _mapContent: {_mapContent}, _playerTransform: {_playerTransform}, _playerMarkerManager: {_playerMarkerManager}");
                 return;
             }
 
