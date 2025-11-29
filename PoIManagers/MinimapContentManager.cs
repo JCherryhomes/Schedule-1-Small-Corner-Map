@@ -43,10 +43,6 @@ namespace Small_Corner_Map.PoIManagers
             var newPosition = _coordinateSystem.GetMapContentPosition(playerPosition);
             _mapContent.anchoredPosition = newPosition;
             
-            // Rotate the map content inverse to the player's Y-rotation
-            // This makes the map appear to rotate beneath the player, keeping north up relative to the player's view
-            _mapContent.rotation = Quaternion.Euler(0, 0, -_playerTransform.eulerAngles.y);
-            
             _playerMarkerManager.UpdateDirectionIndicator(_playerTransform); // Call UpdateDirectionIndicator
         }
     }
