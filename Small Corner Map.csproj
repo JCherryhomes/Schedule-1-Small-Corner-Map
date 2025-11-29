@@ -136,12 +136,13 @@
 
 
   <ItemGroup>
-    <Content Include=".github\CODEOWNERS" />
+    <EmbeddedResource Include="Assets\Map_Full.png" />
   </ItemGroup>
 
 
   <ItemGroup>
     <None Include=".github\copilot-instructions.md" />
+    <None Include=".github\CODEOWNERS" />
   </ItemGroup>
   
 

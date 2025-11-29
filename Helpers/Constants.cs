@@ -39,7 +39,7 @@ namespace Small_Corner_Map.Helpers
         public const float MinimapImageOffsetY = 0f; // Set to 0 for static PNG
 
         // Path to the static minimap image
-        public const string MinimapImagePath = "Assets/Map_Full.png";
+        public const string MinimapImagePath = "Small_Corner_Map.Assets.Map_Full.png";
 
         // Minimap UI Sizing
         public const float BaseMinimapSize = 150f;       // Base size of the minimap mask/frame

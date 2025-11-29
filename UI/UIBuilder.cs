@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.IO; // Added for file operations
+using System.Reflection; // Added for embedded resources
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.PoIManagers;
 using Small_Corner_Map.Main;
@@ -204,36 +205,47 @@ namespace Small_Corner_Map.UI
         /// </summary>
         private void LoadStaticMapSprite()
         {
-            MelonLogger.Msg($"UIBuilder: Attempting to load static minimap image from {Constants.MinimapImagePath}");
+            MelonLogger.Msg($"UIBuilder: Attempting to load static minimap image from embedded resource: {Constants.MinimapImagePath}");
             try
             {
-                // Load the image file as a Texture2D
-                byte[] fileData = File.ReadAllBytes(Constants.MinimapImagePath);
-                Texture2D texture = new Texture2D(2, 2); // Create empty texture
-                if (texture.LoadImage(fileData)) // Load image data into the texture
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                using (Stream stream = assembly.GetManifestResourceStream(Constants.MinimapImagePath))
                 {
-                    // Create a sprite from the texture
-                    Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 50f); // PPU 50
+                    if (stream == null)
+                    {
+                        MelonLogger.Error($"UIBuilder: Failed to get manifest resource stream for {Constants.MinimapImagePath}. Available resources: {string.Join(", ", assembly.GetManifestResourceNames())}");
+                        return;
+                    }
 
-                    // Assign the sprite to the internal map image
-                    GameObject mapImageInContentGO = new GameObject("InternalMapDisplayObject");
-                    _internalMapImageGO = mapImageInContentGO;
-                    _internalMapImageGO.transform.SetParent(_contentGO.transform, false);
+                    byte[] fileData = new byte[stream.Length];
+                    stream.Read(fileData, 0, (int)stream.Length);
 
-                    _internalMapImage = mapImageInContentGO.AddComponent<Image>();
-                    _internalMapImage.sprite = sprite;
-                    _internalMapImage.SetNativeSize(); // Set original size
+                    Texture2D texture = new Texture2D(2, 2); // Create empty texture
+                    if (texture.LoadImage(fileData)) // Load image data into the texture
+                    {
+                        // Create a sprite from the texture
+                        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 50f); // PPU 50
 
-                    MelonLogger.Msg("UIBuilder: Successfully loaded and applied static map sprite.");
-                }
-                else
-                {
-                    MelonLogger.Error($"UIBuilder: Failed to load image from {Constants.MinimapImagePath}");
+                        // Assign the sprite to the internal map image
+                        GameObject mapImageInContentGO = new GameObject("InternalMapDisplayObject");
+                        _internalMapImageGO = mapImageInContentGO;
+                        _internalMapImageGO.transform.SetParent(_contentGO.transform, false);
+
+                        _internalMapImage = mapImageInContentGO.AddComponent<Image>();
+                        _internalMapImage.sprite = sprite;
+                        _internalMapImage.SetNativeSize(); // Set original size
+
+                        MelonLogger.Msg("UIBuilder: Successfully loaded and applied static map sprite.");
+                    }
+                    else
+                    {
+                        MelonLogger.Error($"UIBuilder: Failed to load image data into texture from embedded resource {Constants.MinimapImagePath}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MelonLogger.Error($"UIBuilder: Error loading static map sprite: {ex.Message}");
+                MelonLogger.Error($"UIBuilder: Error loading static map sprite from embedded resource: {ex.Message}");
             }
         }
 
