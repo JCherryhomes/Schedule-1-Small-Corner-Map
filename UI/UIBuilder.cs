@@ -182,9 +182,9 @@ namespace Small_Corner_Map.UI
             }
 
             // Initialize the content manager now that we have the player object
-            if (ContentManager != null && PlayerObject != null && MinimapContent != null && _sharedCoordinateSystem != null)
+            if (ContentManager != null && PlayerObject != null && MinimapContent != null && _sharedCoordinateSystem != null && _playerMarkerManager != null)
             {
-                MelonCoroutines.Start(ContentManager.Initialize(MinimapContent.GetComponent<RectTransform>(), PlayerObject.transform, _sharedCoordinateSystem));
+                MelonCoroutines.Start(ContentManager.Initialize(MinimapContent.GetComponent<RectTransform>(), PlayerObject.transform, _sharedCoordinateSystem, _playerMarkerManager));
             }
 
             AdjustZoom(1f); // Initial zoom

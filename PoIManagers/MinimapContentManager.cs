@@ -12,10 +12,11 @@ namespace Small_Corner_Map.PoIManagers
         private RectTransform _mapContent;
         private Transform _playerTransform;
         private MinimapCoordinateSystem _coordinateSystem;
+        private PlayerMarkerManager _playerMarkerManager; // New field
 
-        public IEnumerator Initialize(RectTransform mapContent, Transform playerTransform, MinimapCoordinateSystem coordinateSystem)
+        public IEnumerator Initialize(RectTransform mapContent, Transform playerTransform, MinimapCoordinateSystem coordinateSystem, PlayerMarkerManager playerMarkerManager) // Updated signature
         {
-            if (mapContent == null || playerTransform == null || coordinateSystem == null)
+            if (mapContent == null || playerTransform == null || coordinateSystem == null || playerMarkerManager == null)
             {
                 yield return new WaitForSeconds(1.0f);
             }
@@ -23,6 +24,7 @@ namespace Small_Corner_Map.PoIManagers
             _mapContent = mapContent;
             _playerTransform = playerTransform;
             _coordinateSystem = coordinateSystem;
+            _playerMarkerManager = playerMarkerManager; // Store reference
         }
         
         void Start()
@@ -31,7 +33,7 @@ namespace Small_Corner_Map.PoIManagers
 
         void Update()
         {
-            if (_mapContent == null || _playerTransform == null)
+            if (_mapContent == null || _playerTransform == null || _playerMarkerManager == null)
             {
                 return;
             }
@@ -39,6 +41,8 @@ namespace Small_Corner_Map.PoIManagers
             var playerPosition = _playerTransform.position;
             var newPosition = _coordinateSystem.GetMapContentPosition(playerPosition);
             _mapContent.anchoredPosition = newPosition;
+            
+            _playerMarkerManager.UpdateDirectionIndicator(_playerTransform); // Call UpdateDirectionIndicator
         }
     }
 }
