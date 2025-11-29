@@ -315,20 +315,5 @@ namespace Small_Corner_Map.UI
             MelonLogger.Msg("UIBuilder: Circle sprite created.");
             return Sprite.Create(texture, new Rect(0, 0, texSize, texSize), new Vector2(0.5f, 0.5f), resolutionMultiplier);
         }
-
-        private void TryApplySpriteFromChildren(Transform contentTransform)
-        {
-            for (var i = 0; i < contentTransform.childCount; i++)
-            {
-                var child = contentTransform.GetChild(i);
-                var childImage = child.GetComponent<Image>();
-                if (childImage != null && childImage.sprite != null)
-                {
-                    MelonLogger.Msg("MinimapUI: Found image in content child: " + childImage.name + ", Sprite: " + childImage.sprite.name);
-                    ApplySpriteToMinimap(childImage);
-                    break;
-                }
-            }
-        }
     }
 }

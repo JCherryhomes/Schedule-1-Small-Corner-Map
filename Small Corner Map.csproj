@@ -63,8 +63,8 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UIElementsModule">
-      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -106,8 +106,8 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UIElementsModule">
-      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIElementsModule.dll</HintPath>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
