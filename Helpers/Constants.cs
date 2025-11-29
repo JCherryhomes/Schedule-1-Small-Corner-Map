@@ -30,14 +30,17 @@ namespace Small_Corner_Map.Helpers
         /// X offset applied to the MapImageObject within its MapContentObject parent.
         /// This accounts for the hierarchical positioning of UI elements.
         /// </summary>
-        public const float MinimapImageOffsetX = 4f;
+        public const float MinimapImageOffsetX = 0f;
         
         /// <summary>
         /// Y offset applied to the MapImageObject within its MapContentObject parent.
         /// This accounts for the hierarchical positioning of UI elements.
         /// </summary>
-        public const float MinimapImageOffsetY = 1.5f;
-        
+        public const float MinimapImageOffsetY = 0f; // Set to 0 for static PNG
+
+        // Path to the static minimap image
+        public const string MinimapImagePath = "Assets/Map_Full.png";
+
         // Minimap UI Sizing
         public const float BaseMinimapSize = 150f;       // Base size of the minimap mask/frame
         public const float BaseMapContentSize = 500f;    // Base size of the map content

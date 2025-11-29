@@ -8,6 +8,7 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.IO; // Added for file operations
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.PoIManagers;
 using Small_Corner_Map.Main;
@@ -26,7 +27,7 @@ namespace Small_Corner_Map.UI
         private GameObject _canvasGO;          // The Canvas GameObject
         private GameObject _contentGO;         // The Content GameObject inside the ScrollRect
         private GameObject _internalMapImageGO;
-        private GameObject _cachedMapContent;  // Cached reference to the game's original map content
+        // private GameObject _cachedMapContent;  // Cached reference to the game's original map content (REMOVED)
         private ScrollRect _scrollRect;        // The core logic component
         private Image _mapImage;               // The Image component used for background/masking
         private Image _internalMapImage;
@@ -45,7 +46,7 @@ namespace Small_Corner_Map.UI
                 public MinimapContentManager ContentManager => _contentManager;
                 private MinimapCoordinateSystem _sharedCoordinateSystem;
         
-                public GameObject CachedMapContent => _cachedMapContent;
+                // public GameObject CachedMapContent => _cachedMapContent; // REMOVED
         
                 public void SetPlayerMarkerManager(PlayerMarkerManager playerMarkerManager)
                 {
@@ -141,37 +142,10 @@ namespace Small_Corner_Map.UI
 
         internal IEnumerator IntegrateWithScene()
         {
-            MelonLogger.Msg("UIBuilder: Looking for game objects in the scene.");
-            yield return new WaitForSeconds(2f);
+            MelonLogger.Msg("UIBuilder: Integrating with scene (loading static map).");
+            yield return new WaitForSeconds(Constants.SceneIntegrationInitialDelay); // Wait a bit for scene to settle
 
-            GameObject mapAppObject = null;
-            GameObject viewportObject = null;
-            var attempts = 0;
-            PlayerObject ??= Player.Local;
-            while ((mapAppObject == null || viewportObject == null || PlayerObject == null) && attempts < 30)
-            {
-                attempts++;
-                if (mapAppObject == null) mapAppObject = FindMapApp();
-                if (mapAppObject != null && viewportObject == null) viewportObject = FindViewport(mapAppObject);
-                if (mapAppObject == null || viewportObject == null || PlayerObject == null)
-                    yield return new WaitForSeconds(Constants.SceneIntegrationRetryDelay);
-            }
-            LogIntegrationResults(mapAppObject, viewportObject);
-            if (viewportObject != null) ApplyMapSprite(viewportObject);
-            _cachedMapContent = GameObject.Find(Constants.MapAppPath);
-            if (_cachedMapContent != null)
-            {
-                // Load Player Icon Here
-                MelonLogger.Msg("UIBuilder: Cached map content found.");
-                if (_playerMarkerManager != null)
-                {
-                    MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon(_cachedMapContent));
-                }
-            }
-            else
-            {
-                MelonLogger.Warning("UIBuilder: Cached map content not found.");
-            }
+            LoadStaticMapSprite(); // Call new method to load the static PNG
 
             // Initialize the content manager now that we have the player object
             if (ContentManager != null && PlayerObject != null && MinimapContent != null && _sharedCoordinateSystem != null && _playerMarkerManager != null)
@@ -205,74 +179,44 @@ namespace Small_Corner_Map.UI
             return new Vector2(0.5f, 0.5f);
         }
 
-        private GameObject FindMapApp()
+        /// <summary>
+        /// Loads the static minimap PNG image from the specified path and applies it to the minimap UI.
+        /// </summary>
+        private void LoadStaticMapSprite()
         {
-            MelonLogger.Msg("UIBuilder: Searching for MapApp.");
-            var gameplayMenu = GameObject.Find("GameplayMenu");
-            var mapApp = gameplayMenu?.transform.Find("Phone")?.Find("phone")?.Find("AppsCanvas")?.Find("MapApp");
-            if (mapApp != null) MelonLogger.Msg("UIBuilder: Found MapApp.");
-            else MelonLogger.Warning("UIBuilder: MapApp not found.");
-            return mapApp?.gameObject;
-        }
-
-        private GameObject FindViewport(GameObject mapAppObject)
-        {
-            MelonLogger.Msg("UIBuilder: Searching for Viewport in MapApp.");
-            if (mapAppObject == null)
-            {
-                MelonLogger.Warning("UIBuilder: MapApp object is null.");
-                return null;
-            }
-            var viewport = mapAppObject.transform.Find("Container")?.Find("Scroll View")?.Find("Viewport");
-            if (viewport != null) MelonLogger.Msg("UIBuilder: Found Viewport.");
-            else MelonLogger.Warning("UIBuilder: Viewport not found.");
-            return viewport?.gameObject;
-        }
-
-        private void LogIntegrationResults(GameObject mapAppObject, GameObject viewportObject)
-        {
-            if (viewportObject != null) { MelonLogger.Msg("UIBuilder: Viewport object found."); }
-            else { MelonLogger.Warning("UIBuilder: Viewport object not found."); }
-            if (PlayerObject == null) { MelonLogger.Warning("UIBuilder: Player object not found."); }
-            MelonLogger.Msg("UIBuilder: Game object search completed.");
-        }
-
-        private void ApplyMapSprite(GameObject viewportObject)
-        {
+            MelonLogger.Msg($"UIBuilder: Attempting to load static minimap image from {Constants.MinimapImagePath}");
             try
             {
-                if (viewportObject.transform.childCount <= 0) return;
-                var contentTransform = viewportObject.transform.GetChild(0);
-                MelonLogger.Msg("MinimapUI: Found viewport content: " + contentTransform.name);
-                var mapImage = contentTransform.GetComponent<Image>();
-                if (mapImage != null && mapImage.sprite != null)
+                // Load the image file as a Texture2D
+                byte[] fileData = File.ReadAllBytes(Constants.MinimapImagePath);
+                Texture2D texture = new Texture2D(2, 2); // Create empty texture
+                if (texture.LoadImage(fileData)) // Load image data into the texture
                 {
-                    ApplySpriteToMinimap(mapImage);
-                    return;
+                    // Create a sprite from the texture
+                    Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 50f); // PPU 50
+
+                    // Assign the sprite to the internal map image
+                    GameObject mapImageInContentGO = new GameObject("InternalMapDisplayObject");
+                    _internalMapImageGO = mapImageInContentGO;
+                    _internalMapImageGO.transform.SetParent(_contentGO.transform, false);
+
+                    _internalMapImage = mapImageInContentGO.AddComponent<Image>();
+                    _internalMapImage.sprite = sprite;
+                    _internalMapImage.SetNativeSize(); // Set original size
+
+                    MelonLogger.Msg("UIBuilder: Successfully loaded and applied static map sprite.");
                 }
-                MelonLogger.Msg("MinimapUI: Content doesn't have an Image component or sprite");
-                TryApplySpriteFromChildren(contentTransform);
+                else
+                {
+                    MelonLogger.Error($"UIBuilder: Failed to load image from {Constants.MinimapImagePath}");
+                }
             }
             catch (Exception ex)
             {
-                MelonLogger.Error("MinimapUI: Error accessing map content: " + ex.Message);
+                MelonLogger.Error($"UIBuilder: Error loading static map sprite: {ex.Message}");
             }
         }
 
-        private void ApplySpriteToMinimap(Image sourceImage)
-        {
-            MelonLogger.Msg("UIBuilder: Applying sprite to minimap.");
-            GameObject mapImageInContentGO = new GameObject("InternalMapDisplayObject");
-            _internalMapImageGO = mapImageInContentGO; // Assign the GameObject
-            _internalMapImageGO.transform.SetParent(_contentGO.transform, false);
-
-            // Get the component and store it in our NEW field
-            _internalMapImage = mapImageInContentGO.AddComponent<Image>();
-            _internalMapImage.sprite = sourceImage.sprite;
-            _internalMapImage.SetNativeSize(); // Set original size
-
-            MelonLogger.Msg("UIBuilder: Successfully applied map sprite to minimap.");
-        }
 
         /// <summary>
         /// Creates a dynamically generated square sprite of a specified size and color.
