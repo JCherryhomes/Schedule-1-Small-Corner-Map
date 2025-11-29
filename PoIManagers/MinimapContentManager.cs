@@ -17,15 +17,11 @@ namespace Small_Corner_Map.PoIManagers
 
         public IEnumerator Initialize(RectTransform mapContent, Transform playerTransform, MinimapCoordinateSystem coordinateSystem, PlayerMarkerManager playerMarkerManager) // Updated signature
         {
-            if (mapContent == null || playerTransform == null || coordinateSystem == null || playerMarkerManager == null)
-            {
-                yield return new WaitForSeconds(1.0f);
-            }
-            
             _mapContent = mapContent;
             _playerTransform = playerTransform;
             _coordinateSystem = coordinateSystem;
             _playerMarkerManager = playerMarkerManager; // Store reference
+            yield break; // Ensure it's still an IEnumerator
         }
         
         void Start()
