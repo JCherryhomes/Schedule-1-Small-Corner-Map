@@ -234,6 +234,14 @@ namespace Small_Corner_Map.UI
                         _internalMapImage = mapImageInContentGO.AddComponent<Image>();
                         _internalMapImage.sprite = sprite;
                         _internalMapImage.SetNativeSize(); // Set original size
+                        _internalMapImage.color = Color.white; // Ensure full opacity
+
+                        // Explicitly set RectTransform properties for proper centering
+                        RectTransform imageRT = _internalMapImageGO.GetComponent<RectTransform>();
+                        imageRT.anchorMin = new Vector2(0.5f, 0.5f);
+                        imageRT.anchorMax = new Vector2(0.5f, 0.5f);
+                        imageRT.pivot = new Vector2(0.5f, 0.5f);
+                        imageRT.anchoredPosition = Vector2.zero; // Center it
 
                         MelonLogger.Msg("UIBuilder: Successfully loaded and applied static map sprite.");
                     }
