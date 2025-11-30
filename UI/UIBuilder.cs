@@ -1,7 +1,9 @@
 #if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
+using Il2CppSystem.Security.Cryptography;
 #else
 using ScheduleOne.PlayerScripts;
+using System.Security.Cryptography;
 #endif
 
 using MelonLoader;
@@ -98,6 +100,7 @@ namespace Small_Corner_Map.UI
             // 2. Add the Visual Components (Image and Mask)
             // This is the component we will swap the sprite on.
             _mapImage = _minimapRootGO.AddComponent<Image>();
+            _mapImage.color = Color.clear; // Make the mask graphic transparent initially
             // Add a Mask component to clip content to the shape of the Image sprite
             // _minimapRootGO.AddComponent<Mask>().showMaskGraphic = true; // Use the image's shape (TEMPORARILY DISABLED)
 
@@ -112,8 +115,8 @@ namespace Small_Corner_Map.UI
 
             // Initialize default sprites
             // You need a default Unity sprite for the rectangle shape
-            _rectangleSprite = CreateSquareSprite(512, Color.gray);
-            _circleSprite = CreateCircleSprite(512, Color.gray);
+            _rectangleSprite = Helpers.Utils.CreateSquareSprite(512, Color.gray);
+            _circleSprite = Helpers.Utils.CreateCircleSprite(512, Color.gray);
 
             // Set initial style based on user preference (e.g., preference "UseCircleMap")
             SetStyle(useSquare ? "Rectangle" : "Circle");

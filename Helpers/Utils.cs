@@ -1,10 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections.Generic; // Added for List
-// using MelonLoader; // Removed MelonLoader as Utils should not directly depend on it
+using System.Collections.Generic;
 
 namespace Small_Corner_Map.Helpers
 {
-    internal class Utils
+    public class Utils
     {
         internal static void RecursiveFind(Transform current, string targetName, List<Transform> result)
         {
