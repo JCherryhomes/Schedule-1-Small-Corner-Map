@@ -28,7 +28,7 @@ namespace Small_Corner_Map.UI
         private GameObject _canvasGO;          // The Canvas GameObject
         private GameObject _contentGO;         // The Content GameObject inside the ScrollRect
         private GameObject _internalMapImageGO;
-        // private GameObject _cachedMapContent;  // Cached reference to the game's original map content (REMOVED)
+        private GameObject _cachedMapContent;  // Cached reference to the game's original map content
         private ScrollRect _scrollRect;        // The core logic component
         private Image _mapImage;               // The Image component used for background/masking
         private Image _internalMapImage;
@@ -47,7 +47,7 @@ namespace Small_Corner_Map.UI
                 public MinimapContentManager ContentManager => _contentManager;
                 private MinimapCoordinateSystem _sharedCoordinateSystem;
         
-                // public GameObject CachedMapContent => _cachedMapContent; // REMOVED
+                public GameObject CachedMapContent => _cachedMapContent; // Restored
         
                 public void SetPlayerMarkerManager(PlayerMarkerManager playerMarkerManager)
                 {
@@ -165,6 +165,16 @@ namespace Small_Corner_Map.UI
                 yield break;
             }
 
+            // --- RESTORE FINDING CACHED MAP CONTENT ---
+            _cachedMapContent = GameObject.Find(Constants.MapAppPath);
+            if (_cachedMapContent == null)
+            {
+                MelonLogger.Warning("UIBuilder: Cached map content not found, real player icon might not be available.");
+            } else {
+                MelonLogger.Msg("UIBuilder: Cached map content found.");
+            }
+            // --- END RESTORE ---
+
             // Initialize the content manager now that we have the player object
             if (ContentManager != null && MinimapContent != null && _sharedCoordinateSystem != null && _playerMarkerManager != null)
             {
@@ -173,6 +183,12 @@ namespace Small_Corner_Map.UI
                 MelonLogger.Error($"UIBuilder: ContentManager init skipped. ContentManager: {ContentManager}, MinimapContent: {MinimapContent}, _sharedCoordinateSystem: {_sharedCoordinateSystem}, _playerMarkerManager: {_playerMarkerManager}");
             }
 
+            // --- RESTORE CALL TO INITIALIZE PLAYER MARKER ICON ---
+            if (_playerMarkerManager != null)
+            {
+                MelonCoroutines.Start(_playerMarkerManager.InitializePlayerMarkerIcon(_cachedMapContent));
+            }
+            // --- END RESTORE ---
 
             AdjustZoom(1f); // Initial zoom
             yield break;
@@ -255,105 +271,6 @@ namespace Small_Corner_Map.UI
             {
                 MelonLogger.Error($"UIBuilder: Error loading static map sprite from embedded resource: {ex.Message}");
             }
-        }
-
-
-        /// <summary>
-        /// Creates a dynamically generated square sprite of a specified size and color.
-        /// </summary>
-        /// <param name="size">The width and height in pixels (e.g., 512).</param>
-        /// <param name="color">The color to fill the square with.</param>
-        /// <returns>The newly created Sprite.</returns>
-        private Sprite CreateSquareSprite(int size, Color color)
-        {
-            // 1. Create a new Texture2D
-            // Format RGBA32 allows transparency; false means no mipmaps needed for UI
-            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
-
-            // 2. Fill the texture with the specified color
-            // Create an array of colors equal to the total number of pixels (size * size)
-            Color[] pixels = new Color[size * size];
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                pixels[i] = color;
-            }
-            texture.SetPixels(pixels);
-            texture.Apply(); // Apply the changes to the texture
-
-            // 3. Create a Sprite from the Texture2D
-            // Rect defines the area of the texture to use (the whole thing in this case)
-            Rect rect = new Rect(0, 0, size, size);
-
-            // Pivot point (Vector2(0.5f, 0.5f) is center)
-            Vector2 pivot = new Vector2(0.5f, 0.5f);
-
-            // Pixels Per Unit (standard for UI is 100, but can be adjusted)
-            float pixelsPerUnit = 100.0f;
-
-            Sprite newSprite = Sprite.Create(texture, rect, pivot, pixelsPerUnit);
-            newSprite.name = "Minimap_SquareSprite";
-
-            return newSprite;
-        }
-
-        private Sprite CreateCircleSprite(int diameter, Color color, int resolutionMultiplier = 1, int featherWidth = 0, bool featherInside = true)
-        {
-            MelonLogger.Msg("UIBuilder: Creating circle sprite.");
-            var texSize = diameter * resolutionMultiplier;
-            var texture = new Texture2D(texSize, texSize, TextureFormat.ARGB32, false)
-            {
-                filterMode = FilterMode.Bilinear
-            };
-
-            var clear = new Color(0f, 0f, 0f, 0f);
-            for (var y = 0; y < texSize; y++)
-                for (var x = 0; x < texSize; x++)
-                    texture.SetPixel(x, y, clear);
-
-            var radius = texSize / 2f;
-            var center = new Vector2(radius, radius);
-            var effectiveFeather = Mathf.Max(0, featherWidth * resolutionMultiplier);
-
-            for (var y = 0; y < texSize; y++)
-            {
-                for (var x = 0; x < texSize; x++)
-                {
-                    var dist = Vector2.Distance(new Vector2(x, y), center);
-                    var alpha = 0f;
-                    if (featherInside)
-                    {
-                        if (!(dist <= radius)) continue;
-                        alpha = color.a;
-                        if (effectiveFeather > 0)
-                        {
-                            var edgeDist = radius - dist;
-                            if (edgeDist <= effectiveFeather)
-                            {
-                                alpha *= Mathf.Clamp01(edgeDist / effectiveFeather);
-                            }
-                        }
-                        texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
-                    }
-                    else
-                    {
-                        if (dist <= radius)
-                        {
-                            alpha = color.a;
-                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
-                        }
-                        else if (dist > radius && dist <= radius + effectiveFeather)
-                        {
-                            var edgeDist = dist - radius;
-                            alpha = color.a * Mathf.Clamp01(1f - (edgeDist / effectiveFeather));
-                            texture.SetPixel(x, y, new Color(color.r, color.g, color.b, alpha));
-                        }
-                    }
-                }
-            }
-
-            texture.Apply();
-            MelonLogger.Msg("UIBuilder: Circle sprite created.");
-            return Sprite.Create(texture, new Rect(0, 0, texSize, texSize), new Vector2(0.5f, 0.5f), resolutionMultiplier);
         }
     }
 }

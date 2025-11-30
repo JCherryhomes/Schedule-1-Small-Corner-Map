@@ -1,5 +1,5 @@
 using MelonLoader;
-using Small_Corner_Map.Helpers;
+using Small_Corner_Map.Helpers; // Added for Utils.CreateCircleSprite
 using Small_Corner_Map.UI;
 using System.Collections;
 using UnityEngine;
@@ -29,6 +29,14 @@ namespace Small_Corner_Map.Main
             rect.anchoredPosition = Vector2.zero;
             
             var image = Marker.AddComponent<Image>();
+            // Use the circular sprite
+            image.sprite = Small_Corner_Map.Helpers.Utils.CreateCircleSprite(
+                (int)Constants.PlayerMarkerSize, // Diameter
+                markerColor,                     // Color
+                Constants.MinimapCircleResolutionMultiplier, // Resolution
+                Constants.MinimapMaskFeather,    // Feather
+                true                             // Feather inside
+            );
             image.color = markerColor;
 
             // Ensure player marker is drawn on top
