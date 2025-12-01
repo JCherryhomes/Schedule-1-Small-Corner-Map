@@ -11,7 +11,7 @@ namespace Small_Corner_Map.Helpers
             {
                 result.Add(current);
             }
-            for (int i = 0; i < current.childCount; i++)
+            for (var i = 0; i < current.childCount; i++)
             {
                 RecursiveFind(current.GetChild(i), targetName, result);
             }
@@ -27,12 +27,12 @@ namespace Small_Corner_Map.Helpers
         {
             // 1. Create a new Texture2D
             // Format RGBA32 allows transparency; false means no mipmaps needed for UI
-            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
 
             // 2. Fill the texture with the specified color
             // Create an array of colors equal to the total number of pixels (size * size)
-            Color[] pixels = new Color[size * size];
-            for (int i = 0; i < pixels.Length; i++)
+            var pixels = new Color[size * size];
+            for (var i = 0; i < pixels.Length; i++)
             {
                 pixels[i] = color;
             }
@@ -41,15 +41,15 @@ namespace Small_Corner_Map.Helpers
 
             // 3. Create a Sprite from the Texture2D
             // Rect defines the area of the texture to use (the whole thing in this case)
-            Rect rect = new Rect(0, 0, size, size);
+            var rect = new Rect(0, 0, size, size);
 
             // Pivot point (Vector2(0.5f, 0.5f) is center)
-            Vector2 pivot = new Vector2(0.5f, 0.5f);
+            var pivot = new Vector2(0.5f, 0.5f);
 
             // Pixels Per Unit (standard for UI is 100, but can be adjusted)
-            float pixelsPerUnit = 100.0f;
+            var pixelsPerUnit = 100.0f;
 
-            Sprite newSprite = Sprite.Create(texture, rect, pivot, pixelsPerUnit);
+            var newSprite = Sprite.Create(texture, rect, pivot, pixelsPerUnit);
             newSprite.name = "Minimap_SquareSprite";
 
             return newSprite;
@@ -113,6 +113,121 @@ namespace Small_Corner_Map.Helpers
             texture.Apply();
             // MelonLogger.Msg("Utils: Circle sprite created."); // Removed MelonLogger call
             return Sprite.Create(texture, new Rect(0, 0, texSize, texSize), new Vector2(0.5f, 0.5f), resolutionMultiplier);
+        }
+        
+        public static Sprite CreateRoundedSquareSprite(int size, float cornerRadius, Color color, int resolutionMultiplier = 2)
+        {
+            var texSize = size * resolutionMultiplier;
+            var radius = cornerRadius * resolutionMultiplier;
+            var texture = new Texture2D(texSize, texSize, TextureFormat.ARGB32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            var pixels = new Color[texSize * texSize];
+            var transparent = new Color(0, 0, 0, 0);
+
+            for (var y = 0; y < texSize; y++)
+            {
+                for (var x = 0; x < texSize; x++)
+                {
+                    var pixelIndex = y * texSize + x;
+                    pixels[pixelIndex] = color;
+
+                    if (x < radius && y < radius) // Bottom-left corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(radius, radius)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                    else if (x > texSize - radius -1 && y < radius) // Bottom-right corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(texSize - radius -1, radius)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                    else if (x < radius && y > texSize - radius -1) // Top-left corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(radius, texSize - radius -1)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                    else if (x > texSize - radius -1 && y > texSize - radius -1) // Top-right corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(texSize - radius -1, texSize - radius -1)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            return Sprite.Create(texture, new Rect(0, 0, texSize, texSize), new Vector2(0.5f, 0.5f), 100f * resolutionMultiplier);
+        }
+
+        public static Sprite CreateRoundedRectSprite(int width, int height, float cornerRadius, Color color, int resolutionMultiplier = 2)
+        {
+            var texWidth = width * resolutionMultiplier;
+            var texHeight = height * resolutionMultiplier;
+            var radius = cornerRadius * resolutionMultiplier;
+            var texture = new Texture2D(texWidth, texHeight, TextureFormat.ARGB32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            var pixels = new Color[texWidth * texHeight];
+            var transparent = new Color(0, 0, 0, 0);
+
+            for (var y = 0; y < texHeight; y++)
+            {
+                for (var x = 0; x < texWidth; x++)
+                {
+                    var pixelIndex = y * texWidth + x;
+                    pixels[pixelIndex] = color;
+
+                    if (x < radius && y < radius) // Bottom-left corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(radius, radius)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                    else if (x > texWidth - radius - 1 && y < radius) // Bottom-right corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(texWidth - radius - 1, radius)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                    else if (x < radius && y > texHeight - radius - 1) // Top-left corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(radius, texHeight - radius - 1)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                    else if (x > texWidth - radius - 1 && y > texHeight - radius - 1) // Top-right corner
+                    {
+                        if (Vector2.Distance(new Vector2(x, y), new Vector2(texWidth - radius - 1, texHeight - radius - 1)) > radius)
+                        {
+                            pixels[pixelIndex] = transparent;
+                        }
+                    }
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            return Sprite.Create(texture, new Rect(0, 0, texWidth, texHeight), new Vector2(0.5f, 0.5f), 100f * resolutionMultiplier);
         }
     }
 }

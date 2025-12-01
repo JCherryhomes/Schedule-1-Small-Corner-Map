@@ -60,7 +60,7 @@ namespace Small_Corner_Map.Main
             
             _playerMarkerImage = _markerGO.AddComponent<Image>();
             _playerMarkerImage.sprite = Utils.CreateCircleSprite(
-                (int)Constants.PlayerMarkerSize, 
+                Constants.PlayerMarkerCircleDrawingResolution, // Use higher resolution for drawing
                 _markerColor, 
                 Constants.MinimapCircleResolutionMultiplier, 
                 Constants.MinimapMaskFeather, 
@@ -190,4 +190,3 @@ namespace Small_Corner_Map.Main
         }
     }
 }
-

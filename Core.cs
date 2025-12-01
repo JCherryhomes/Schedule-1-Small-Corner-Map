@@ -46,7 +46,7 @@ namespace Small_Corner_Map
             else
             {
                 // Dispose of the minimap when leaving the main scene
-                var baseGameObject = GameObject.Find("SmallCornerMap_Main");
+                var baseGameObject = GameObject.Find("MinimapCanvas");
 
                 if (baseGameObject != null)
                 {

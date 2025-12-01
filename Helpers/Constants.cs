@@ -9,6 +9,8 @@ namespace Small_Corner_Map.Helpers
         public const string GameName = "Schedule I";
         public const string GameDeveloper = "TVGS";
 
+        public const bool DisableDebug = true;
+
         // Map Preferences Category Identifier
         public const string MapPreferencesCategoryIdentifier = "SmallCornerMapSettings";
         
@@ -41,6 +43,10 @@ namespace Small_Corner_Map.Helpers
         /// </summary>
         public const float MinimapDefaultPlayerOffsetY = -4.25f;
 
+        // Resolution for drawing smooth circle sprites
+        public const int MinimapCircleDrawingResolution = 256;
+        public const int PlayerMarkerCircleDrawingResolution = 20;
+        
         // Marker Offsets (these seem to be for POI markers, not player centering)
         public const float MarkerXOffset = 14f;          // X offset for markers (inverted for properties: -12f)
         public const float MarkerZOffset = -3.5f;         // Z offset for markers

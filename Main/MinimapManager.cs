@@ -58,40 +58,30 @@ namespace Small_Corner_Map.Main
 
             MelonLogger.Msg("Player object found, initializing MinimapView.");
 
-            // Determine initial values for map movement scale and offsets
-            float initialMapZoomLevel = Constants.MinimapDefaultMapMovementScale;
-            float initialMinimapPlayerOffsetX = Constants.MinimapDefaultPlayerOffsetX;
-            float initialMinimapPlayerOffsetY = Constants.MinimapDefaultPlayerOffsetY;
-
-            if (_mapPreferences.EnableAdvancedMinimapTuning.Value)
-            {
-                initialMapZoomLevel = _mapPreferences.MapZoomLevel.Value;
-                initialMinimapPlayerOffsetX = _mapPreferences.MinimapPlayerOffsetX.Value;
-                initialMinimapPlayerOffsetY = _mapPreferences.MinimapPlayerOffsetY.Value;
-            }
-
             _minimapView.Initialize(
                 Player.Local, 
                 _mapPreferences.MinimapEnabled.Value, 
                 _mapPreferences.MinimapScaleFactor, 
                 _mapPreferences.ShowSquareMinimap.Value, 
                 _mapPreferences.ShowGameTime,
-                Constants.BaseWorldToUIScaleFactor, // Use the renamed constant
-                initialMapZoomLevel, 
-                initialMinimapPlayerOffsetX,
-                initialMinimapPlayerOffsetY
+                Constants.BaseWorldToUIScaleFactor, 
+                _mapPreferences.MapZoomLevel.Value, 
+                _mapPreferences.MinimapPlayerOffsetX.Value,
+                _mapPreferences.MinimapPlayerOffsetY.Value
             );
             
             // Subscribe to preference changes
             _mapPreferences.MinimapEnabled.OnEntryValueChanged.Subscribe(OnMinimapEnabledChanged);
             _mapPreferences.IncreaseSize.OnEntryValueChanged.Subscribe(OnIncreaseSizeChanged);
             _mapPreferences.ShowSquareMinimap.OnEntryValueChanged.Subscribe(OnShowSquareMinimapChanged);
+            
+            // Only subscribe to tuning preference changes if advanced tuning is enabled
             _mapPreferences.MapZoomLevel.OnEntryValueChanged.Subscribe(OnMapZoomLevelChanged);
             _mapPreferences.MinimapPlayerOffsetX.OnEntryValueChanged.Subscribe(OnMinimapPlayerOffsetXChanged);
             _mapPreferences.MinimapPlayerOffsetY.OnEntryValueChanged.Subscribe(OnMinimapPlayerOffsetYChanged);
+            
             _mapPreferences.ShowGameTime.OnEntryValueChanged.Subscribe(OnShowGameTimeChanged);
             _mapPreferences.ShowCompass.OnEntryValueChanged.Subscribe(OnShowCompassChanged);
-            _mapPreferences.EnableAdvancedMinimapTuning.OnEntryValueChanged.Subscribe(OnEnableAdvancedMinimapTuningChanged);
         }
 
         private void OnDestroy()
@@ -102,12 +92,14 @@ namespace Small_Corner_Map.Main
                 _mapPreferences.MinimapEnabled.OnEntryValueChanged.Unsubscribe(OnMinimapEnabledChanged);
                 _mapPreferences.IncreaseSize.OnEntryValueChanged.Unsubscribe(OnIncreaseSizeChanged);
                 _mapPreferences.ShowSquareMinimap.OnEntryValueChanged.Unsubscribe(OnShowSquareMinimapChanged);
+                
+                // Only unsubscribe tuning preference changes if they were subscribed
                 _mapPreferences.MapZoomLevel.OnEntryValueChanged.Unsubscribe(OnMapZoomLevelChanged);
                 _mapPreferences.MinimapPlayerOffsetX.OnEntryValueChanged.Unsubscribe(OnMinimapPlayerOffsetXChanged);
                 _mapPreferences.MinimapPlayerOffsetY.OnEntryValueChanged.Unsubscribe(OnMinimapPlayerOffsetYChanged);
+
                 _mapPreferences.ShowGameTime.OnEntryValueChanged.Unsubscribe(OnShowGameTimeChanged);
                 _mapPreferences.ShowCompass.OnEntryValueChanged.Unsubscribe(OnShowCompassChanged);
-                _mapPreferences.EnableAdvancedMinimapTuning.OnEntryValueChanged.Unsubscribe(OnEnableAdvancedMinimapTuningChanged);
             }
         }
 
@@ -129,41 +121,20 @@ namespace Small_Corner_Map.Main
 
         private void OnMapZoomLevelChanged(float oldValue, float newValue)
         {
-            // Only update if advanced tuning is enabled
-            if (_mapPreferences.EnableAdvancedMinimapTuning.Value)
-            {
-                _minimapView.UpdateMapMovementScale(newValue);
-            }
+            // This event handler should only be subscribed if tuning is enabled, so no need for an extra check here.
+            _minimapView.UpdateMapMovementScale(newValue);
         }
 
         private void OnMinimapPlayerOffsetXChanged(float oldValue, float newValue)
         {
-            // Only update if advanced tuning is enabled
-            if (_mapPreferences.EnableAdvancedMinimapTuning.Value)
-            {
-                _minimapView.UpdateMinimapPlayerCenterXOffset(newValue);
-            }
+            // This event handler should only be subscribed if tuning is enabled, so no need for an extra check here.
+            _minimapView.UpdateMinimapPlayerCenterXOffset(newValue);
         }
 
         private void OnMinimapPlayerOffsetYChanged(float oldValue, float newValue)
         {
-            // Only update if advanced tuning is enabled
-            if (_mapPreferences.EnableAdvancedMinimapTuning.Value)
-            {
-                _minimapView.UpdateMinimapPlayerCenterYOffset(newValue);
-            }
-        }
-        
-        private void OnEnableAdvancedMinimapTuningChanged(bool oldValue, bool newValue)
-        {
-            // When this preference changes, update all related settings to either defaults or preference values
-            float mapZoomLevel = newValue ? _mapPreferences.MapZoomLevel.Value : Constants.MinimapDefaultMapMovementScale;
-            float minimapPlayerOffsetX = newValue ? _mapPreferences.MinimapPlayerOffsetX.Value : Constants.MinimapDefaultPlayerOffsetX;
-            float minimapPlayerOffsetY = newValue ? _mapPreferences.MinimapPlayerOffsetY.Value : Constants.MinimapDefaultPlayerOffsetY;
-
-            _minimapView.UpdateMapMovementScale(mapZoomLevel);
-            _minimapView.UpdateMinimapPlayerCenterXOffset(minimapPlayerOffsetX);
-            _minimapView.UpdateMinimapPlayerCenterYOffset(minimapPlayerOffsetY);
+            // This event handler should only be subscribed if tuning is enabled, so no need for an extra check here.
+            _minimapView.UpdateMinimapPlayerCenterYOffset(newValue);
         }
 
         private void OnShowGameTimeChanged(bool oldValue, bool newValue)
@@ -177,4 +148,3 @@ namespace Small_Corner_Map.Main
         }
     }
 }
-
