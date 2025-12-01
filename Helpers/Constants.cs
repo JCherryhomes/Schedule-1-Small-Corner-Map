@@ -8,20 +8,40 @@ namespace Small_Corner_Map.Helpers
         public const string ModAuthor = "winzaar";
         public const string GameName = "Schedule I";
         public const string GameDeveloper = "TVGS";
+
+        // Map Preferences Category Identifier
+        public const string MapPreferencesCategoryIdentifier = "SmallCornerMapSettings";
         
         // Map Scaling
         /// <summary>
         /// Base world-to-UI scale factor. This constant defines the fundamental ratio
-        /// between world units and UI pixels. Empirically determined to match the game's map image.
+        /// between world units and UI pixels. This should be adjusted to match the overall map image to world unit scale.
         /// </summary>
-        public const float DefaultMapScale = 50f;
+        public const float BaseWorldToUIScaleFactor = 1f;
+
+        /// <summary>
+        /// Default scale factor for map movement. Multiplies with BaseWorldToUIScaleFactor.
+        /// Empirically determined to match the desired map movement speed.
+        /// </summary>
+        public const float MinimapDefaultMapMovementScale = 1.22f;
         
         /// <summary>
         /// Initial scaling factor for the map image to reduce its size.
         /// </summary>
         public const float InitialMapImageScale = 0.0825f;
 
-        // Marker Offsets
+        // Minimap Player Centering Offsets (Fine-tuned defaults)
+        /// <summary>
+        /// Default X offset to apply to the map content position to correctly center the player marker.
+        /// </summary>
+        public const float MinimapDefaultPlayerOffsetX = 13f;
+
+        /// <summary>
+        /// Default Y offset to apply to the map content position to correctly center the player marker.
+        /// </summary>
+        public const float MinimapDefaultPlayerOffsetY = -4.25f;
+
+        // Marker Offsets (these seem to be for POI markers, not player centering)
         public const float MarkerXOffset = 14f;          // X offset for markers (inverted for properties: -12f)
         public const float MarkerZOffset = -3.5f;         // Z offset for markers
 
@@ -95,19 +115,6 @@ namespace Small_Corner_Map.Helpers
         /// Scaled by MinimapScaleFactor when the minimap size changes.
         /// </summary>
         public const float PlayerMarkerOffsetZ = -2.7f;
-        
-        // New configurable offsets for player marker centering
-        /// <summary>
-        /// X offset to apply to the map content position to correctly center the player marker in the minimap viewport.
-        /// This is a configurable value to be adjusted based on the new UI rendering.
-        /// </summary>
-        public const float MinimapPlayerCenterXOffset = 10f; // Increased for "right" offset
-        
-        /// <summary>
-        /// Y offset to apply to the map content position to correctly center the player marker in the minimap viewport.
-        /// This is a configurable value to be adjusted based on the new UI rendering.
-        /// </summary>
-        public const float MinimapPlayerCenterYOffset = 10f; // Increased for "up" offset
         
         // Time Display
         public const float TimeDisplayWidth = 100f;      // Width of time display container

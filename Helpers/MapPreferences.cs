@@ -6,7 +6,6 @@ namespace Small_Corner_Map.Helpers
     public class MapPreferences
     {
         // Preference Category and Keys
-        private const string CategoryIdentifier = "SmallCornerMapSettings";
         private const string CategoryDisplayName = "Small Corner Map Settings";
         
         // Preference Keys, Display Names, and Default Values
@@ -21,6 +20,18 @@ namespace Small_Corner_Map.Helpers
         private const string IncreaseSizeKey = "IncreaseMapSize";
         private const string IncreaseSizeDisplayName = "Increase Minimap Size";
         private const bool IncreaseSizeDefault = false;
+
+        private const string EnableAdvancedMinimapTuningKey = "EnableAdvancedMinimapTuning";
+        private const string EnableAdvancedMinimapTuningDisplayName = "Enable Advanced Minimap Tuning";
+        private const bool EnableAdvancedMinimapTuningDefault = false;
+
+        // Advanced tuning preferences (always defined, but only created in settings if tuning enabled)
+        private const string MapZoomLevelKey = "MapZoomLevel";
+        private const string MapZoomLevelDisplayName = "Map Movement Scale (Zoom)";
+        private const string MinimapPlayerOffsetXKey = "MinimapPlayerOffsetX";
+        private const string MinimapPlayerOffsetXDisplayName = "Minimap Player X Offset";
+        private const string MinimapPlayerOffsetYKey = "MinimapPlayerOffsetY";
+        private const string MinimapPlayerOffsetYDisplayName = "Minimap Player Y Offset";
 
         private const string ContractTrackingKey = "TrackContracts";
         private const string ContractTrackingDisplayName = "Track Active Contracts on Minimap";
@@ -39,10 +50,14 @@ namespace Small_Corner_Map.Helpers
         private const bool ShowCompassDefault = true;
         
         // Preference Entries
-        private MelonPreferences_Category SettingsCategory { get; set; }
+        public MelonPreferences_Category SettingsCategory { get; set; }
         public MelonPreferences_Entry<bool> MinimapEnabled { get; private set; }
         public MelonPreferences_Entry<bool> ShowGameTime { get; private set; }
         public MelonPreferences_Entry<bool> IncreaseSize { get; private set; }
+        public MelonPreferences_Entry<bool> EnableAdvancedMinimapTuning { get; private set; }
+        public MelonPreferences_Entry<float> MapZoomLevel { get; private set; }
+        public MelonPreferences_Entry<float> MinimapPlayerOffsetX { get; private set; }
+        public MelonPreferences_Entry<float> MinimapPlayerOffsetY { get; private set; }
         public MelonPreferences_Entry<bool> TrackContracts { get; private set; }
         public MelonPreferences_Entry<bool> TrackProperties { get; private set; }
         public MelonPreferences_Entry<bool> TrackVehicles { get; private set; }
@@ -56,27 +71,29 @@ namespace Small_Corner_Map.Helpers
 
         public void LoadPreferences()
         {
-            if (!MelonPreferences.HasEntry(CategoryIdentifier, MinimapEnabledKey))
+            if (!MelonPreferences.HasEntry(Constants.MapPreferencesCategoryIdentifier, MinimapEnabledKey))
             {
                 CreateDefaultEntries();
             }
-            else
-            {
-                SettingsCategory = MelonPreferences.GetCategory(CategoryIdentifier);
-                MinimapEnabled = MelonPreferences.GetEntry<bool>(CategoryIdentifier, MinimapEnabledKey);
-                ShowGameTime = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ShowGameTimeKey);
-                IncreaseSize = MelonPreferences.GetEntry<bool>(CategoryIdentifier, IncreaseSizeKey);
-                TrackContracts = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ContractTrackingKey);
-                TrackProperties = MelonPreferences.GetEntry<bool>(CategoryIdentifier, PropertyTrackingKey);
-                TrackVehicles = MelonPreferences.GetEntry<bool>(CategoryIdentifier, VehicleTrackingKey);
-                ShowCompass = MelonPreferences.GetEntry<bool>(CategoryIdentifier, ShowCompassKey);
-                ShowSquareMinimap = MelonPreferences.GetEntry<bool>(CategoryIdentifier, "ShowSquareMinimap");
-            }
+            // Always retrieve all entries if the category exists. Defaults are handled by CreateDefaultEntries or first load.
+            SettingsCategory = MelonPreferences.GetCategory(Constants.MapPreferencesCategoryIdentifier);
+            MinimapEnabled = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, MinimapEnabledKey);
+            ShowGameTime = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, ShowGameTimeKey);
+            IncreaseSize = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, IncreaseSizeKey);
+            EnableAdvancedMinimapTuning = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, EnableAdvancedMinimapTuningKey);
+            MapZoomLevel = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MapZoomLevelKey);
+            MinimapPlayerOffsetX = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MinimapPlayerOffsetXKey);
+            MinimapPlayerOffsetY = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MinimapPlayerOffsetYKey);
+            TrackContracts = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, ContractTrackingKey);
+            TrackProperties = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, PropertyTrackingKey);
+            TrackVehicles = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, VehicleTrackingKey);
+            ShowCompass = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, ShowCompassKey);
+            ShowSquareMinimap = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, "ShowSquareMinimap");
         }
 
         private void CreateDefaultEntries()
         {
-            SettingsCategory = MelonPreferences.CreateCategory(CategoryIdentifier, CategoryDisplayName);
+            SettingsCategory = MelonPreferences.CreateCategory(Constants.MapPreferencesCategoryIdentifier, CategoryDisplayName);
 
             MinimapEnabled = SettingsCategory.CreateEntry(
                 MinimapEnabledKey, 
@@ -93,6 +110,26 @@ namespace Small_Corner_Map.Helpers
                 IncreaseSizeDefault, 
                 IncreaseSizeDisplayName);
             
+            EnableAdvancedMinimapTuning = SettingsCategory.CreateEntry(
+                EnableAdvancedMinimapTuningKey,
+                EnableAdvancedMinimapTuningDefault,
+                EnableAdvancedMinimapTuningDisplayName);
+
+            MapZoomLevel = SettingsCategory.CreateEntry(
+                MapZoomLevelKey,
+                Constants.MinimapDefaultMapMovementScale,
+                MapZoomLevelDisplayName);
+            
+            MinimapPlayerOffsetX = SettingsCategory.CreateEntry(
+                MinimapPlayerOffsetXKey,
+                Constants.MinimapDefaultPlayerOffsetX,
+                MinimapPlayerOffsetXDisplayName);
+            
+            MinimapPlayerOffsetY = SettingsCategory.CreateEntry(
+                MinimapPlayerOffsetYKey,
+                Constants.MinimapDefaultPlayerOffsetY,
+                MinimapPlayerOffsetYDisplayName);
+
             TrackContracts = SettingsCategory.CreateEntry(
                 ContractTrackingKey, 
                 ContractTrackingDefault, 

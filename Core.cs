@@ -41,8 +41,7 @@ namespace Small_Corner_Map
             if (sceneName == "Main")
             {
                 MelonLogger.Msg("GameplayScene loaded, initializing Small Corner Map...");
-                var baseGameObject = new GameObject("SmallCornerMap_Main");
-                baseGameObject.AddComponent<MinimapCoordinator>();
+                MinimapManager.Instance.Initialize();
             }
             else
             {

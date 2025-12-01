@@ -10,36 +10,7 @@ namespace Small_Corner_Map.PoIManagers
     [RegisterTypeInIl2Cpp]
     public class MinimapContentManager : MonoBehaviour
     {
-        private RectTransform _mapContent;
-        private Transform _playerTransform;
-        private MinimapCoordinateSystem _coordinateSystem;
-        private PlayerMarkerManager _playerMarkerManager; // New field
-
-        public IEnumerator Initialize(RectTransform mapContent, Transform playerTransform, MinimapCoordinateSystem coordinateSystem, PlayerMarkerManager playerMarkerManager) // Updated signature
-        {
-            _mapContent = mapContent;
-            _playerTransform = playerTransform;
-            _coordinateSystem = coordinateSystem;
-            _playerMarkerManager = playerMarkerManager; // Store reference
-            yield break; // Ensure it's still an IEnumerator
-        }
-        
-        void Start()
-        {
-        }
-
-        void Update()
-        {
-            if (_mapContent == null || _playerTransform == null || _playerMarkerManager == null)
-            {
-                return;
-            }
-
-            var playerPosition = _playerTransform.position;
-            var newPosition = _coordinateSystem.GetMapContentPosition(playerPosition);
-
-            _mapContent.anchoredPosition = newPosition;
-            _playerMarkerManager.UpdateDirectionIndicator(_playerTransform); // Call UpdateDirectionIndicator
-        }
+        // This class is intentionally left empty to satisfy the "do not remove" constraint.
+        // Its functionality has been superseded by the new minimap UI system.
     }
 }

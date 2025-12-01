@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Import local developer settings if they exist (not committed to source control) -->
   <Import Project="Local.props" Condition="Exists('Local.props')" />
@@ -121,12 +121,13 @@
   <ItemGroup>
     <Compile Include="Core.cs" />
     <Compile Include="Helpers\Constants.cs" />
+    <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
     <Compile Include="Helpers\MinimapCoordinateSystem.cs" />
-    <Compile Include="PoIManagers\PlayerMarkerManager.cs" />
-    <Compile Include="PoIManagers\MinimapContentManager.cs" />
-    <Compile Include="UI\UIBuilder.cs" />
-    <Compile Include="Main\MinimapCoordinator.cs" />
+    <Compile Include="Main\MinimapManager.cs" />
+    <Compile Include="Main\MinimapView.cs" />
+    <Compile Include="Main\PlayerMarkerView.cs" />
+    <Compile Include="Main\TimeDisplayView.cs" />
   </ItemGroup>
 
 
