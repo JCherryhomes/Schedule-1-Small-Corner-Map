@@ -63,8 +63,7 @@ namespace Small_Corner_Map.Main
                 Constants.PlayerMarkerCircleDrawingResolution, // Use higher resolution for drawing
                 _markerColor, 
                 Constants.MinimapCircleResolutionMultiplier, 
-                Constants.MinimapMaskFeather, 
-                true
+                Constants.MinimapMaskFeather
             );
             _playerMarkerImage.color = _markerColor;
 

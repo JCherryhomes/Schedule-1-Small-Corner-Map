@@ -1,114 +1,117 @@
-﻿using MelonLoader;
+﻿
+using MelonLoader;
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.Main;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 #if IL2CPP
 using S1Property = Il2CppScheduleOne.Property;
+using Il2CppScheduleOne.Map;
+using Il2CppScheduleOne.PlayerScripts;
+using Il2CppScheduleOne.UI.Phone.Map;
 #else
 using S1Property = ScheduleOne.Property;
+using ScheduleOne.Map;
+using ScheduleOne.UI.Phone.Map;
 #endif
 
 namespace Small_Corner_Map.PoIManagers;
 
-public class PropertyPoIManager : PoIManagerBase<S1Property.Property>, IPoIManager<S1Property.Property>
+[RegisterTypeInIl2Cpp]
+public class PropertyPoIManager : MonoBehaviour
 {
-    public PropertyPoIManager(MinimapContent mapContent, MapPreferences preferences, MarkerRegistry registry) : base(mapContent, preferences, registry)
+    private RectTransform parentRT;
+    private Dictionary<int, PoIMarkerView> poiMarkers = [];
+    private Transform _playerTransform; 
+    private RectTransform mapImageRT;
+    private float worldScaleFactor;
+    private float currentZoomLevel;
+
+    // Throttle POI scanning to reduce per-frame allocations/work
+    private int _frameCounter = 0;
+    private const int ScanIntervalFrames = 30; // ~0.5s at 60 FPS
+
+    private string[] allowList = 
+    [
+        "PropertyPoI(Clone)",
+        "OwnedVehiclePoI(Clone)",
+        "QuestPoI(Clone)",
+        "ContractPoI(Clone)",
+        "DeaddropPoI_Red(Clone)",
+        "PotentialCustomerPoI(Clone)",
+        "PotentialDealerPoI(Clone)"
+    ];
+
+    private string[] movingMarkers =
+    [
+        "PotentialCustomerPoI(Clone)",
+        "PotentialDealerPoI(Clone)"
+    ];
+
+    public void Initialize(Transform player, RectTransform mapImage, float worldScale, float zoom, float offsetX, float offsetY)
     {
-        MarkerKeyPrefix = "PropertyPoI_Marker";
-    }
-    
-    public void Initialize()
-    {
-        AddAllMarkers();
-    }
-    
-    public void CacheIconContainerIfNeeded()
-    {
-        CachePoIIcon(null);
+        _playerTransform = player; 
+        mapImageRT = mapImage;
+        worldScaleFactor = worldScale;
+        currentZoomLevel = zoom;
+        // minimapPlayerCenterXOffset and minimapPlayerCenterYOffset are no longer stored here
+        // as they are not passed to PoIMarkerView
     }
 
-    public void RefreshAll()
+    public void UpdateZoomLevel(float newZoomLevel)
     {
-        if (IconPrefab == null)
+        currentZoomLevel = newZoomLevel;
+        foreach (var kvp in poiMarkers)
         {
-            MelonLogger.Warning("PropertyPoIManager: Cannot refresh markers, IconContainer is still null after caching attempt");
+            kvp.Value.UpdateZoomLevel(newZoomLevel);
+        }
+    }
+
+    private void Start()
+    {
+        parentRT = transform as RectTransform;
+    }
+    
+    private void Update()
+    {
+        if (MapApp.Instance == null || MapApp.Instance.PoIContainer == null || _playerTransform == null) return;
+
+        // Only rescan periodically to reduce overhead; dynamic markers update themselves
+        _frameCounter++;
+        if ((_frameCounter % ScanIntervalFrames) != 0)
             return;
-        }
-        
-        RemoveAllMarkers();
-        Initialize();
-    }
 
-    public static GameObject PropertyIconPrototype => IconPrefab != null ? IconPrefab.gameObject : null;
-    
-    internal override void CachePoIIcon(S1Property.Property marker)
-    {
-        if (IconPrefab != null) return;
+        var currentChildren = MapApp.Instance.PoIContainer
+            .GetComponentsInChildren<RectTransform>(false)
+            .Where(rt => rt.gameObject.activeSelf && allowList.Any(allowed => rt.gameObject.name == allowed))
+            .ToDictionary(rt => rt.gameObject.GetInstanceID(), rt => rt);
 
-        if (marker != null)
+        // Remove old markers
+        var childrenToRemove = poiMarkers.Where(marker => !currentChildren.ContainsKey(marker.Key));
+
+        foreach (var kvp in childrenToRemove)
         {
-            IconPrefab = marker.PoI.IconContainer.gameObject;
-            return;
+            poiMarkers.Remove(kvp.Key);
         }
-    }
 
-    public void AddMarker(S1Property.Property property)
-    {
-        if (IconPrefab == null)
-            CachePoIIcon(property);
-        
-        var scale = MapContent.CurrentMapScale;
-        var worldPos = property.gameObject.transform.position;
-        var markerData = GetMarkerData(property);
-        Registry.AddOrUpdateMarker(markerData);
-    }
-
-    public void AddAllMarkers()
-    {
-        var properties = S1Property.PropertyManager.Instance?.GetComponentsInChildren<S1Property.Property>().ToList() ?? [];
-        foreach (var property in properties)
+        // Add new markers
+        foreach (var kvp in currentChildren)
         {
-            if (!property.IsOwned) continue;
-            AddMarker(property);
+            var child = kvp.Value;
+            if (poiMarkers.ContainsKey(child.GetInstanceID()) && !movingMarkers.Contains(child.name)) continue;
+            
+            var poiMarkerViewGO = new GameObject("PoIMarkerView_" + child.name);
+            // Add RectTransform BEFORE parenting so it's created as a RectTransform
+            var rect = poiMarkerViewGO.AddComponent<RectTransform>();
+            rect.SetParent(mapImageRT, false);
+            
+            var poiMarkerView = poiMarkerViewGO.AddComponent<PoIMarkerView>();
+            // Use the anchoredPosition from the phone map - it's already correctly positioned!
+            bool isDynamic = movingMarkers.Contains(child.name);
+            poiMarkerView.Initialize(child, child.anchoredPosition, worldScaleFactor, currentZoomLevel, isDynamic);
+            poiMarkers[kvp.Key] = poiMarkerView;
         }
-    }
-
-    public void RemoveMarker(S1Property.Property marker)
-    {
-        Registry.RemoveMarker(GetMarkerName(marker));
-    }
-
-    public void RemoveAllMarkers()
-    {
-        var properties = S1Property.PropertyManager.Instance?.GetComponentsInChildren<S1Property.Property>();
-        if (!(properties?.Length > 0)) return;
-        foreach (var property in properties)
-        {
-            Registry.RemoveMarker(GetMarkerName(property));
-        }
-    }
-
-    internal override MarkerRegistry.MarkerData GetMarkerData(S1Property.Property property)
-    {
-        var scale = MapContent.CurrentMapScale;
-        var worldPos = property.gameObject.transform.position;
-        return new MarkerRegistry.MarkerData
-        {
-            Id = GetMarkerName(property),
-            WorldPos = worldPos,
-            IconPrefab = IconPrefab,
-            Type = MarkerType.Property,
-            DisplayName = property.name,
-            XOffset = -Constants.MarkerXOffset,
-            ZOffset = -Constants.MarkerZOffset,
-            IsTracked = true,
-            IsVisibleOnMinimap = true,
-            IsVisibleOnCompass = true
-        };
-    }
-
-    protected override string GetMarkerName(S1Property.Property property)
-    {
-        return MarkerKeyPrefix + "_" + property.name;
     }
 }

@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using MelonLoader;
 using Small_Corner_Map.Helpers;
 using System.Reflection;
+using Small_Corner_Map.PoIManagers;
 #if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
 #else
@@ -19,8 +20,10 @@ namespace Small_Corner_Map.Main
         private Image mapImage;
         private Image maskImage;
         private Mask mask;
+        private Image borderImage;
 
         private PlayerMarkerView playerMarkerView;
+        private PropertyPoIManager propertyPoIManager;
         private TimeDisplayView timeDisplayView;
         
         private Transform playerTransform; // Added to store player transform for Update
@@ -53,8 +56,12 @@ namespace Small_Corner_Map.Main
             currentZoomLevel = mapZoomLevel; // Set current zoom level from preferences
 
             // Generate sprites for mask
-            circleSprite = Utils.CreateCircleSprite(Constants.MinimapCircleDrawingResolution, Color.grey);
-            squareSprite = Utils.CreateRoundedSquareSprite((int)Constants.BaseMinimapSize, 5f, Color.grey);
+            if (!circleSprite) 
+                circleSprite = Utils.CreateCircleSprite(Constants.MinimapCircleDrawingResolution, Color.grey, 2, 2);
+            
+            if (!squareSprite)
+                squareSprite = Utils.CreateRoundedSquareSprite(
+                    (int)Constants.BaseMinimapSize, 10f, Color.grey, 2);
 
             // Create the UI
             if (minimapEnabled)
@@ -101,6 +108,10 @@ namespace Small_Corner_Map.Main
             if (playerMarkerView != null)
             {
                 playerMarkerView.UpdateZoomLevel(newZoomLevel);
+            }
+            if (propertyPoIManager != null)
+            {
+                propertyPoIManager.UpdateZoomLevel(newZoomLevel);
             }
         }
         
@@ -151,6 +162,17 @@ namespace Small_Corner_Map.Main
             containerRT.anchoredPosition = new Vector2(-20, -20);
             containerRT.sizeDelta = new Vector2(Constants.BaseMinimapSize * minimapScaleFactor, Constants.BaseMinimapSize * minimapScaleFactor);
 
+            // --- Minimap Border ---
+            var borderGo = new GameObject("MinimapBorder");
+            borderGo.transform.SetParent(containerRT, false);
+            var borderRT = borderGo.AddComponent<RectTransform>();
+            borderRT.anchorMin = Vector2.zero;
+            borderRT.anchorMax = Vector2.one;
+            borderRT.offsetMin = new Vector2(-2, -2);
+            borderRT.offsetMax = new Vector2(2, 2);
+            borderImage = borderGo.AddComponent<Image>();
+            borderImage.color = Color.black;
+
             // --- Minimap Mask ---
             var maskGo = new GameObject("MinimapMask");
             maskGo.transform.SetParent(containerRT, false);
@@ -177,6 +199,10 @@ namespace Small_Corner_Map.Main
             playerMarkerView = new GameObject("PlayerMarkerView").AddComponent<PlayerMarkerView>();
             playerMarkerView.transform.SetParent(containerRT, false); // Parent to containerRT for fixed center position
             playerMarkerView.Initialize(player.transform, containerRT.transform, worldScaleFactor, currentZoomLevel, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
+
+            propertyPoIManager = new GameObject("PropertyPoIManager").AddComponent<PropertyPoIManager>();
+            propertyPoIManager.transform.SetParent(containerRT, false);
+            propertyPoIManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
             
             // --- Time Display ---
             timeDisplayView = new GameObject("TimeDisplayView").AddComponent<TimeDisplayView>();
@@ -220,9 +246,11 @@ namespace Small_Corner_Map.Main
 
         public void SetStyle(bool useCircle)
         {
-            if (maskImage == null) return;
+            if (maskImage == null || borderImage == null) return;
 
-            maskImage.sprite = useCircle ? circleSprite : squareSprite;
+            var sprite = useCircle ? circleSprite : squareSprite;
+            maskImage.sprite = sprite;
+            borderImage.sprite = sprite;
         }
 
         private void Update()

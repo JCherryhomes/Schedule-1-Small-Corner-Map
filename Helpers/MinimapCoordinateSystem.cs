@@ -67,16 +67,21 @@ namespace Small_Corner_Map.Helpers
         /// Converts a world position to a position relative to the MapContentObject.
         /// Used for positioning POI markers on the map.
         /// </summary>
-        /// <param name="worldPos">World space position</param>
+        /// <param name="poiWorldPos">POI's world space position</param>
+        /// <param name="playerWorldPos">Player's world space position</param>
         /// <param name="worldScaleFactor">The base world-to-UI scale factor.</param>
         /// <param name="currentZoomLevel">Current zoom level applied to the minimap.</param>
         /// <returns>Position to use for marker's anchoredPosition relative to MapContent</returns>
-        public static Vector2 WorldToMarkerPosition(Vector3 worldPos, float worldScaleFactor, float currentZoomLevel)
+        public static Vector2 WorldToMarkerPosition(Vector3 poiWorldPos, Vector3 playerWorldPos, float worldScaleFactor, float currentZoomLevel)
         {
-            // Markers are children of MapContentObject, so we just need map-space coordinates
-            // The MapContentObject's position already handles the player centering
             var scale = WorldToUIScale(worldScaleFactor, currentZoomLevel);
-            return new Vector2(worldPos.x * scale, worldPos.z * scale);
+            
+            // Calculate the POI's position relative to the player, then scale
+            // The minimapPlayerX/YOffsets are handled by the parent mapImageRT's position
+            var relativeX = (poiWorldPos.x - playerWorldPos.x) * scale;
+            var relativeZ = (poiWorldPos.z - playerWorldPos.z) * scale;
+            
+            return new Vector2(relativeX, relativeZ);
         }
 
         /// <summary>
@@ -102,12 +107,14 @@ namespace Small_Corner_Map.Helpers
         {
             var mapSpace = WorldToMapSpace(worldPos, worldScaleFactor, currentZoomLevel);
             var contentPos = GetMapContentPosition(worldPos, worldScaleFactor, currentZoomLevel, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
-            var markerPos = WorldToMarkerPosition(worldPos, worldScaleFactor, currentZoomLevel);
+            // Note: WorldToMarkerPosition needs playerWorldPos for accurate debug info
+            // For this debug info, we'll assume playerWorldPos is the same as worldPos for simplicity
+            var markerPos = WorldToMarkerPosition(worldPos, worldPos, worldScaleFactor, currentZoomLevel);
             
             return $"World: {worldPos}\n" +
                    $"Map Space: {mapSpace}\n" +
                    $"Content Pos: {contentPos}\n" +
-                   $"Marker Pos: {markerPos}\n" +
+                   $"Marker Pos (relative to self as player): {markerPos}\n" +
                    $"Scale: {WorldToUIScale(worldScaleFactor, currentZoomLevel)}x";
         }
     }
