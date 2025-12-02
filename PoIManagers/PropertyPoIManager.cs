@@ -23,41 +23,29 @@ namespace Small_Corner_Map.PoIManagers;
 public class PropertyPoIManager : MonoBehaviour
 {
     private RectTransform parentRT;
-    private Dictionary<int, PoIMarkerView> poiMarkers = [];
-    private Transform _playerTransform; 
+    private Dictionary<string, PoIMarkerView> poiMarkers = []; // Use name+position as key for stability
+    private Transform _playerTransform;
     private RectTransform mapImageRT;
     private float worldScaleFactor;
     private float currentZoomLevel;
 
-    // Throttle POI scanning to reduce per-frame allocations/work
-    private int _frameCounter = 0;
-    private const int ScanIntervalFrames = 30; // ~0.5s at 60 FPS
+    private object _updateCoroutine;
 
-    private string[] allowList = 
-    [
+    private HashSet<string> allowList = new HashSet<string>
+    {
         "PropertyPoI(Clone)",
         "OwnedVehiclePoI(Clone)",
         "QuestPoI(Clone)",
         "ContractPoI(Clone)",
-        "DeaddropPoI_Red(Clone)",
-        "PotentialCustomerPoI(Clone)",
-        "PotentialDealerPoI(Clone)"
-    ];
+        "DeaddropPoI_Red(Clone)"
+    };
 
-    private string[] movingMarkers =
-    [
-        "PotentialCustomerPoI(Clone)",
-        "PotentialDealerPoI(Clone)"
-    ];
-
-    public void Initialize(Transform player, RectTransform mapImage, float worldScale, float zoom, float offsetX, float offsetY)
+    public void Initialize(Transform player, RectTransform mapImage, float worldScale, float zoom)
     {
         _playerTransform = player; 
         mapImageRT = mapImage;
         worldScaleFactor = worldScale;
         currentZoomLevel = zoom;
-        // minimapPlayerCenterXOffset and minimapPlayerCenterYOffset are no longer stored here
-        // as they are not passed to PoIMarkerView
     }
 
     public void UpdateZoomLevel(float newZoomLevel)
@@ -73,45 +61,78 @@ public class PropertyPoIManager : MonoBehaviour
     {
         parentRT = transform as RectTransform;
     }
-    
-    private void Update()
+
+    private void OnEnable()
     {
-        if (MapApp.Instance == null || MapApp.Instance.PoIContainer == null || _playerTransform == null) return;
-
-        // Only rescan periodically to reduce overhead; dynamic markers update themselves
-        _frameCounter++;
-        if ((_frameCounter % ScanIntervalFrames) != 0)
-            return;
-
-        var currentChildren = MapApp.Instance.PoIContainer
-            .GetComponentsInChildren<RectTransform>(false)
-            .Where(rt => rt.gameObject.activeSelf && allowList.Any(allowed => rt.gameObject.name == allowed))
-            .ToDictionary(rt => rt.gameObject.GetInstanceID(), rt => rt);
-
-        // Remove old markers
-        var childrenToRemove = poiMarkers.Where(marker => !currentChildren.ContainsKey(marker.Key));
-
-        foreach (var kvp in childrenToRemove)
+        if (_updateCoroutine == null)
         {
-            poiMarkers.Remove(kvp.Key);
+            _updateCoroutine = MelonCoroutines.Start(UpdatePoIMarkersCoroutine());
         }
+    }
 
-        // Add new markers
-        foreach (var kvp in currentChildren)
+    private void OnDisable()
+    {
+        if (_updateCoroutine != null)
         {
-            var child = kvp.Value;
-            if (poiMarkers.ContainsKey(child.GetInstanceID()) && !movingMarkers.Contains(child.name)) continue;
+            MelonCoroutines.Stop(_updateCoroutine);
+            _updateCoroutine = null;
+        }
+    }
+
+    private System.Collections.IEnumerator UpdatePoIMarkersCoroutine()
+    {
+        var waitInterval = new WaitForSeconds(1.0f);
+
+        while (true)
+        {
+            yield return waitInterval;
+
+            if (MapApp.Instance == null || MapApp.Instance.PoIContainer == null || _playerTransform == null)
+                continue;
+
+            var allChildren = MapApp.Instance.PoIContainer.GetComponentsInChildren<RectTransform>(false);
+            var currentChildren = new Dictionary<string, RectTransform>();
             
-            var poiMarkerViewGO = new GameObject("PoIMarkerView_" + child.name);
-            // Add RectTransform BEFORE parenting so it's created as a RectTransform
-            var rect = poiMarkerViewGO.AddComponent<RectTransform>();
-            rect.SetParent(mapImageRT, false);
-            
-            var poiMarkerView = poiMarkerViewGO.AddComponent<PoIMarkerView>();
-            // Use the anchoredPosition from the phone map - it's already correctly positioned!
-            bool isDynamic = movingMarkers.Contains(child.name);
-            poiMarkerView.Initialize(child, child.anchoredPosition, worldScaleFactor, currentZoomLevel, isDynamic);
-            poiMarkers[kvp.Key] = poiMarkerView;
+            // Only process static markers (skip moving markers like customers/dealers)
+            foreach (var rt in allChildren)
+            {
+                if (rt.gameObject.activeSelf && allowList.Contains(rt.gameObject.name))
+                {
+                    // Use name + position as stable key (rounded to avoid floating point variations)
+                    string key = $"{rt.gameObject.name}_{Mathf.RoundToInt(rt.anchoredPosition.x)}_{Mathf.RoundToInt(rt.anchoredPosition.y)}";
+                    currentChildren[key] = rt;
+                }
+            }
+
+            // Remove old markers that no longer exist
+            var childrenToRemove = poiMarkers.Where(marker => !currentChildren.ContainsKey(marker.Key)).ToList();
+
+            foreach (var kvp in childrenToRemove)
+            {
+                if (kvp.Value != null && kvp.Value.gameObject != null)
+                {
+                    Destroy(kvp.Value.gameObject);
+                }
+                poiMarkers.Remove(kvp.Key);
+            }
+
+            // Add new static markers (skip if already exists)
+            foreach (var kvp in currentChildren)
+            {
+                if (poiMarkers.ContainsKey(kvp.Key))
+                    continue;
+                
+                var child = kvp.Value;
+                
+                // Create new marker
+                var poiMarkerViewGO = new GameObject("PoIMarkerView_" + child.name);
+                var rect = poiMarkerViewGO.AddComponent<RectTransform>();
+                rect.SetParent(mapImageRT, false);
+                
+                var poiMarkerView = poiMarkerViewGO.AddComponent<PoIMarkerView>();
+                poiMarkerView.Initialize(child, child.anchoredPosition, worldScaleFactor, currentZoomLevel, false);
+                poiMarkers[kvp.Key] = poiMarkerView;
+            }
         }
     }
 }

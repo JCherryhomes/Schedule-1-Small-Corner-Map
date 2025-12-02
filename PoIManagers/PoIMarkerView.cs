@@ -65,6 +65,7 @@ namespace Small_Corner_Map.PoIManagers
             // Set the position AFTER everything else is set up
             // Scale the phone map position to match the minimap size (approx 2000->500 => 0.25)
             Vector2 scaledPosition = _phoneMapPosition * 0.25f;
+            scaledPosition = new Vector2(scaledPosition.x + 2f, scaledPosition.y - 3f);
             _thisRect.anchoredPosition = scaledPosition;
         }
 
@@ -73,21 +74,14 @@ namespace Small_Corner_Map.PoIManagers
             currentZoomLevel = newZoomLevel;
         }
 
-        void Update()
+        public void UpdatePosition(Vector2 newPhoneMapPosition)
         {
             if (_thisRect == null)
                 return;
 
-            // Only dynamic markers need per-frame updates; static markers are positioned once
-            if (_isDynamic && _sourceRect != null)
-            {
-                Vector2 scaledPosition = _sourceRect.anchoredPosition * 0.25f;
-                // Avoid redundant assignments to reduce layout work/GC
-                if ((_thisRect.anchoredPosition - scaledPosition).sqrMagnitude > 0.001f)
-                {
-                    _thisRect.anchoredPosition = scaledPosition;
-                }
-            }
+            _phoneMapPosition = newPhoneMapPosition;
+            Vector2 scaledPosition = _phoneMapPosition * 0.25f;
+            _thisRect.anchoredPosition = scaledPosition;
         }
     }
 }

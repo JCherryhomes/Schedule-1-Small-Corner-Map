@@ -202,7 +202,7 @@ namespace Small_Corner_Map.Main
 
             propertyPoIManager = new GameObject("PropertyPoIManager").AddComponent<PropertyPoIManager>();
             propertyPoIManager.transform.SetParent(containerRT, false);
-            propertyPoIManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
+            propertyPoIManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel);
             
             // --- Time Display ---
             timeDisplayView = new GameObject("TimeDisplayView").AddComponent<TimeDisplayView>();
