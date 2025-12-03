@@ -49,7 +49,7 @@ namespace Small_Corner_Map.Main
         }
 
         public void Initialize(
-            Player player, bool minimapEnabled, float minimapScaleFactor, bool showSquareMinimap, MelonPreferences_Entry<bool> showGameTimePreference, float scaleFactor, float mapZoomLevel, float playerCenterXOffset, float playerCenterYOffset)
+            Player player, bool minimapEnabled, float minimapScaleFactor, bool showSquareMinimap, bool showGameTime, float scaleFactor, float mapZoomLevel, float playerCenterXOffset, float playerCenterYOffset, bool trackProperties, bool trackContracts, bool trackVehicles)
         {
             MelonLogger.Msg("MinimapView initializing.");
             
@@ -73,7 +73,7 @@ namespace Small_Corner_Map.Main
             // Create the UI
             if (minimapEnabled)
             {
-                CreateMinimapUI(player, minimapScaleFactor, showGameTimePreference);
+                CreateMinimapUI(player, minimapScaleFactor, showGameTime, trackProperties, trackContracts, trackVehicles);
 
                 // Load the map sprite
                 LoadMapSprite();
@@ -171,7 +171,7 @@ namespace Small_Corner_Map.Main
             }
         }
 
-        private void CreateMinimapUI(Player player, float minimapScaleFactor, MelonPreferences_Entry<bool> showGameTimePreference)
+        private void CreateMinimapUI(Player player, float minimapScaleFactor, bool showGameTime, bool trackProperties, bool trackContracts, bool trackVehicles)
         {
             // --- Canvas ---
             canvasGo = new GameObject("MinimapCanvas");
@@ -234,12 +234,12 @@ namespace Small_Corner_Map.Main
 
             mapMarkerManager = new GameObject("PropertyPoIManager").AddComponent<MapMarkerManager>();
             mapMarkerManager.transform.SetParent(containerRT, false);
-            mapMarkerManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel);
+            mapMarkerManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel, trackProperties, trackContracts, trackVehicles);
             
             // --- Time Display ---
             timeDisplayView = new GameObject("TimeDisplayView").AddComponent<TimeDisplayView>();
             timeDisplayView.transform.SetParent(containerRT, false);
-            timeDisplayView.Initialize(containerRT, showGameTimePreference);
+            timeDisplayView.Initialize(containerRT, showGameTime);
         }
 
         private void LoadMapSprite()

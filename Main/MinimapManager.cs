@@ -1,14 +1,14 @@
 using MelonLoader;
 using UnityEngine;
 using Small_Corner_Map.Helpers;
-using System.Collections;
-using System;
 
 
 #if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
+using Il2CppIEnumerator = Il2CppSystem.Collections.IEnumerator;
 #else
 using ScheduleOne.PlayerScripts;
+using Il2CppIEnumerator = System.Collections.IEnumerator;
 #endif
 
 namespace Small_Corner_Map.Main
@@ -48,7 +48,7 @@ namespace Small_Corner_Map.Main
             MelonCoroutines.Start(InitializeWhenReady());
         }
 
-        private IEnumerator InitializeWhenReady()
+        private System.Collections.IEnumerator InitializeWhenReady()
         {
             // Wait for Player.Local to be available
             while (Player.Local == null)
@@ -63,11 +63,14 @@ namespace Small_Corner_Map.Main
                 _mapPreferences.MinimapEnabled.Value, 
                 _mapPreferences.MinimapScaleFactor, 
                 _mapPreferences.ShowSquareMinimap.Value, 
-                _mapPreferences.ShowGameTime,
-                Constants.BaseWorldToUIScaleFactor, 
-                _mapPreferences.MapZoomLevel.Value, 
+                _mapPreferences.ShowGameTime.Value,
+                Constants.BaseWorldToUIScaleFactor,
+                _mapPreferences.MapZoomLevel.Value,
                 _mapPreferences.MinimapPlayerOffsetX.Value,
-                _mapPreferences.MinimapPlayerOffsetY.Value
+                _mapPreferences.MinimapPlayerOffsetY.Value,
+                _mapPreferences.TrackProperties.Value,
+                _mapPreferences.TrackContracts.Value,
+                _mapPreferences.TrackVehicles.Value
             );
             
             // Subscribe to preference changes

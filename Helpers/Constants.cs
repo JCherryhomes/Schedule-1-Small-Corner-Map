@@ -81,7 +81,7 @@ namespace Small_Corner_Map.Helpers
         public const float RedMarkerSize = 5f;           // Width/height of red debug markers
         public const float PlayerMarkerSize = 10f;       // Width/height of player marker
         public const float DirectionIndicatorSize = 6f;  // Width/height of direction indicator
-        public const float DirectionIndicatorDistance = 7.5f; // Distance from player marker center
+        public const float DirectionIndicatorDistance = 10f; // Distance from player marker center
         
         // Minimap Border
         public const float MinimapBorderThickness = 2f;  // Pixel thickness outward from mask circle (reduced for less extension)

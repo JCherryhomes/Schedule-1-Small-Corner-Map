@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using MelonLoader;
 using Small_Corner_Map.Helpers;
 
 #if IL2CPP
@@ -16,21 +15,22 @@ namespace Small_Corner_Map.Main
     {
         private Text timeText;
         private GameObject timeDisplayGo;
-        private MelonPreferences_Entry<bool> showGameTimePreference;
+        private bool showGameTime;
         private const int Width = 110;
         private const int Height = 55;
 
         public void ToggleVisibility(bool isVisible)
         {
+            showGameTime = isVisible;
             if (timeDisplayGo != null)
             {
                 timeDisplayGo.SetActive(isVisible);
             }
         }
 
-        public void Initialize(RectTransform parent, MelonPreferences_Entry<bool> gameTimePreference)
+        public void Initialize(RectTransform parent, bool initialShowGameTime)
         {
-            showGameTimePreference = gameTimePreference;
+            showGameTime = initialShowGameTime;
 
             // Create the time display UI element
             timeDisplayGo = new GameObject("TimeDisplay");
@@ -64,17 +64,12 @@ namespace Small_Corner_Map.Main
             textRect.sizeDelta = Vector2.zero;
 
             // Set initial visibility
-            timeDisplayGo.SetActive(this.showGameTimePreference.Value);
+            timeDisplayGo.SetActive(showGameTime);
         }
 
         void Update()
         {
-            if (timeDisplayGo)
-            {
-                timeDisplayGo.SetActive(showGameTimePreference.Value);
-            }
-
-            if (!showGameTimePreference.Value || !TimeManager.InstanceExists)
+            if (!showGameTime || !TimeManager.InstanceExists)
             {
                 return;
             }

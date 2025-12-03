@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using Small_Corner_Map.Helpers;
 using MelonLoader;
 
 namespace Small_Corner_Map.PoIManagers

@@ -1,21 +1,16 @@
 ﻿
 using MelonLoader;
-using Small_Corner_Map.Helpers;
-using Small_Corner_Map.Main;
-using Small_Corner_Map;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 #if IL2CPP
-using S1Property = Il2CppScheduleOne.Property;
 using Il2CppScheduleOne.Map;
 using Il2CppScheduleOne.PlayerScripts;
 using Il2CppScheduleOne.UI.Phone.Map;
+using Il2CppIEnumerator = Il2CppSystem.Collections.IEnumerator;
 #else
 using S1Property = ScheduleOne.Property;
 using ScheduleOne.Map;
 using ScheduleOne.UI.Phone.Map;
+using Il2CppIEnumerator = System.Collections.IEnumerator;
 #endif
 
 namespace Small_Corner_Map.PoIManagers;
@@ -23,11 +18,9 @@ namespace Small_Corner_Map.PoIManagers;
 [RegisterTypeInIl2Cpp]
 public class MapMarkerManager : MonoBehaviour
 {
-    private RectTransform parentRT;
     private Dictionary<string, PoIMarkerView> poiMarkers = []; // Use name+position as key for stability
     private Transform _playerTransform;
     private RectTransform mapImageRT;
-    private RectTransform minimapContainerRT;
     private float worldScaleFactor;
     private float currentZoomLevel;
 
@@ -39,12 +32,26 @@ public class MapMarkerManager : MonoBehaviour
         "DeaddropPoI_Red(Clone)"
     };
 
-    public void Initialize(Transform player, RectTransform mapImage, float worldScale, float zoom)
+    public void Initialize(Transform player, RectTransform mapImage, float worldScale, float zoom, bool trackProperties, bool trackContracts, bool trackVehicles)
     {
         _playerTransform = player; 
         mapImageRT = mapImage;
         worldScaleFactor = worldScale;
         currentZoomLevel = zoom;
+        
+        // Initialize allowList based on tracking preferences
+        if (trackProperties)
+        {
+            allowList.Add("PropertyPoI(Clone)");
+        }
+        if (trackContracts)
+        {
+            allowList.Add("ContractPoI(Clone)");
+        }
+        if (trackVehicles)
+        {
+            allowList.Add("OwnedVehiclePoI(Clone)");
+        }
     }
 
     public void UpdateZoomLevel(float newZoomLevel)
@@ -54,11 +61,6 @@ public class MapMarkerManager : MonoBehaviour
         {
             kvp.Value.UpdateZoomLevel(newZoomLevel);
         }
-    }
-
-    private void Start()
-    {
-        parentRT = transform as RectTransform;
     }
 
     private void OnEnable()

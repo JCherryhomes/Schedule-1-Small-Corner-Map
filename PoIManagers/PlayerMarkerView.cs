@@ -2,7 +2,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
 using MelonLoader;
-using System.Collections;
+
+#if IL2CPP
+using Il2CppIEnumerator = Il2CppSystem.Collections.IEnumerator;
+#else
+using Il2CppIEnumerator = System.Collections.IEnumerator;
+#endif
 
 namespace Small_Corner_Map.PoIManagers
 {
@@ -159,7 +164,7 @@ namespace Small_Corner_Map.PoIManagers
             _directionIndicator.localRotation = Quaternion.Euler(0, 0, angleDeg);
         }
 
-        private IEnumerator InitializePlayerMarkerIcon()
+        private System.Collections.IEnumerator InitializePlayerMarkerIcon()
         {
             // Wait for the map object to be available
             GameObject mapObject = null;
