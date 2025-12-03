@@ -4,6 +4,9 @@ using MelonLoader;
 using Small_Corner_Map.Helpers;
 using System.Reflection;
 using Small_Corner_Map.PoIManagers;
+
+
+
 #if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
 #else
@@ -23,7 +26,7 @@ namespace Small_Corner_Map.Main
         private Image borderImage;
 
         private PlayerMarkerView playerMarkerView;
-        private PropertyPoIManager propertyPoIManager;
+        private MapMarkerManager mapMarkerManager;
         private TimeDisplayView timeDisplayView;
         
         private Transform playerTransform; // Added to store player transform for Update
@@ -45,7 +48,8 @@ namespace Small_Corner_Map.Main
             mapImageRT = mapImageGo.AddComponent<RectTransform>();
         }
 
-        public void Initialize(Player player, bool minimapEnabled, float minimapScaleFactor, bool showSquareMinimap, MelonPreferences_Entry<bool> showGameTimePreference, float scaleFactor, float mapZoomLevel, float playerCenterXOffset, float playerCenterYOffset)
+        public void Initialize(
+            Player player, bool minimapEnabled, float minimapScaleFactor, bool showSquareMinimap, MelonPreferences_Entry<bool> showGameTimePreference, float scaleFactor, float mapZoomLevel, float playerCenterXOffset, float playerCenterYOffset)
         {
             MelonLogger.Msg("MinimapView initializing.");
             
@@ -54,6 +58,9 @@ namespace Small_Corner_Map.Main
             minimapPlayerCenterXOffset = playerCenterXOffset;
             minimapPlayerCenterYOffset = playerCenterYOffset;
             currentZoomLevel = mapZoomLevel; // Set current zoom level from preferences
+            
+            // Initialize minimap state for marker clamping
+            MinimapState.UpdateState(!showSquareMinimap, minimapScaleFactor);
 
             // Generate sprites for mask
             if (!circleSprite) 
@@ -93,6 +100,9 @@ namespace Small_Corner_Map.Main
                 if (containerRT != null)
                 {
                     containerRT.sizeDelta = new Vector2(Constants.BaseMinimapSize * newScaleFactor, Constants.BaseMinimapSize * newScaleFactor);
+                    
+                    // Update shared state
+                    MinimapState.UpdateState(MinimapState.IsCircleMode, newScaleFactor);
                 }
             }
         }
@@ -100,20 +110,23 @@ namespace Small_Corner_Map.Main
         public void UpdateMinimapShape(bool isSquare)
         {
             SetStyle(!isSquare);
+            
+            // Update shared state
+            MinimapState.UpdateState(!isSquare, MinimapState.ScaleFactor);
         }
 
-        public void UpdateMapMovementScale(float newZoomLevel)
-        {
-            currentZoomLevel = newZoomLevel;
-            if (playerMarkerView != null)
-            {
-                playerMarkerView.UpdateZoomLevel(newZoomLevel);
-            }
-            if (propertyPoIManager != null)
-            {
-                propertyPoIManager.UpdateZoomLevel(newZoomLevel);
-            }
-        }
+        // public void UpdateMapMovementScale(float newZoomLevel)
+        // {
+        //     currentZoomLevel = newZoomLevel;
+        //     if (playerMarkerView != null)
+        //     {
+        //         playerMarkerView.UpdateZoomLevel(newZoomLevel);
+        //     }
+        //     if (mapMarkerManager != null)
+        //     {
+        //         mapMarkerManager.UpdateZoomLevel(newZoomLevel);
+        //     }
+        // }
         
         public void UpdateMinimapPlayerCenterXOffset(float newOffsetX)
         {
@@ -131,12 +144,31 @@ namespace Small_Corner_Map.Main
             {
                 timeDisplayView.ToggleVisibility(isVisible);
             }
+        }   
+        
+        public void UpdateVehicleTracking(bool isVisible)
+        {
+            // Vehicle tracking handled in MapMarkerManager
+            if (mapMarkerManager != null)
+            {
+                mapMarkerManager.OnTrackVehiclesChanged(isVisible);
+            }
+        }
+        
+        public void UpdatePropertyTracking(bool isVisible)
+        {
+            if (mapMarkerManager != null)
+            {
+                mapMarkerManager.OnTrackPropertiesChanged(isVisible);
+            }
         }
 
-        public void UpdateCompassVisibility(bool isVisible)
+        public void UpdateContractTracking(bool isVisible)
         {
-            // Implementation for compass visibility will go here later
-            MelonLogger.Msg($"MinimapView: Compass visibility set to: {isVisible}");
+            if (mapMarkerManager != null)
+            {
+                mapMarkerManager.OnTrackContractsChanged(isVisible);
+            }
         }
 
         private void CreateMinimapUI(Player player, float minimapScaleFactor, MelonPreferences_Entry<bool> showGameTimePreference)
@@ -200,9 +232,9 @@ namespace Small_Corner_Map.Main
             playerMarkerView.transform.SetParent(containerRT, false); // Parent to containerRT for fixed center position
             playerMarkerView.Initialize(player.transform, containerRT.transform, worldScaleFactor, currentZoomLevel, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
 
-            propertyPoIManager = new GameObject("PropertyPoIManager").AddComponent<PropertyPoIManager>();
-            propertyPoIManager.transform.SetParent(containerRT, false);
-            propertyPoIManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel);
+            mapMarkerManager = new GameObject("PropertyPoIManager").AddComponent<MapMarkerManager>();
+            mapMarkerManager.transform.SetParent(containerRT, false);
+            mapMarkerManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel);
             
             // --- Time Display ---
             timeDisplayView = new GameObject("TimeDisplayView").AddComponent<TimeDisplayView>();

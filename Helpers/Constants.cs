@@ -81,7 +81,7 @@ namespace Small_Corner_Map.Helpers
         public const float RedMarkerSize = 5f;           // Width/height of red debug markers
         public const float PlayerMarkerSize = 10f;       // Width/height of player marker
         public const float DirectionIndicatorSize = 6f;  // Width/height of direction indicator
-        public const float DirectionIndicatorDistance = 15f; // Distance from player marker center
+        public const float DirectionIndicatorDistance = 7.5f; // Distance from player marker center
         
         // Minimap Border
         public const float MinimapBorderThickness = 2f;  // Pixel thickness outward from mask circle (reduced for less extension)
@@ -158,6 +158,7 @@ namespace Small_Corner_Map.Helpers
         // Compass Settings
         public const int CompassTickCount = 16; // Total ticks (including cardinal positions)
         public const float CompassRingPadding = 6f; // Padding outside minimap mask to start compass ring
+        public const float CompassRingThickness = 20f; // Thickness of compass ring to fit letters inside
         public const int CompassLetterFontSize = 12; // Font size for compass letters
         public const float CompassLetterColorR = 1f;
         public const float CompassLetterColorG = 1f;

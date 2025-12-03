@@ -4,7 +4,7 @@ using Small_Corner_Map.Helpers;
 using MelonLoader;
 using System.Collections;
 
-namespace Small_Corner_Map.Main
+namespace Small_Corner_Map.PoIManagers
 {
     [RegisterTypeInIl2Cpp]
     public class PlayerMarkerView : MonoBehaviour
@@ -144,7 +144,7 @@ namespace Small_Corner_Map.Main
             var yRotation = _playerTransform.rotation.eulerAngles.y;
             var angleRad = (90f - yRotation) * Mathf.Deg2Rad;
 
-            // Apply scaling to the indicator distance
+            // Apply scaling to the indicator distance and reduce to half
             float scaledIndicatorDistance = indicatorDistance * MinimapCoordinateSystem.WorldToUIScale(_worldScaleFactor, _currentZoomLevel);
 
             var newPosition = new Vector2(
@@ -152,6 +152,11 @@ namespace Small_Corner_Map.Main
                 scaledIndicatorDistance * Mathf.Sin(angleRad)
             );
             _directionIndicator.anchoredPosition = newPosition;
+            
+            // Rotate the indicator to point away from the marker (outward)
+            // The angle is calculated so the chevron points in the direction of player facing
+            var angleDeg = 90f - yRotation;
+            _directionIndicator.localRotation = Quaternion.Euler(0, 0, angleDeg);
         }
 
         private IEnumerator InitializePlayerMarkerIcon()
@@ -170,6 +175,31 @@ namespace Small_Corner_Map.Main
             {
                 ReplaceWithRealPlayerIcon(realIcon.gameObject);
                 MelonLogger.Msg("PlayerMarkerView: Replaced fallback player marker with real player icon.");
+                
+                // Get the direction indicator sprite from MapApp
+                var mapAppDirectionIndicator = realIcon.Find("Image");
+                if (mapAppDirectionIndicator != null)
+                {
+                    var mapAppImage = mapAppDirectionIndicator.GetComponent<Image>();
+                    if (mapAppImage != null && mapAppImage.sprite != null && _directionIndicator != null)
+                    {
+                        var ourDirectionImage = _directionIndicator.GetComponent<Image>();
+                        if (ourDirectionImage != null)
+                        {
+                            ourDirectionImage.sprite = mapAppImage.sprite;
+                            ourDirectionImage.color = Color.white; // Use white to show the sprite as-is
+                            
+                            // Match the size from MapApp
+                            var mapAppRect = mapAppDirectionIndicator.GetComponent<RectTransform>();
+                            if (mapAppRect != null)
+                            {
+                                _directionIndicator.sizeDelta = mapAppRect.sizeDelta;
+                            }
+                            
+                            MelonLogger.Msg("PlayerMarkerView: Applied MapApp direction indicator sprite and size.");
+                        }
+                    }
+                }
             }
         }
         

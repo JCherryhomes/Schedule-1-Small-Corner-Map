@@ -2,6 +2,7 @@
 using MelonLoader;
 using Small_Corner_Map.Helpers;
 using Small_Corner_Map.Main;
+using Small_Corner_Map;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,12 +21,13 @@ using ScheduleOne.UI.Phone.Map;
 namespace Small_Corner_Map.PoIManagers;
 
 [RegisterTypeInIl2Cpp]
-public class PropertyPoIManager : MonoBehaviour
+public class MapMarkerManager : MonoBehaviour
 {
     private RectTransform parentRT;
     private Dictionary<string, PoIMarkerView> poiMarkers = []; // Use name+position as key for stability
     private Transform _playerTransform;
     private RectTransform mapImageRT;
+    private RectTransform minimapContainerRT;
     private float worldScaleFactor;
     private float currentZoomLevel;
 
@@ -33,10 +35,7 @@ public class PropertyPoIManager : MonoBehaviour
 
     private HashSet<string> allowList = new HashSet<string>
     {
-        "PropertyPoI(Clone)",
-        "OwnedVehiclePoI(Clone)",
         "QuestPoI(Clone)",
-        "ContractPoI(Clone)",
         "DeaddropPoI_Red(Clone)"
     };
 
@@ -78,6 +77,7 @@ public class PropertyPoIManager : MonoBehaviour
             _updateCoroutine = null;
         }
     }
+
 
     private System.Collections.IEnumerator UpdatePoIMarkersCoroutine()
     {
@@ -127,12 +127,50 @@ public class PropertyPoIManager : MonoBehaviour
                 // Create new marker
                 var poiMarkerViewGO = new GameObject("PoIMarkerView_" + child.name);
                 var rect = poiMarkerViewGO.AddComponent<RectTransform>();
+                
+                // All markers parented to mapImageRT (move with map)
                 rect.SetParent(mapImageRT, false);
                 
                 var poiMarkerView = poiMarkerViewGO.AddComponent<PoIMarkerView>();
                 poiMarkerView.Initialize(child, child.anchoredPosition, worldScaleFactor, currentZoomLevel, false);
                 poiMarkers[kvp.Key] = poiMarkerView;
             }
+        }  
+    }
+        
+    public void OnTrackPropertiesChanged(bool isTracking)
+    {
+        if (isTracking)
+        {
+            allowList.Add("PropertyPoI(Clone)");
+        }
+        else
+        {
+            allowList.Remove("PropertyPoI(Clone)");
         }
     }
+    
+    public void OnTrackContractsChanged(bool isTracking)
+    {
+        if (isTracking)
+        {
+            allowList.Add("ContractPoI(Clone)");
+        }
+        else
+        {
+            allowList.Remove("ContractPoI(Clone)");
+        }
+    }
+
+    public void OnTrackVehiclesChanged(bool isTracking)
+    {
+        if (isTracking)
+        {
+            allowList.Add("OwnedVehiclePoI(Clone)");
+        }
+        else
+        {
+            allowList.Remove("OwnedVehiclePoI(Clone)");
+        }
+    } 
 }

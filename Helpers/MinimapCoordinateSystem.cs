@@ -117,5 +117,53 @@ namespace Small_Corner_Map.Helpers
                    $"Marker Pos (relative to self as player): {markerPos}\n" +
                    $"Scale: {WorldToUIScale(worldScaleFactor, currentZoomLevel)}x";
         }
+        
+        /// <summary>
+        /// Clamps a marker position to stay within the circular minimap bounds.
+        /// </summary>
+        /// <param name="markerPosition">The marker's current anchored position</param>
+        /// <param name="minimapRadius">Radius of the circular minimap</param>
+        /// <returns>Clamped position that stays within the circle</returns>
+        public static Vector2 ClampToCircle(Vector2 markerPosition, float minimapRadius)
+        {
+            var distance = markerPosition.magnitude;
+            if (distance > minimapRadius)
+            {
+                return markerPosition.normalized * minimapRadius;
+            }
+            return markerPosition;
+        }
+        
+        /// <summary>
+        /// Clamps a marker position to stay within the square minimap bounds.
+        /// </summary>
+        /// <param name="markerPosition">The marker's current anchored position</param>
+        /// <param name="minimapHalfSize">Half the size of the square minimap (radius equivalent)</param>
+        /// <returns>Clamped position that stays within the square</returns>
+        public static Vector2 ClampToSquare(Vector2 markerPosition, float minimapHalfSize)
+        {
+            var clampedX = Mathf.Clamp(markerPosition.x, -minimapHalfSize, minimapHalfSize);
+            var clampedY = Mathf.Clamp(markerPosition.y, -minimapHalfSize, minimapHalfSize);
+            return new Vector2(clampedX, clampedY);
+        }
+        
+        /// <summary>
+        /// Checks if a marker is outside the minimap bounds.
+        /// </summary>
+        /// <param name="markerPosition">The marker's current anchored position</param>
+        /// <param name="minimapRadius">Radius of the minimap (or half-size for square)</param>
+        /// <param name="isCircle">Whether the minimap is circular (true) or square (false)</param>
+        /// <returns>True if the marker is outside bounds</returns>
+        public static bool IsOutsideBounds(Vector2 markerPosition, float minimapRadius, bool isCircle)
+        {
+            if (isCircle)
+            {
+                return markerPosition.magnitude > minimapRadius;
+            }
+            else
+            {
+                return Mathf.Abs(markerPosition.x) > minimapRadius || Mathf.Abs(markerPosition.y) > minimapRadius;
+            }
+        }
     }
 }

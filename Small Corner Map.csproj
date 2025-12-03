@@ -124,12 +124,13 @@
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
     <Compile Include="Helpers\MinimapCoordinateSystem.cs" />
+    <Compile Include="Helpers\MinimapState.cs" />
     <Compile Include="Main\MinimapManager.cs" />
     <Compile Include="Main\MinimapView.cs" />
-    <Compile Include="Main\PlayerMarkerView.cs" />
     <Compile Include="Main\TimeDisplayView.cs" />
+    <Compile Include="PoIManagers\PlayerMarkerView.cs" />
     <Compile Include="PoIManagers\PoIMarkerView.cs" />
-    <Compile Include="PoIManagers\PropertyPoIManager.cs" />
+    <Compile Include="PoIManagers\MapMarkerManager.cs" />
   </ItemGroup>
 
 

@@ -83,5 +83,6 @@ namespace Small_Corner_Map.PoIManagers
             Vector2 scaledPosition = _phoneMapPosition * 0.25f;
             _thisRect.anchoredPosition = scaledPosition;
         }
+        
     }
 }

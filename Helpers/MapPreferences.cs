@@ -43,10 +43,6 @@ namespace Small_Corner_Map.Helpers
         private const string VehicleTrackingDisplayName = "Track Owned Vehicles on Minimap";
         private const bool VehicleTrackingDefault = true;
         
-        private const string ShowCompassKey = Constants.CompassPreferenceKey;
-        private const string ShowCompassDisplayName = "Show Compass Ring";
-        private const bool ShowCompassDefault = true;
-        
         // Preference Entries
         public MelonPreferences_Category SettingsCategory { get; set; }
         public MelonPreferences_Entry<bool> MinimapEnabled { get; private set; }
@@ -58,7 +54,6 @@ namespace Small_Corner_Map.Helpers
         public MelonPreferences_Entry<bool> TrackContracts { get; private set; }
         public MelonPreferences_Entry<bool> TrackProperties { get; private set; }
         public MelonPreferences_Entry<bool> TrackVehicles { get; private set; }
-        public MelonPreferences_Entry<bool> ShowCompass { get; private set; }
         public MelonPreferences_Entry<bool> ShowSquareMinimap { get; private set; }
         
         private readonly float defaultScaleFactor = 1.0f;
@@ -84,7 +79,6 @@ namespace Small_Corner_Map.Helpers
             TrackContracts = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, ContractTrackingKey);
             TrackProperties = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, PropertyTrackingKey);
             TrackVehicles = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, VehicleTrackingKey);
-            ShowCompass = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, ShowCompassKey);
             ShowSquareMinimap = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, "ShowSquareMinimap");
         }
 
@@ -121,11 +115,6 @@ namespace Small_Corner_Map.Helpers
                 VehicleTrackingKey, 
                 VehicleTrackingDefault, 
                 VehicleTrackingDisplayName);
-            
-            ShowCompass = SettingsCategory.CreateEntry(
-                ShowCompassKey,
-                ShowCompassDefault,
-                ShowCompassDisplayName);
 
             ShowSquareMinimap = SettingsCategory.CreateEntry(
                 "ShowSquareMinimap",
