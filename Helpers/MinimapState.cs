@@ -2,14 +2,6 @@ using UnityEngine;
 
 namespace Small_Corner_Map.Helpers
 {
-}
-
-namespace Small_Corner_Map.Helpers
-{
-}
-
-namespace Small_Corner_Map.Helpers
-{
     /// <summary>
     /// Shared state for minimap configuration that markers can use for clamping.
     /// </summary>

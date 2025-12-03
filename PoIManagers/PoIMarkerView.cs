@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using MelonLoader;
+using Small_Corner_Map.Helpers;
 
 namespace Small_Corner_Map.PoIManagers
 {
@@ -12,18 +14,33 @@ namespace Small_Corner_Map.PoIManagers
         private RectTransform _sourceRect;
         private Vector2 _phoneMapPosition;
         private string poiName;
+        private string _markerType;
         private float worldScaleFactor;
         private float currentZoomLevel;
         private bool _isDynamic;
+        private bool _isCircleMode;
 
-        public void Initialize(RectTransform poiTransform, Vector2 phoneMapPosition, float worldScale, float zoom, bool isDynamic)
+        private RectTransform _mapImageRT;
+        private Vector2 _mapPosition;
+
+        private static readonly HashSet<string> clampedMarkerTypes = new HashSet<string>
+        {
+            "QuestPoI(Clone)",
+            "DeaddropPoI_Red(Clone)",
+            "ContractPoI(Clone)"
+        };
+
+        public void Initialize(RectTransform poiTransform, Vector2 phoneMapPosition, float worldScale, float zoom, bool isDynamic, string markerType, RectTransform mapImageRT, bool isCircle)
         {
             _sourceRect = poiTransform;
             _phoneMapPosition = phoneMapPosition;
             poiName = poiTransform.name;
+            _markerType = markerType;
             worldScaleFactor = worldScale;
             currentZoomLevel = zoom;
             _isDynamic = isDynamic;
+            _mapImageRT = mapImageRT;
+            _isCircleMode = isCircle;
 
             // Get the RectTransform (should already exist since it was added before this component)
             _thisRect = gameObject.GetComponent<RectTransform>();
@@ -61,11 +78,17 @@ namespace Small_Corner_Map.PoIManagers
 
             markerGO.SetActive(true);
             
-            // Set the position AFTER everything else is set up
-            // Scale the phone map position to match the minimap size (approx 2000->500 => 0.25)
+            // Store the marker's true position on the map
             Vector2 scaledPosition = _phoneMapPosition * 0.25f;
-            scaledPosition = new Vector2(scaledPosition.x + 2f, scaledPosition.y - 3f);
-            _thisRect.anchoredPosition = scaledPosition;
+            _mapPosition = new Vector2(scaledPosition.x + 2f, scaledPosition.y - 3f);
+            
+            // Set initial position
+            _thisRect.anchoredPosition = _mapPosition;
+        }
+        
+        public void SetShape(bool isCircle)
+        {
+            _isCircleMode = isCircle;
         }
 
         public void UpdateZoomLevel(float newZoomLevel)
@@ -80,8 +103,44 @@ namespace Small_Corner_Map.PoIManagers
 
             _phoneMapPosition = newPhoneMapPosition;
             Vector2 scaledPosition = _phoneMapPosition * 0.25f;
-            _thisRect.anchoredPosition = scaledPosition;
+            _mapPosition = new Vector2(scaledPosition.x + 2f, scaledPosition.y - 3f);
         }
-        
+
+        private void Update()
+        {
+            if (_thisRect == null || _mapImageRT == null) return;
+            
+            Vector2 newAnchoredPosition = _mapPosition;
+
+            if (clampedMarkerTypes.Contains(_markerType))
+            {
+                Vector2 positionRelativeToPlayer = _mapPosition + _mapImageRT.anchoredPosition;
+
+                if (_isCircleMode)
+                {
+                    float distance = positionRelativeToPlayer.magnitude;
+                    if (distance > MinimapState.MinimapRadius)
+                    {
+                        Vector2 clampedPlayerRelativePosition = positionRelativeToPlayer.normalized * MinimapState.MinimapRadius;
+                        newAnchoredPosition = clampedPlayerRelativePosition - _mapImageRT.anchoredPosition;
+                    }
+                }
+                else // Square mode
+                {
+                    float halfSize = MinimapState.MinimapRadius;
+                    Vector2 clampedPlayerRelativePosition = new Vector2(
+                        Mathf.Clamp(positionRelativeToPlayer.x, -halfSize, halfSize),
+                        Mathf.Clamp(positionRelativeToPlayer.y, -halfSize, halfSize)
+                    );
+
+                    if (clampedPlayerRelativePosition != positionRelativeToPlayer)
+                    {
+                        newAnchoredPosition = clampedPlayerRelativePosition - _mapImageRT.anchoredPosition;
+                    }
+                }
+            }
+            
+            _thisRect.anchoredPosition = newAnchoredPosition;
+        }
     }
 }

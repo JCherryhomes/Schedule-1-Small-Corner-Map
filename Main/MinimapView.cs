@@ -73,7 +73,7 @@ namespace Small_Corner_Map.Main
             // Create the UI
             if (minimapEnabled)
             {
-                CreateMinimapUI(player, minimapScaleFactor, showGameTime, trackProperties, trackContracts, trackVehicles);
+                CreateMinimapUI(player, minimapScaleFactor, showGameTime, trackProperties, trackContracts, trackVehicles, !showSquareMinimap);
 
                 // Load the map sprite
                 LoadMapSprite();
@@ -109,10 +109,17 @@ namespace Small_Corner_Map.Main
 
         public void UpdateMinimapShape(bool isSquare)
         {
-            SetStyle(!isSquare);
+            bool isCircle = !isSquare;
+            SetStyle(isCircle);
             
-            // Update shared state
-            MinimapState.UpdateState(!isSquare, MinimapState.ScaleFactor);
+            // Update shared state for radius calculation
+            MinimapState.UpdateState(isCircle, MinimapState.ScaleFactor);
+            
+            // Propagate shape change to marker manager
+            if (mapMarkerManager != null)
+            {
+                mapMarkerManager.UpdateMinimapShape(isCircle);
+            }
         }
 
         // public void UpdateMapMovementScale(float newZoomLevel)
@@ -171,7 +178,7 @@ namespace Small_Corner_Map.Main
             }
         }
 
-        private void CreateMinimapUI(Player player, float minimapScaleFactor, bool showGameTime, bool trackProperties, bool trackContracts, bool trackVehicles)
+        private void CreateMinimapUI(Player player, float minimapScaleFactor, bool showGameTime, bool trackProperties, bool trackContracts, bool trackVehicles, bool isCircle)
         {
             // --- Canvas ---
             canvasGo = new GameObject("MinimapCanvas");
@@ -234,7 +241,7 @@ namespace Small_Corner_Map.Main
 
             mapMarkerManager = new GameObject("PropertyPoIManager").AddComponent<MapMarkerManager>();
             mapMarkerManager.transform.SetParent(containerRT, false);
-            mapMarkerManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel, trackProperties, trackContracts, trackVehicles);
+            mapMarkerManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel, trackProperties, trackContracts, trackVehicles, isCircle);
             
             // --- Time Display ---
             timeDisplayView = new GameObject("TimeDisplayView").AddComponent<TimeDisplayView>();

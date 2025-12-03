@@ -1,15 +1,18 @@
-﻿
+
 using MelonLoader;
 using UnityEngine;
+using Small_Corner_Map.Helpers;
 #if IL2CPP
 using Il2CppScheduleOne.Map;
 using Il2CppScheduleOne.PlayerScripts;
 using Il2CppScheduleOne.UI.Phone.Map;
+using System.Linq;
 using Il2CppIEnumerator = Il2CppSystem.Collections.IEnumerator;
 #else
 using S1Property = ScheduleOne.Property;
 using ScheduleOne.Map;
 using ScheduleOne.UI.Phone.Map;
+using System.Linq;
 using Il2CppIEnumerator = System.Collections.IEnumerator;
 #endif
 
@@ -23,6 +26,7 @@ public class MapMarkerManager : MonoBehaviour
     private RectTransform mapImageRT;
     private float worldScaleFactor;
     private float currentZoomLevel;
+    private bool _isCircleMode;
 
     private object _updateCoroutine;
 
@@ -32,12 +36,13 @@ public class MapMarkerManager : MonoBehaviour
         "DeaddropPoI_Red(Clone)"
     };
 
-    public void Initialize(Transform player, RectTransform mapImage, float worldScale, float zoom, bool trackProperties, bool trackContracts, bool trackVehicles)
+    public void Initialize(Transform player, RectTransform mapImage, float worldScale, float zoom, bool trackProperties, bool trackContracts, bool trackVehicles, bool isCircle)
     {
         _playerTransform = player; 
         mapImageRT = mapImage;
         worldScaleFactor = worldScale;
         currentZoomLevel = zoom;
+        _isCircleMode = isCircle;
         
         // Initialize allowList based on tracking preferences
         if (trackProperties)
@@ -60,6 +65,15 @@ public class MapMarkerManager : MonoBehaviour
         foreach (var kvp in poiMarkers)
         {
             kvp.Value.UpdateZoomLevel(newZoomLevel);
+        }
+    }
+    
+    public void UpdateMinimapShape(bool isCircle)
+    {
+        _isCircleMode = isCircle;
+        foreach (var kvp in poiMarkers)
+        {
+            kvp.Value.SetShape(isCircle);
         }
     }
 
@@ -134,7 +148,7 @@ public class MapMarkerManager : MonoBehaviour
                 rect.SetParent(mapImageRT, false);
                 
                 var poiMarkerView = poiMarkerViewGO.AddComponent<PoIMarkerView>();
-                poiMarkerView.Initialize(child, child.anchoredPosition, worldScaleFactor, currentZoomLevel, false);
+                poiMarkerView.Initialize(child, child.anchoredPosition, worldScaleFactor, currentZoomLevel, false, child.gameObject.name, mapImageRT, _isCircleMode);
                 poiMarkers[kvp.Key] = poiMarkerView;
             }
         }  

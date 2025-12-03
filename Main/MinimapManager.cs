@@ -123,7 +123,7 @@ namespace Small_Corner_Map.Main
 
         private void OnShowSquareMinimapChanged(bool oldValue, bool newValue)
         {
-            _minimapView.SetStyle(!newValue); // true for circle, false for square
+            _minimapView.UpdateMinimapShape(newValue);
         }
 
         // private void OnMapZoomLevelChanged(float oldValue, float newValue)
