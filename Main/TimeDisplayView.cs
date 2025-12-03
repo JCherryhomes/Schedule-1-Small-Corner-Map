@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
+using MelonLoader;
 
 #if IL2CPP
 using Il2CppScheduleOne.GameTime;
