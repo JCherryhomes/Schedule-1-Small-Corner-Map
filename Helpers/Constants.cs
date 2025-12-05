@@ -1,9 +1,9 @@
-namespace Small_Corner_Map.Helpers
+﻿namespace Small_Corner_Map.Helpers
 {
     internal static class Constants
     {
         // Mod Info
-        public const string ModVersion = "3.2.1";
+        public const string ModVersion = "4.0.0";
         public const string ModName = "Small Corner Map";
         public const string ModAuthor = "winzaar";
         public const string GameName = "Schedule I";
