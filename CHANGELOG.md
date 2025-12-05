@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.0 - 2025-12-04
+### Complete rework of the mod
+- **Loading**: The underlying code for loading the markers on the minimap was overhauled.
+- **Compass**: Removed the compass
+- **Clamping**: Properties and vehicles are no longer clamped to the edge of the minimap to reduce clutter.
+- **Markers**: The appearance of the markers should be cleaner.
+
 ## 3.2.1 - 2025-11-23
 ### Fix Resizing
 - **Resizing**: The markers on the minimap should now retain their positions when resizing.

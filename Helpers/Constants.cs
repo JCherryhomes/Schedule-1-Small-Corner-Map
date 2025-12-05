@@ -1,22 +1,53 @@
-namespace Small_Corner_Map.Helpers
+﻿namespace Small_Corner_Map.Helpers
 {
     internal static class Constants
     {
         // Mod Info
-        public const string ModVersion = "3.2.1";
+        public const string ModVersion = "4.0.0";
         public const string ModName = "Small Corner Map";
         public const string ModAuthor = "winzaar";
         public const string GameName = "Schedule I";
         public const string GameDeveloper = "TVGS";
+
+        public const bool DisableDebug = true;
+
+        // Map Preferences Category Identifier
+        public const string MapPreferencesCategoryIdentifier = "SmallCornerMapSettings";
         
         // Map Scaling
         /// <summary>
         /// Base world-to-UI scale factor. This constant defines the fundamental ratio
-        /// between world units and UI pixels. Empirically determined to match the game's map image.
+        /// between world units and UI pixels. This should be adjusted to match the overall map image to world unit scale.
         /// </summary>
-        public const float DefaultMapScale = 1.2487098f;
+        public const float BaseWorldToUIScaleFactor = 1f;
+
+        /// <summary>
+        /// Default scale factor for map movement. Multiplies with BaseWorldToUIScaleFactor.
+        /// Empirically determined to match the desired map movement speed.
+        /// </summary>
+        public const float MinimapDefaultMapMovementScale = 1.22f;
         
-        // Marker Offsets
+        /// <summary>
+        /// Initial scaling factor for the map image to reduce its size.
+        /// </summary>
+        public const float InitialMapImageScale = 0.0825f;
+
+        // Minimap Player Centering Offsets (Fine-tuned defaults)
+        /// <summary>
+        /// Default X offset to apply to the map content position to correctly center the player marker.
+        /// </summary>
+        public const float MinimapDefaultPlayerOffsetX = 13f;
+
+        /// <summary>
+        /// Default Y offset to apply to the map content position to correctly center the player marker.
+        /// </summary>
+        public const float MinimapDefaultPlayerOffsetY = -4.25f;
+
+        // Resolution for drawing smooth circle sprites
+        public const int MinimapCircleDrawingResolution = 256;
+        public const int PlayerMarkerCircleDrawingResolution = 20;
+        
+        // Marker Offsets (these seem to be for POI markers, not player centering)
         public const float MarkerXOffset = 14f;          // X offset for markers (inverted for properties: -12f)
         public const float MarkerZOffset = -3.5f;         // Z offset for markers
 
@@ -25,14 +56,17 @@ namespace Small_Corner_Map.Helpers
         /// X offset applied to the MapImageObject within its MapContentObject parent.
         /// This accounts for the hierarchical positioning of UI elements.
         /// </summary>
-        public const float MinimapImageOffsetX = 4f;
+        public const float MinimapImageOffsetX = 0f;
         
         /// <summary>
         /// Y offset applied to the MapImageObject within its MapContentObject parent.
         /// This accounts for the hierarchical positioning of UI elements.
         /// </summary>
-        public const float MinimapImageOffsetY = 1.5f;
-        
+        public const float MinimapImageOffsetY = 0f; // Set to 0 for static PNG
+
+        // Path to the static minimap image
+        public const string MinimapImagePath = "Small_Corner_Map.Assets.Map_Full.png";
+
         // Minimap UI Sizing
         public const float BaseMinimapSize = 150f;       // Base size of the minimap mask/frame
         public const float BaseMapContentSize = 500f;    // Base size of the map content
@@ -47,7 +81,7 @@ namespace Small_Corner_Map.Helpers
         public const float RedMarkerSize = 5f;           // Width/height of red debug markers
         public const float PlayerMarkerSize = 10f;       // Width/height of player marker
         public const float DirectionIndicatorSize = 6f;  // Width/height of direction indicator
-        public const float DirectionIndicatorDistance = 15f; // Distance from player marker center
+        public const float DirectionIndicatorDistance = 10f; // Distance from player marker center
         
         // Minimap Border
         public const float MinimapBorderThickness = 2f;  // Pixel thickness outward from mask circle (reduced for less extension)
@@ -124,6 +158,7 @@ namespace Small_Corner_Map.Helpers
         // Compass Settings
         public const int CompassTickCount = 16; // Total ticks (including cardinal positions)
         public const float CompassRingPadding = 6f; // Padding outside minimap mask to start compass ring
+        public const float CompassRingThickness = 20f; // Thickness of compass ring to fit letters inside
         public const int CompassLetterFontSize = 12; // Font size for compass letters
         public const float CompassLetterColorR = 1f;
         public const float CompassLetterColorG = 1f;

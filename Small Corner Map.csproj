@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Import local developer settings if they exist (not committed to source control) -->
   <Import Project="Local.props" Condition="Exists('Local.props')" />
@@ -13,8 +13,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
     <!-- Syncing AssemblyVersion/FileVersion with Constants.ModVersion (2.1.0) -->
-    <AssemblyVersion>3.2.1.0</AssemblyVersion>
-    <FileVersion>3.2.1.0</FileVersion>
+    <AssemblyVersion>4.0.0.0</AssemblyVersion>
+    <FileVersion>4.0.0.0</FileVersion>
     <!-- <NeutralLanguage>en-US</NeutralLanguage> -->
     <AssemblyName>Small_Corner_Map</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
@@ -63,6 +63,9 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(MonoGamePath)\Schedule I_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 
@@ -103,6 +106,9 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(IL2CPPGamePath)\MelonLoader\Il2CppAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 
@@ -114,31 +120,17 @@
 
   <ItemGroup>
     <Compile Include="Core.cs" />
-    <Compile Include="Helpers\CompassUIFactory.cs" />
     <Compile Include="Helpers\Constants.cs" />
+    <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Helpers\MapPreferences.cs" />
     <Compile Include="Helpers\MinimapCoordinateSystem.cs" />
-    <Compile Include="Helpers\MinimapUIFactory.cs" />
-    <Compile Include="Helpers\Utils.cs" />
-    <Compile Include="Main\CompassManager.cs" />
-    <Compile Include="Main\MarkerRegistry.cs" />
-    <Compile Include="Main\MinimapContent.cs" />
-    <Compile Include="Main\MinimapMarkerCoordinator.cs" />
-    <Compile Include="Main\MinimapResizer.cs" />
-    <Compile Include="Main\MinimapSceneIntegration.cs" />
-    <Compile Include="Main\MinimapTimeDisplay.cs" />
-    <Compile Include="Main\MinimapUI.cs" />
-    <Compile Include="PoIManagers\IPoIManager.cs" />
-    <Compile Include="PoIManagers\OwnedVehiclesManager.cs" />
-    <Compile Include="PoIManagers\PlayerMarkerManager.cs" />
-    <Compile Include="PoIManagers\PropertyPoIManager.cs" />
-    <Compile Include="PoIManagers\QuestMarkerManager.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\ContractMarkerStrategy.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\DeadDropQuestMarkerStrategy.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\QuestMarkerStrategyResolver.cs" />
-    <Compile Include="PoIManagers\QuestMarkerStrategies\RegularQuestMarkerStrategy.cs" />
-    <Compile Include="PoIManagers\PoIManagerBase.cs" />
-    <Compile Include="PoIManagers\SuppliersPoIManager.cs" />
+    <Compile Include="Helpers\MinimapState.cs" />
+    <Compile Include="Main\MinimapManager.cs" />
+    <Compile Include="Main\MinimapView.cs" />
+    <Compile Include="Main\TimeDisplayView.cs" />
+    <Compile Include="PoIManagers\PlayerMarkerView.cs" />
+    <Compile Include="PoIManagers\PoIMarkerView.cs" />
+    <Compile Include="PoIManagers\MapMarkerManager.cs" />
   </ItemGroup>
 
 
@@ -148,12 +140,13 @@
 
 
   <ItemGroup>
-    <Content Include=".github\CODEOWNERS" />
+    <EmbeddedResource Include="Assets\Map_Full.png" />
   </ItemGroup>
 
 
   <ItemGroup>
     <None Include=".github\copilot-instructions.md" />
+    <None Include=".github\CODEOWNERS" />
   </ItemGroup>
   
 
