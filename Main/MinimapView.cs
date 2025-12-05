@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using MelonLoader;
 using Small_Corner_Map.Helpers;
 using System.Reflection;
@@ -40,6 +41,7 @@ namespace Small_Corner_Map.Main
         private float minimapPlayerCenterYOffset;
         private float currentZoomLevel; // Will be updated by preferences
         private RectTransform mapImageRT;
+        private RectTransform containerRT;
 
 
         private void Start()
@@ -49,7 +51,7 @@ namespace Small_Corner_Map.Main
         }
 
         public void Initialize(
-            Player player, bool minimapEnabled, float minimapScaleFactor, bool showSquareMinimap, bool showGameTime, float scaleFactor, float mapZoomLevel, float playerCenterXOffset, float playerCenterYOffset, bool trackProperties, bool trackContracts, bool trackVehicles)
+            Player player, bool minimapEnabled, float minimapScaleFactor, bool showSquareMinimap, bool showGameTime, float scaleFactor, float mapZoomLevel, float playerCenterXOffset, float playerCenterYOffset, bool trackProperties, bool trackContracts, bool trackVehicles, float positionX, float positionY)
         {
             MelonLogger.Msg("MinimapView initializing.");
             
@@ -57,7 +59,7 @@ namespace Small_Corner_Map.Main
             worldScaleFactor = scaleFactor; // This comes from Constants.BaseWorldToUIScaleFactor in MinimapManager
             minimapPlayerCenterXOffset = playerCenterXOffset;
             minimapPlayerCenterYOffset = playerCenterYOffset;
-            currentZoomLevel = mapZoomLevel; // Set current zoom level from preferences
+            currentZoomLevel = mapZoomLevel;
             
             // Initialize minimap state for marker clamping
             MinimapState.UpdateState(!showSquareMinimap, minimapScaleFactor);
@@ -73,7 +75,7 @@ namespace Small_Corner_Map.Main
             // Create the UI
             if (minimapEnabled)
             {
-                CreateMinimapUI(player, minimapScaleFactor, showGameTime, trackProperties, trackContracts, trackVehicles, !showSquareMinimap);
+                CreateMinimapUI(player, minimapScaleFactor, showGameTime, trackProperties, trackContracts, trackVehicles, !showSquareMinimap, positionX, positionY);
 
                 // Load the map sprite
                 LoadMapSprite();
@@ -196,7 +198,7 @@ namespace Small_Corner_Map.Main
             }
         }
 
-        private void CreateMinimapUI(Player player, float minimapScaleFactor, bool showGameTime, bool trackProperties, bool trackContracts, bool trackVehicles, bool isCircle)
+        private void CreateMinimapUI(Player player, float minimapScaleFactor, bool showGameTime, bool trackProperties, bool trackContracts, bool trackVehicles, bool isCircle, float positionX, float positionY)
         {
             // --- Canvas ---
             canvasGo = new GameObject("MinimapCanvas");
@@ -209,14 +211,14 @@ namespace Small_Corner_Map.Main
             canvasGo.AddComponent<GraphicRaycaster>();
             DontDestroyOnLoad(canvasGo);
 
-            // --- Minimap Container (top-right corner) ---
+            // --- Minimap Container (positioned based on preferences) ---
             var containerGo = new GameObject("MinimapContainer");
             containerGo.transform.SetParent(canvasGo.transform, false);
-            var containerRT = containerGo.AddComponent<RectTransform>();
+            containerRT = containerGo.AddComponent<RectTransform>();
             containerRT.anchorMin = new Vector2(1, 1);
             containerRT.anchorMax = new Vector2(1, 1);
             containerRT.pivot = new Vector2(1, 1);
-            containerRT.anchoredPosition = new Vector2(-20, -20);
+            containerRT.anchoredPosition = new Vector2(positionX, positionY);
             containerRT.sizeDelta = new Vector2(Constants.BaseMinimapSize * minimapScaleFactor, Constants.BaseMinimapSize * minimapScaleFactor);
 
             // --- Minimap Border ---
@@ -334,6 +336,15 @@ namespace Small_Corner_Map.Main
                 minimapPlayerCenterYOffset
             );
             mapImageRT.anchoredPosition = newMapPosition;
+        }
+        
+        public void UpdateMinimapPosition(float positionX, float positionY)
+        {
+            if (containerRT != null)
+            {
+                containerRT.anchoredPosition = new Vector2(positionX, positionY);
+                MelonLogger.Msg($"[MinimapView] Position updated to: ({positionX}, {positionY})");
+            }
         }
     }
 }

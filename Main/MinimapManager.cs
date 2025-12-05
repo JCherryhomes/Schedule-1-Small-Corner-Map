@@ -110,12 +110,14 @@ namespace Small_Corner_Map.Main
                 _mapPreferences.ShowSquareMinimap.Value, 
                 _mapPreferences.ShowGameTime.Value,
                 Constants.BaseWorldToUIScaleFactor,
-                _mapPreferences.MapZoomLevel.Value,
-                _mapPreferences.MinimapPlayerOffsetX.Value,
-                _mapPreferences.MinimapPlayerOffsetY.Value,
+                Constants.MinimapDefaultMapMovementScale,
+                Constants.MinimapDefaultPlayerOffsetX,
+                Constants.MinimapDefaultPlayerOffsetY,
                 _mapPreferences.TrackProperties.Value,
                 _mapPreferences.TrackContracts.Value,
-                _mapPreferences.TrackVehicles.Value
+                _mapPreferences.TrackVehicles.Value,
+                _mapPreferences.MinimapPositionX.Value,
+                _mapPreferences.MinimapPositionY.Value
             );
             
             // Subscribe to preference changes
@@ -123,15 +125,14 @@ namespace Small_Corner_Map.Main
             _mapPreferences.IncreaseSize.OnEntryValueChanged.Subscribe(OnIncreaseSizeChanged);
             _mapPreferences.ShowSquareMinimap.OnEntryValueChanged.Subscribe(OnShowSquareMinimapChanged);
             
-            // Only subscribe to tuning preference changes if advanced tuning is enabled
-            _mapPreferences.MapZoomLevel.OnEntryValueChanged.Subscribe(OnMapZoomLevelChanged);
-            _mapPreferences.MinimapPlayerOffsetX.OnEntryValueChanged.Subscribe(OnMinimapPlayerOffsetXChanged);
-            _mapPreferences.MinimapPlayerOffsetY.OnEntryValueChanged.Subscribe(OnMinimapPlayerOffsetYChanged);
-            
             _mapPreferences.ShowGameTime.OnEntryValueChanged.Subscribe(OnShowGameTimeChanged);
             _mapPreferences.TrackProperties.OnEntryValueChanged.Subscribe(OnTrackPropertiesChanged);
             _mapPreferences.TrackContracts.OnEntryValueChanged.Subscribe(OnTrackContractsChanged);
             _mapPreferences.TrackVehicles.OnEntryValueChanged.Subscribe(OnTrackVehiclesChanged);
+            
+            // Subscribe to repositioning preference changes
+            _mapPreferences.MinimapPositionX.OnEntryValueChanged.Subscribe(OnMinimapPositionXChanged);
+            _mapPreferences.MinimapPositionY.OnEntryValueChanged.Subscribe(OnMinimapPositionYChanged);
         }
 
         private void OnDestroy()
@@ -146,16 +147,15 @@ namespace Small_Corner_Map.Main
                 _mapPreferences.MinimapEnabled.OnEntryValueChanged.Unsubscribe(OnMinimapEnabledChanged);
                 _mapPreferences.IncreaseSize.OnEntryValueChanged.Unsubscribe(OnIncreaseSizeChanged);
                 _mapPreferences.ShowSquareMinimap.OnEntryValueChanged.Unsubscribe(OnShowSquareMinimapChanged);
-                
-                // Only unsubscribe tuning preference changes if they were subscribed
-                // _mapPreferences.MapZoomLevel.OnEntryValueChanged.Unsubscribe(OnMapZoomLevelChanged);
-                _mapPreferences.MinimapPlayerOffsetX.OnEntryValueChanged.Unsubscribe(OnMinimapPlayerOffsetXChanged);
-                _mapPreferences.MinimapPlayerOffsetY.OnEntryValueChanged.Unsubscribe(OnMinimapPlayerOffsetYChanged);
 
                 _mapPreferences.ShowGameTime.OnEntryValueChanged.Unsubscribe(OnShowGameTimeChanged);
                 _mapPreferences.TrackProperties.OnEntryValueChanged.Unsubscribe(OnTrackPropertiesChanged);
                 _mapPreferences.TrackContracts.OnEntryValueChanged.Unsubscribe(OnTrackContractsChanged);
                 _mapPreferences.TrackVehicles.OnEntryValueChanged.Unsubscribe(OnTrackVehiclesChanged);
+                
+                // Unsubscribe repositioning preference changes
+                _mapPreferences.MinimapPositionX.OnEntryValueChanged.Unsubscribe(OnMinimapPositionXChanged);
+                _mapPreferences.MinimapPositionY.OnEntryValueChanged.Unsubscribe(OnMinimapPositionYChanged);
             }
         }
 
@@ -211,6 +211,25 @@ namespace Small_Corner_Map.Main
         private void OnTrackVehiclesChanged(bool oldValue, bool newValue)
         {
             if (_minimapView != null) _minimapView.UpdateVehicleTracking(newValue);
+        }
+        
+        private void OnMinimapPositionXChanged(float oldValue, float newValue)
+        {
+            if (_minimapView != null) _minimapView.UpdateMinimapPosition(newValue, _mapPreferences.MinimapPositionY.Value);
+        }
+        
+        private void OnMinimapPositionYChanged(float oldValue, float newValue)
+        {
+            if (_minimapView != null) _minimapView.UpdateMinimapPosition(_mapPreferences.MinimapPositionX.Value, newValue);
+        }
+        
+        public void OnMinimapPositionChanged(float x, float y)
+        {
+            if (_mapPreferences != null)
+            {
+                _mapPreferences.MinimapPositionX.Value = x;
+                _mapPreferences.MinimapPositionY.Value = y;
+            }
         }
     }
 }

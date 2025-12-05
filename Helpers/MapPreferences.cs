@@ -21,16 +21,6 @@ namespace Small_Corner_Map.Helpers
         private const string IncreaseSizeDisplayName = "Increase Minimap Size";
         private const bool IncreaseSizeDefault = false;
 
-        // Advanced tuning preferences (always defined with defaults if not loaded from file)
-        private const string MapZoomLevelKey = "07_MapZoomLevel";
-        private const string MapZoomLevelDisplayName = "Map Movement Scale (Zoom)";
-        
-        private const string MinimapPlayerOffsetXKey = "08_MinimapPlayerOffsetX";
-        private const string MinimapPlayerOffsetXDisplayName = "Minimap Player X Offset";
-        
-        private const string MinimapPlayerOffsetYKey = "09_MinimapPlayerOffsetY";
-        private const string MinimapPlayerOffsetYDisplayName = "Minimap Player Y Offset";
-
         private const string ContractTrackingKey = "04_TrackContracts";
         private const string ContractTrackingDisplayName = "Track Active Contracts on Minimap";
         private const bool ContractTrackingDefault = true;
@@ -43,17 +33,25 @@ namespace Small_Corner_Map.Helpers
         private const string VehicleTrackingDisplayName = "Track Owned Vehicles on Minimap";
         private const bool VehicleTrackingDefault = true;
         
+        private const string MinimapPositionXKey = "07_MinimapPositionX";
+        private const string MinimapPositionXDisplayName = "Change Minimap Position: X Coordinate";
+        private const float MinimapPositionXDefault = -20f;
+        
+        private const string MinimapPositionYKey = "08_MinimapPositionY";
+        private const string MinimapPositionYDisplayName = "Change Minimap Position: Y Coordinate";
+        private const float MinimapPositionYDefault = -20f;
+
+        
         // Preference Entries
         public MelonPreferences_Category SettingsCategory { get; set; }
         public MelonPreferences_Entry<bool> MinimapEnabled { get; private set; }
         public MelonPreferences_Entry<bool> ShowGameTime { get; private set; }
         public MelonPreferences_Entry<bool> IncreaseSize { get; private set; }
-        public MelonPreferences_Entry<float> MapZoomLevel { get; private set; }
-        public MelonPreferences_Entry<float> MinimapPlayerOffsetX { get; private set; }
-        public MelonPreferences_Entry<float> MinimapPlayerOffsetY { get; private set; }
         public MelonPreferences_Entry<bool> TrackContracts { get; private set; }
         public MelonPreferences_Entry<bool> TrackProperties { get; private set; }
         public MelonPreferences_Entry<bool> TrackVehicles { get; private set; }
+        public MelonPreferences_Entry<float> MinimapPositionX { get; private set; }
+        public MelonPreferences_Entry<float> MinimapPositionY { get; private set; }
         public MelonPreferences_Entry<bool> ShowSquareMinimap { get; private set; }
         
         private readonly float defaultScaleFactor = 1.0f;
@@ -71,15 +69,12 @@ namespace Small_Corner_Map.Helpers
             ShowGameTime = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, ShowGameTimeKey);
             IncreaseSize = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, IncreaseSizeKey);
             
-            // These preferences are always loaded/created, but only become visible/tunable if EnableAdvancedMinimapTuning is true.
-            MapZoomLevel = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MapZoomLevelKey);
-            MinimapPlayerOffsetX = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MinimapPlayerOffsetXKey);
-            MinimapPlayerOffsetY = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MinimapPlayerOffsetYKey);
-            
             TrackContracts = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, ContractTrackingKey);
             TrackProperties = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, PropertyTrackingKey);
             TrackVehicles = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, VehicleTrackingKey);
             ShowSquareMinimap = MelonPreferences.GetEntry<bool>(Constants.MapPreferencesCategoryIdentifier, "ShowSquareMinimap");
+            MinimapPositionX = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MinimapPositionXKey);
+            MinimapPositionY = MelonPreferences.GetEntry<float>(Constants.MapPreferencesCategoryIdentifier, MinimapPositionYKey);
         }
 
         private void CreateDefaultEntries()
@@ -126,29 +121,16 @@ namespace Small_Corner_Map.Helpers
                 "ShowSquareMinimap",
                 false,
                 "Enable Square Minimap");
-
-            // These tuning entries are always created as preferences, but their visibility in UI is tied to DisableDebugging.
-            // Their default values come from Constants.cs.
-            MapZoomLevel = SettingsCategory.CreateEntry<float>(
-                MapZoomLevelKey,
-                Constants.MinimapDefaultMapMovementScale,
-                MapZoomLevelDisplayName);
+        
+            MinimapPositionX = SettingsCategory.CreateEntry(
+                MinimapPositionXKey,
+                MinimapPositionXDefault,
+                MinimapPositionXDisplayName);
             
-            MapZoomLevel.IsHidden = Constants.DisableDebug;
-            
-            MinimapPlayerOffsetX = SettingsCategory.CreateEntry(
-                MinimapPlayerOffsetXKey,
-                Constants.MinimapDefaultPlayerOffsetX,
-                MinimapPlayerOffsetXDisplayName);
-            
-            MinimapPlayerOffsetX.IsHidden = Constants.DisableDebug;
-            
-            MinimapPlayerOffsetY = SettingsCategory.CreateEntry(
-                MinimapPlayerOffsetYKey,
-                Constants.MinimapDefaultPlayerOffsetY,
-                MinimapPlayerOffsetYDisplayName);
-            
-            MinimapPlayerOffsetY.IsHidden = Constants.DisableDebug;
+            MinimapPositionY = SettingsCategory.CreateEntry(
+                MinimapPositionYKey,
+                MinimapPositionYDefault,
+                MinimapPositionYDisplayName);
         }
     }
 }

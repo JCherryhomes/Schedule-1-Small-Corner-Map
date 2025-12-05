@@ -3,13 +3,14 @@ using MelonLoader;
 using UnityEngine;
 using System.Linq;
 using Small_Corner_Map.Helpers;
-using Il2CppScheduleOne.PlayerScripts;
 
 
 #if IL2CPP
+using Il2CppScheduleOne.PlayerScripts;
 using Il2CppScheduleOne.UI.Phone.Map;
 using Il2CppScheduleOne.Vehicles;
 #else
+using ScheduleOne.PlayerScripts;
 using ScheduleOne.UI.Phone.Map;
 using ScheduleOne.Vehicles;
 #endif
@@ -100,6 +101,12 @@ public class MapMarkerManager : MonoBehaviour
     
     private string GetGeneratedPoIKey(RectTransform rt)
     {
+        // Add null check to prevent exceptions during cleanup
+        if (rt == null || rt.gameObject == null)
+        {
+            return null;
+        }
+        
         // Use name + position as stable key (rounded to avoid floating point variations)
         return $"{rt.gameObject.name}_{Mathf.RoundToInt(rt.anchoredPosition.x)}_{Mathf.RoundToInt(rt.anchoredPosition.y)}";
     }
@@ -223,39 +230,70 @@ public class MapMarkerManager : MonoBehaviour
     
     public void OnPlayerEnterVehicle(LandVehicle vehicle)
     {
-        if (!_isTrackingVehicles) return;
-        _vehiclePoIKey = GetGeneratedPoIKey(vehicle.POI.UI);        
-        poiMarkers[_vehiclePoIKey].gameObject.SetActive(false);
+        if (!_isTrackingVehicles || vehicle?.POI?.UI == null) return;
+        
+        _vehiclePoIKey = GetGeneratedPoIKey(vehicle.POI.UI);
+        if (!string.IsNullOrEmpty(_vehiclePoIKey) && poiMarkers.TryGetValue(_vehiclePoIKey, out var marker) && marker != null)
+        {
+            marker.gameObject.SetActive(false);
+        }
     }
     
     public void OnPlayerExitVehicle(LandVehicle vehicle)
     {
-        if (!_isTrackingVehicles) return;
-        var marker = poiMarkers[_vehiclePoIKey];
+        if (!_isTrackingVehicles || string.IsNullOrEmpty(_vehiclePoIKey)) return;
         
-        marker.gameObject.SetActive(true);
+        if (poiMarkers.TryGetValue(_vehiclePoIKey, out var marker) && marker != null)
+        {
+            marker.gameObject.SetActive(true);
+        }
         _vehiclePoIKey = null;
     }
     
     private void UpdateVehicleMarkers()
     {
-        foreach (var vehicle in VehicleManager.Instance.PlayerOwnedVehicles)
+        // Add safety checks to prevent null reference exceptions during cleanup
+        if (VehicleManager.Instance == null || VehicleManager.Instance.PlayerOwnedVehicles == null || 
+            this == null || gameObject == null || !gameObject.activeInHierarchy)
         {
-            MelonLogger.Msg("Updating vehicle marker for: " + vehicle.VehicleName);
-            var key = GetGeneratedPoIKey(vehicle.POI.UI);
-            MelonLogger.Msg("Generated key: " + key);
-            
-            foreach(var existingKey in poiMarkers.Keys)
+            return;
+        }
+        
+        try
+        {
+            foreach (var vehicle in VehicleManager.Instance.PlayerOwnedVehicles)
             {
-                if (!existingKey.StartsWith("OwnedVehiclePoI(Clone)_")) continue;
-                MelonLogger.Msg("Existing marker key: " + existingKey);
+                // Add null checks for vehicle and its components
+                if (vehicle == null || vehicle.POI == null || vehicle.POI.UI == null || vehicle.transform == null)
+                {
+                    continue;
+                }
+                    
+                var key = GetGeneratedPoIKey(vehicle.POI.UI);
+                
+                // Check if key generation was successful
+                if (string.IsNullOrEmpty(key))
+                {
+                    continue;
+                }
+                
+                MelonLogger.Msg("Generated key: " + key);
+                
+                foreach(var existingKey in poiMarkers.Keys)
+                {
+                    if (!existingKey.StartsWith("OwnedVehiclePoI(Clone)_")) continue;
+                }
+                
+                if (poiMarkers.TryGetValue(key, out var marker) && marker != null)
+                {
+                    marker.UpdatePositionFromWorld(vehicle.transform.position);
+                }
             }
-            
-            if (poiMarkers.TryGetValue(key, out var marker))
-            {
-                MelonLogger.Msg("Found marker for key: " + key);
-                marker.UpdatePositionFromWorld(vehicle.transform.position);
-            }
+        }
+        catch (System.Exception ex)
+        {
+            // Log exception but don't crash - this can happen during scene transitions
+            MelonLogger.Warning($"[MapMarkerManager] Exception in UpdateVehicleMarkers: {ex.Message}");
         }
     }
 }

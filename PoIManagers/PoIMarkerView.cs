@@ -3,7 +3,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using MelonLoader;
 using Small_Corner_Map.Helpers;
+
+#if IL2CPP
 using Il2CppScheduleOne.Vehicles;
+#else
+using ScheduleOne.Vehicles;
+#endif
 
 namespace Small_Corner_Map.PoIManagers
 {

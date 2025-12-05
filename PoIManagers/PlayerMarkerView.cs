@@ -2,14 +2,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
 using MelonLoader;
-using Il2CppScheduleOne.PlayerScripts;
 
 
 
 #if IL2CPP
 using Il2CppIEnumerator = Il2CppSystem.Collections.IEnumerator;
+using Il2CppScheduleOne.PlayerScripts;
 #else
 using Il2CppIEnumerator = System.Collections.IEnumerator;
+using ScheduleOne.PlayerScripts;
 #endif
 
 namespace Small_Corner_Map.PoIManagers
@@ -84,18 +85,32 @@ namespace Small_Corner_Map.PoIManagers
 
         void Update()
         {
-            if (Player.Local.IsInVehicle)
+            // Add safety checks to prevent null reference exceptions during cleanup
+            if (Player.Local == null || this == null || gameObject == null || !gameObject.activeInHierarchy)
             {
-                _playerTransform = Player.Local.CurrentVehicle.transform;     
-            }
-            else
-            {
-                _playerTransform = Player.Local.transform;
+                return;
             }
             
-            if (_playerTransform != null)
+            try
             {
-                UpdateDirectionIndicator();
+                if (Player.Local.IsInVehicle)
+                {
+                    _playerTransform = Player.Local.CurrentVehicle?.transform;     
+                }
+                else
+                {
+                    _playerTransform = Player.Local.transform;
+                }
+                
+                if (_playerTransform != null)
+                {
+                    UpdateDirectionIndicator();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                // Log exception but don't crash - this can happen during scene transitions
+                MelonLogger.Warning($"[PlayerMarkerView] Exception in Update: {ex.Message}");
             }
         }
         
