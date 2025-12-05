@@ -6,7 +6,7 @@
   <PropertyGroup>
     <!-- Game installation paths - must be configured in Local.props -->
     <!-- MonoGamePath and IL2CPPGamePath should contain full paths to game folders -->
-    <TargetFramework>net60</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <RootNamespace>Small_Corner_Map</RootNamespace>
@@ -151,7 +151,7 @@
   
 
   <PropertyGroup Condition="'$(Configuration)' == 'IL2CPP'">
-    <TargetFramework>net60</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <DefineConstants>$(DefineConstants);IL2CPP</DefineConstants>
     <TargetName>Small_Corner_Map.Il2cpp</TargetName>
   </PropertyGroup>

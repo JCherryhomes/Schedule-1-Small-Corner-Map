@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using Small_Corner_Map.Helpers;
 using MelonLoader;
+using Il2CppScheduleOne.PlayerScripts;
+
+
 
 #if IL2CPP
 using Il2CppIEnumerator = Il2CppSystem.Collections.IEnumerator;
@@ -45,9 +48,9 @@ namespace Small_Corner_Map.PoIManagers
             _minimapPlayerCenterYOffset = newOffsetY;
         }
 
-        public void Initialize(Transform playerTransform, Transform parent, float worldScaleFactor, float currentZoomLevel, float minimapPlayerCenterXOffset, float minimapPlayerCenterYOffset)
+        public void Initialize(Transform parent, float worldScaleFactor, float currentZoomLevel, float minimapPlayerCenterXOffset, float minimapPlayerCenterYOffset)
         {
-            _playerTransform = playerTransform;
+            _playerTransform = Player.Local.transform;
             _worldScaleFactor = worldScaleFactor;
             _minimapPlayerCenterXOffset = minimapPlayerCenterXOffset;
             _minimapPlayerCenterYOffset = minimapPlayerCenterYOffset;
@@ -81,6 +84,15 @@ namespace Small_Corner_Map.PoIManagers
 
         void Update()
         {
+            if (Player.Local.IsInVehicle)
+            {
+                _playerTransform = Player.Local.CurrentVehicle.transform;     
+            }
+            else
+            {
+                _playerTransform = Player.Local.transform;
+            }
+            
             if (_playerTransform != null)
             {
                 UpdateDirectionIndicator();

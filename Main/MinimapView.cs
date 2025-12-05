@@ -5,12 +5,12 @@ using Small_Corner_Map.Helpers;
 using System.Reflection;
 using Small_Corner_Map.PoIManagers;
 
-
-
 #if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
+using Il2CppScheduleOne.Vehicles;
 #else
 using ScheduleOne.PlayerScripts;
+using ScheduleOne.Vehicles;
 #endif
 
 namespace Small_Corner_Map.Main
@@ -68,7 +68,7 @@ namespace Small_Corner_Map.Main
             
             if (!squareSprite)
                 squareSprite = Utils.CreateRoundedSquareSprite(
-                    (int)Constants.BaseMinimapSize, 10f, Color.grey, 2);
+                    (int)Constants.BaseMinimapSize, 3f, Color.grey, 2);
 
             // Create the UI
             if (minimapEnabled)
@@ -122,18 +122,18 @@ namespace Small_Corner_Map.Main
             }
         }
 
-        // public void UpdateMapMovementScale(float newZoomLevel)
-        // {
-        //     currentZoomLevel = newZoomLevel;
-        //     if (playerMarkerView != null)
-        //     {
-        //         playerMarkerView.UpdateZoomLevel(newZoomLevel);
-        //     }
-        //     if (mapMarkerManager != null)
-        //     {
-        //         mapMarkerManager.UpdateZoomLevel(newZoomLevel);
-        //     }
-        // }
+        public void UpdateMapMovementScale(float newZoomLevel)
+        {
+            currentZoomLevel = newZoomLevel;
+            if (playerMarkerView != null)
+            {
+                playerMarkerView.UpdateZoomLevel(newZoomLevel);
+            }
+            if (mapMarkerManager != null)
+            {
+                mapMarkerManager.UpdateZoomLevel(newZoomLevel);
+            }
+        }
         
         public void UpdateMinimapPlayerCenterXOffset(float newOffsetX)
         {
@@ -175,6 +175,24 @@ namespace Small_Corner_Map.Main
             if (mapMarkerManager != null)
             {
                 mapMarkerManager.OnTrackContractsChanged(isVisible);
+            }
+        }
+        
+        public void HandlePlayerEnterVehicle(LandVehicle vehicle)
+        {
+            // Notify player marker view
+            if (mapMarkerManager != null)
+            {
+                mapMarkerManager.OnPlayerEnterVehicle(vehicle);
+            }
+        }
+        
+        public void HandlePlayerExitVehicle(LandVehicle vehicle)
+        {
+            // Notify player marker view
+            if (mapMarkerManager != null)
+            {
+                mapMarkerManager.OnPlayerExitVehicle(vehicle);
             }
         }
 
@@ -237,11 +255,13 @@ namespace Small_Corner_Map.Main
             // --- Player Marker ---
             playerMarkerView = new GameObject("PlayerMarkerView").AddComponent<PlayerMarkerView>();
             playerMarkerView.transform.SetParent(containerRT, false); // Parent to containerRT for fixed center position
-            playerMarkerView.Initialize(player.transform, containerRT.transform, worldScaleFactor, currentZoomLevel, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
+            playerMarkerView.Initialize(
+                containerRT.transform, worldScaleFactor, currentZoomLevel, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
 
             mapMarkerManager = new GameObject("PropertyPoIManager").AddComponent<MapMarkerManager>();
             mapMarkerManager.transform.SetParent(containerRT, false);
-            mapMarkerManager.Initialize(player.transform, mapImageRT, worldScaleFactor, currentZoomLevel, trackProperties, trackContracts, trackVehicles, isCircle);
+            mapMarkerManager.Initialize(
+                mapImageRT, worldScaleFactor, currentZoomLevel, trackProperties, trackContracts, trackVehicles, isCircle, minimapPlayerCenterXOffset, minimapPlayerCenterYOffset);
             
             // --- Time Display ---
             timeDisplayView = new GameObject("TimeDisplayView").AddComponent<TimeDisplayView>();
@@ -295,6 +315,15 @@ namespace Small_Corner_Map.Main
         private void Update()
         {
             if (!playerTransform || !mapImageGo) return;
+            
+            if (Player.Local.IsInVehicle)
+            {
+                playerTransform = Player.Local.CurrentVehicle.transform;
+            }
+            else
+            {
+                playerTransform = Player.Local.transform;
+            }
 
             // Pass primitives to the static MinimapCoordinateSystem methods
             var newMapPosition = MinimapCoordinateSystem.GetMapContentPosition(

@@ -9,37 +9,37 @@ namespace Small_Corner_Map.Helpers
         private const string CategoryDisplayName = "Small Corner Map Settings";
         
         // Preference Keys, Display Names, and Default Values
-        private const string MinimapEnabledKey = "MinimapEnabled";
+        private const string MinimapEnabledKey = "01_MinimapEnabled";
         private const string MinimapEnabledDisplayName = "Enable Minimap";
         private const bool MinimapEnabledDefault = true;
         
-        private const string ShowGameTimeKey = "ShowGameTime";
+        private const string ShowGameTimeKey = "03_ShowGameTime";
         private const string ShowGameTimeDisplayName = "Show Current Game Time";
         private const bool ShowGameTimeDefault = true;
         
-        private const string IncreaseSizeKey = "IncreaseMapSize";
+        private const string IncreaseSizeKey = "02_IncreaseMapSize";
         private const string IncreaseSizeDisplayName = "Increase Minimap Size";
         private const bool IncreaseSizeDefault = false;
 
         // Advanced tuning preferences (always defined with defaults if not loaded from file)
-        private const string MapZoomLevelKey = "MapZoomLevel";
+        private const string MapZoomLevelKey = "07_MapZoomLevel";
         private const string MapZoomLevelDisplayName = "Map Movement Scale (Zoom)";
         
-        private const string MinimapPlayerOffsetXKey = "MinimapPlayerOffsetX";
+        private const string MinimapPlayerOffsetXKey = "08_MinimapPlayerOffsetX";
         private const string MinimapPlayerOffsetXDisplayName = "Minimap Player X Offset";
         
-        private const string MinimapPlayerOffsetYKey = "MinimapPlayerOffsetY";
+        private const string MinimapPlayerOffsetYKey = "09_MinimapPlayerOffsetY";
         private const string MinimapPlayerOffsetYDisplayName = "Minimap Player Y Offset";
 
-        private const string ContractTrackingKey = "TrackContracts";
+        private const string ContractTrackingKey = "04_TrackContracts";
         private const string ContractTrackingDisplayName = "Track Active Contracts on Minimap";
         private const bool ContractTrackingDefault = true;
         
-        private const string PropertyTrackingKey = "TrackProperties";
+        private const string PropertyTrackingKey = "05_TrackProperties";
         private const string PropertyTrackingDisplayName = "Track Owned Properties on Minimap";
         private const bool PropertyTrackingDefault = true;
         
-        private const string VehicleTrackingKey = "TrackVehicles";
+        private const string VehicleTrackingKey = "06_TrackVehicles";
         private const string VehicleTrackingDisplayName = "Track Owned Vehicles on Minimap";
         private const bool VehicleTrackingDefault = true;
         
@@ -84,6 +84,12 @@ namespace Small_Corner_Map.Helpers
 
         private void CreateDefaultEntries()
         {
+            if (MelonPreferences.GetCategory(Constants.MapPreferencesCategoryIdentifier) != null)
+            {
+                // Category already exists, no need to recreate entries
+                return;
+            }
+            
             SettingsCategory = MelonPreferences.CreateCategory(Constants.MapPreferencesCategoryIdentifier, CategoryDisplayName);
 
             MinimapEnabled = SettingsCategory.CreateEntry(

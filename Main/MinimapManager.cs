@@ -2,12 +2,13 @@ using MelonLoader;
 using UnityEngine;
 using Small_Corner_Map.Helpers;
 
-
 #if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
+using Il2CppScheduleOne.Vehicles;
 using Il2CppIEnumerator = Il2CppSystem.Collections.IEnumerator;
 #else
 using ScheduleOne.PlayerScripts;
+using ScheduleOne.Vehicles;
 using Il2CppIEnumerator = System.Collections.IEnumerator;
 #endif
 
@@ -35,6 +36,12 @@ namespace Small_Corner_Map.Main
 
         public void Initialize()
         {
+            if (_minimapView != null)
+            {
+                MelonLogger.Msg("MinimapManager is already initialized. Skipping.");
+                return;
+            }
+            
             MelonLogger.Msg("MinimapManager initializing.");
             
             _mapPreferences = new MapPreferences();
@@ -48,12 +55,50 @@ namespace Small_Corner_Map.Main
             MelonCoroutines.Start(InitializeWhenReady());
         }
 
+        public void Cleanup()
+        {
+            MelonLogger.Msg("MinimapManager cleaning up.");
+            
+            UnsubscribeEvents();
+            
+            if (_minimapView != null)
+            {
+                Destroy(_minimapView.gameObject);
+                _minimapView = null;
+            }
+            
+            _instance = null;
+        }
+        
+        public void OnPlayerEnterVehicle(LandVehicle vehicle)
+        {
+            if (_minimapView != null)
+            {
+                _minimapView.HandlePlayerEnterVehicle(vehicle);
+            }
+        }
+        
+        public void OnPlayerExitVehicle(LandVehicle vehicle)
+        {
+            if (_minimapView != null)
+            {
+                _minimapView.HandlePlayerExitVehicle(vehicle);
+            }
+        }
+
         private System.Collections.IEnumerator InitializeWhenReady()
         {
             // Wait for Player.Local to be available
             while (Player.Local == null)
             {
                 yield return null;
+            }
+
+            // A null _minimapView might mean Cleanup was called after Initialize started but before this ran.
+            if (_minimapView == null)
+            {
+                MelonLogger.Warning("MinimapView was destroyed during initialization. Aborting.");
+                yield break;
             }
 
             MelonLogger.Msg("Player object found, initializing MinimapView.");
@@ -79,7 +124,7 @@ namespace Small_Corner_Map.Main
             _mapPreferences.ShowSquareMinimap.OnEntryValueChanged.Subscribe(OnShowSquareMinimapChanged);
             
             // Only subscribe to tuning preference changes if advanced tuning is enabled
-            // _mapPreferences.MapZoomLevel.OnEntryValueChanged.Subscribe(OnMapZoomLevelChanged);
+            _mapPreferences.MapZoomLevel.OnEntryValueChanged.Subscribe(OnMapZoomLevelChanged);
             _mapPreferences.MinimapPlayerOffsetX.OnEntryValueChanged.Subscribe(OnMinimapPlayerOffsetXChanged);
             _mapPreferences.MinimapPlayerOffsetY.OnEntryValueChanged.Subscribe(OnMinimapPlayerOffsetYChanged);
             
@@ -91,7 +136,11 @@ namespace Small_Corner_Map.Main
 
         private void OnDestroy()
         {
-            // Unsubscribe from preference changes
+            UnsubscribeEvents();
+        }
+
+        private void UnsubscribeEvents()
+        {
             if (_mapPreferences != null)
             {
                 _mapPreferences.MinimapEnabled.OnEntryValueChanged.Unsubscribe(OnMinimapEnabledChanged);
@@ -112,56 +161,56 @@ namespace Small_Corner_Map.Main
 
         private void OnMinimapEnabledChanged(bool oldValue, bool newValue)
         {
-            _minimapView.ToggleMinimapVisibility(newValue);
+            if (_minimapView != null) _minimapView.ToggleMinimapVisibility(newValue);
         }
 
         private void OnIncreaseSizeChanged(bool oldValue, bool newValue)
         {
             // Recalculate scale factor and update view
-            _minimapView.UpdateMinimapUISize(_mapPreferences.MinimapScaleFactor);
+            if (_minimapView != null) _minimapView.UpdateMinimapUISize(_mapPreferences.MinimapScaleFactor);
         }
 
         private void OnShowSquareMinimapChanged(bool oldValue, bool newValue)
         {
-            _minimapView.UpdateMinimapShape(newValue);
+            if (_minimapView != null) _minimapView.UpdateMinimapShape(newValue);
         }
 
-        // private void OnMapZoomLevelChanged(float oldValue, float newValue)
-        // {
-        //     // This event handler should only be subscribed if tuning is enabled, so no need for an extra check here.
-        //     _minimapView.UpdateMapMovementScale(newValue);
-        // }
+        private void OnMapZoomLevelChanged(float oldValue, float newValue)
+        {
+            // This event handler should only be subscribed if tuning is enabled, so no need for an extra check here.
+            _minimapView.UpdateMapMovementScale(newValue);
+        }
 
         private void OnMinimapPlayerOffsetXChanged(float oldValue, float newValue)
         {
             // This event handler should only be subscribed if tuning is enabled, so no need for an extra check here.
-            _minimapView.UpdateMinimapPlayerCenterXOffset(newValue);
+           if (_minimapView != null) _minimapView.UpdateMinimapPlayerCenterXOffset(newValue);
         }
 
         private void OnMinimapPlayerOffsetYChanged(float oldValue, float newValue)
         {
             // This event handler should only be subscribed if tuning is enabled, so no need for an extra check here.
-            _minimapView.UpdateMinimapPlayerCenterYOffset(newValue);
+            if (_minimapView != null) _minimapView.UpdateMinimapPlayerCenterYOffset(newValue);
         }
 
         private void OnShowGameTimeChanged(bool oldValue, bool newValue)
         {
-            _minimapView.UpdateTimeDisplayVisibility(newValue);
+            if (_minimapView != null) _minimapView.UpdateTimeDisplayVisibility(newValue);
         }
         
         private void OnTrackPropertiesChanged(bool oldValue, bool newValue)
         {
-            _minimapView.UpdatePropertyTracking(newValue);
+            if (_minimapView != null) _minimapView.UpdatePropertyTracking(newValue);
         }
         
         private void OnTrackContractsChanged(bool oldValue, bool newValue)
         {
-            _minimapView.UpdateContractTracking(newValue);
+            if (_minimapView != null) _minimapView.UpdateContractTracking(newValue);
         }
 
         private void OnTrackVehiclesChanged(bool oldValue, bool newValue)
         {
-            _minimapView.UpdateVehicleTracking(newValue);
+            if (_minimapView != null) _minimapView.UpdateVehicleTracking(newValue);
         }
     }
 }

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using MelonLoader;
 using Small_Corner_Map.Helpers;
+using Il2CppScheduleOne.Vehicles;
 
 namespace Small_Corner_Map.PoIManagers
 {
@@ -103,7 +104,15 @@ namespace Small_Corner_Map.PoIManagers
 
             _phoneMapPosition = newPhoneMapPosition;
             Vector2 scaledPosition = _phoneMapPosition * 0.25f;
-            _mapPosition = new Vector2(scaledPosition.x + 2f, scaledPosition.y - 3f);
+            _mapPosition = new Vector2(scaledPosition.x + 2f, scaledPosition.y  - 3f);
+        }
+
+        public void UpdatePositionFromWorld(Vector3 worldPos)
+        {
+            if (_thisRect == null) return;
+            // Convert world position to the minimap's internal _mapPosition
+            var positionWithOffset = worldPos + new Vector3(-10f, 0f, 6f); // Adjust if needed
+            _mapPosition = MinimapCoordinateSystem.WorldToMapSpace(positionWithOffset, worldScaleFactor, currentZoomLevel);
         }
 
         private void Update()
