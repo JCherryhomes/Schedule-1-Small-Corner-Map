@@ -116,7 +116,6 @@ namespace Small_Corner_Map.PoIManagers
         
         public void ReplaceWithRealPlayerIcon(GameObject realIconPrefab)
         {
-            MelonLogger.Msg("PlayerMarkerView: Replacing player marker with real icon: " + (realIconPrefab?.name ?? "null"));
             if (realIconPrefab == null) return;
             _originalPlayerIconPrefab = realIconPrefab; // cache for restore
             ReplaceWithIcon(realIconPrefab, Constants.PlayerIconReplacementScale, isVehicle:false);
@@ -206,7 +205,6 @@ namespace Small_Corner_Map.PoIManagers
             if (realIcon != null)
             {
                 ReplaceWithRealPlayerIcon(realIcon.gameObject);
-                MelonLogger.Msg("PlayerMarkerView: Replaced fallback player marker with real player icon.");
                 
                 // Get the direction indicator sprite from MapApp
                 var mapAppDirectionIndicator = realIcon.Find("Image");
@@ -227,8 +225,6 @@ namespace Small_Corner_Map.PoIManagers
                             {
                                 _directionIndicator.sizeDelta = mapAppRect.sizeDelta;
                             }
-                            
-                            MelonLogger.Msg("PlayerMarkerView: Applied MapApp direction indicator sprite and size.");
                         }
                     }
                 }

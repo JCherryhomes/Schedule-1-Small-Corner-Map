@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.1 - 2025-12-06
+### Clean up logging
+- **Logging**: Remove some of the excessive MelonLogger messages.
+
 ## 4.0.0 - 2025-12-04
 ### Complete rework of the mod
 - **Loading**: The underlying code for loading the markers on the minimap was overhauled.

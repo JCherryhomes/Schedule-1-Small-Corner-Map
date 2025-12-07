@@ -172,7 +172,6 @@ public class MapMarkerManager : MonoBehaviour
 
                 if (kvp.Key.Contains("OwnedVehiclePoI(Clone)"))
                 {
-                    MelonLogger.Msg("Adding/Updating vehicle PoI to poiMarkerKeyMap");
                     poiMarkerKeyMap[kvp.Key] = kvp.Key;
                 }
                 
@@ -276,8 +275,6 @@ public class MapMarkerManager : MonoBehaviour
                 {
                     continue;
                 }
-                
-                MelonLogger.Msg("Generated key: " + key);
                 
                 foreach(var existingKey in poiMarkers.Keys)
                 {
