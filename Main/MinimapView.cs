@@ -251,8 +251,7 @@ namespace Small_Corner_Map.Main
             mapImageRT.pivot = new Vector2(0.5f, 0.5f);
             mapImageRT.sizeDelta = new Vector2(500, 500); // Initial size, will be adjusted by zoom
             mapImage = mapImageGo.AddComponent<Image>();
-            mapImage.color = Color.white; 
-            MelonLogger.Msg($"MinimapView: MapImage RectTransform sizeDelta: {mapImageRT.sizeDelta}");
+            mapImage.color = Color.white;
 
             // --- Player Marker ---
             playerMarkerView = new GameObject("PlayerMarkerView").AddComponent<PlayerMarkerView>();
@@ -289,10 +288,8 @@ namespace Small_Corner_Map.Main
                  var texture = new Texture2D(2, 2);
                  if (texture.LoadImage(fileData))
                  {
-                     MelonLogger.Msg($"MinimapView: Loaded texture with size: {texture.width}x{texture.height}");
                      var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
                      mapImage.sprite = sprite;
-                     MelonLogger.Msg("MinimapView: Successfully loaded and assigned map sprite.");
                  }
                  else
                  {
@@ -343,7 +340,6 @@ namespace Small_Corner_Map.Main
             if (containerRT != null)
             {
                 containerRT.anchoredPosition = new Vector2(positionX, positionY);
-                MelonLogger.Msg($"[MinimapView] Position updated to: ({positionX}, {positionY})");
             }
         }
     }
